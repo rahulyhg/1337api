@@ -9,6 +9,10 @@ require 'config.php';
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 R::setAutoResolve( TRUE );
 
+if($config['api']['debug']){    
+	R::debug( TRUE, 0 );
+}
+
 /* ***************************************************************************************************
 ** BEANS *********************************************************************************************
 *************************************************************************************************** */ 
@@ -20,22 +24,11 @@ R::setAutoResolve( TRUE );
 ** GET ROUTES ****************************************************************************************
 *************************************************************************************************** */ 
 
-if( !empty($_GET) && in_array($_GET['action'], $config['api']['actionlist']) ){
+if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist']) ){
+
 	$api['action']	 = $_GET['action'];
 	$api['edge']	 = $_GET['edge'];
 	$api['param']	 = $_GET['param'];
-
-	if($config['api']['debug']){
-		echo 'elijah says: you are trying to ' . $api['action'] . '<br />';
-		if (!empty($api['edge'])){echo '@ edge: ' . $api['edge']; if (!empty($api['param'])){echo ' w/ param: ' . $api['param'];}};
-		echo '<hr />';		
-	}
-
-} 
-
-else {
-	die('elijah says: you shall not pass.<br /><hr />');
-}
 
 	switch($api['action']) {
 
@@ -54,33 +47,26 @@ else {
 			output($result);
 		break;
 
-		case 'create':
-			$result['message'] = 'in development: action "create"';
-			output($result);
-		break;
-
 		case 'read':
-			$result['message'] = 'in development: action "read"';
-			output($result);
-		break;
-
-		case 'update':
-			$result['message'] = 'in development: action "update"';
+			$page = R::load( $api['edge'], $api['param'] );			
+			$result['id'] = $page['id'];
+			$result['title'] = $page['title'];
 			output($result);
 
-		break;
-
-		case 'destroy':
-			$result['message'] = 'in development: action "destroy"';
-			output($result);
 		break;
 
 		default:
 			$result['message'] = 'action not supported.';
 			output($result);
-
 		break;
 	}
+
+} 
+
+else {
+	$result['message'] = 'elijah says: you shall not pass.';
+	output($result);
+}
 
 /* ***************************************************************************************************
 ** POST ROUTES ***************************************************************************************
