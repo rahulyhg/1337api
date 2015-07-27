@@ -6,12 +6,8 @@ RewriteEngine On
 #
 # RewriteBase /
 
-# ENDPOINTS become /endpoint by elijah
+# API ENDPOINTS by elijah
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)$ index.php?endpoint=$1 [L]
-
-# PARAM become /endpoint/param by elijah
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/([^/]+)$ index.php?endpoint=$1&param=$2 [L]
+RewriteRule ^([^/]+)$ index.php?action=$1 [L]
+RewriteRule ^([^/]+)/([^/]+)$ index.php?action=$1&edge=$2 [L]
+RewriteRule ^([^/]+)/([^/]+)/([^/]+)$ index.php?action=$1&edge=$2&param=$3 [L]

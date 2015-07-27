@@ -1,12 +1,13 @@
 <?php
-	error_reporting(E_ALL);
-	ini_set('error_reporting', E_ALL);
 
-	require 'rb-p533.php';
-	R::setup('mysql:host=186.202.152.116; dbname=umstudiohomolo8','umstudiohomolo8','studio0001');
-	R::setAutoResolve( TRUE );
+/* ***************************************************************************************************
+** INIT **********************************************************************************************
+*************************************************************************************************** */ 
+require 'rb-p533.php';
+require 'config.php';
 
-
+R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
+R::setAutoResolve( TRUE );
 
 /* ***************************************************************************************************
 ** BEANS *********************************************************************************************
@@ -19,31 +20,81 @@
 ** GET ROUTES ****************************************************************************************
 *************************************************************************************************** */ 
 
-if(!empty($_GET['endpoint'])){
+if( !empty($_GET) && in_array($_GET['action'], $config['api']['actionlist']) ){
+	$api['action']	 = $_GET['action'];
+	$api['edge']	 = $_GET['edge'];
+	$api['param']	 = $_GET['param'];
 
-	switch($_GET['endpoint']) {
+	if($config['api']['debug']){
+		echo 'elijah says: you are trying to ' . $api['action'] . '<br />';
+		if (!empty($api['edge'])){echo '@ edge: ' . $api['edge']; if (!empty($api['param'])){echo ' w/ param: ' . $api['param'];}};
+		echo '<hr />';		
+	}
 
-		case 'hello_world':
-			echo 'endpoint = hello_world';
-			echo '<hr />';
-			echo 'param = ' . $_GET['param'];
+} 
+
+else {
+	die('elijah says: you shall not pass.<br /><hr />');
+}
+
+	switch($api['action']) {
+
+		case 'hi':
+			$result['message'] = 'Hi, Elijah!';
+			output($result);
 		break;
 
 		case 'inspect':
-			$inspect = json_encode(R::inspect($_GET['param']));
-			print_r($inspect);
+			$result[$api['edge']] = R::inspect($api['edge']);
+			output($result);
 		break;
 
+		case 'search':
+			$result['message'] = 'in development: action "search"';
+			output($result);
+		break;
+
+		case 'create':
+			$result['message'] = 'in development: action "create"';
+			output($result);
+		break;
+
+		case 'read':
+			$result['message'] = 'in development: action "read"';
+			output($result);
+		break;
+
+		case 'update':
+			$result['message'] = 'in development: action "update"';
+			output($result);
+
+		break;
+
+		case 'destroy':
+			$result['message'] = 'in development: action "destroy"';
+			output($result);
+		break;
+
+		default:
+			$result['message'] = 'action not supported.';
+			output($result);
+
+		break;
 	}
 
+/* ***************************************************************************************************
+** POST ROUTES ***************************************************************************************
+*************************************************************************************************** */ 
 
+
+
+/* ***************************************************************************************************
+** RETURN FUNCTIONS **********************************************************************************
+*************************************************************************************************** */ 
+
+
+function output($result){
+	echo json_encode($result);
 }
 
-/* hello word - create table
-    $umspost = R::dispense( 'umspost' );
-    $umspost->text = 'Hello World';
-
-    $id = R::store( $umspost );          //Create or Update
-    $umspost = R::load( 'umspost', $id );   //Retrieve
-*/
 ?>	
