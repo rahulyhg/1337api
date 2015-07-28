@@ -2,7 +2,6 @@
 function LoadingMenu($scope, $http)
 {
   $http.get('api/edges').success(function(data){
-    console.log(data.edges);
     $scope.menus  = data.edges;
   });
 }
@@ -38,13 +37,13 @@ function EditCtrl($scope, $http, $location, $routeParams) {
   $scope.activePath = null;
 
   $http.get('api/read/items/'+id).success(function(data) {
-    $scope.items = data;
+    $scope.item = data;
   });
 
   $scope.update = function(item){
     
     $http.put('api/update/items/'+id, item).success(function(data) {
-      $scope.items = data;
+      $scope.item = data;
       $scope.activePath = $location.path('/');
     });
   };
@@ -54,7 +53,7 @@ function EditCtrl($scope, $http, $location, $routeParams) {
 
     var deleteitem = confirm('Are you absolutely sure you want to delete?');
     if (deleteitem) {
-      $http.delete('api/items/'+item.id);
+      $http.delete('api/destroy/items/'+item.id);
       $scope.activePath = $location.path('/');
     }
   };

@@ -106,6 +106,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 			}
 		break;
 
+		default:
+			$result['message'] = 'action not supported.';
+			api_output($result);
+		break;
+
+	}
+
+}
+
+/* ***************************************************************************************************
+** DELETE ROUTES ****************************************************************************************
+*************************************************************************************************** */ 
+
+if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
+
+	$request_array = explode('/', $_SERVER['REQUEST_URI']);
+
+	$request['action']	 = $request_array[sizeof($request_array) - 3];
+	$request['edge']	 = $request_array[sizeof($request_array) - 2];
+	$request['param']	 = $request_array[sizeof($request_array) - 1];
+
+	switch($request['action']) {
+
+		case 'destroy':
+			if (in_array($request['edge'], $config['api']['beansList'])){
+				api_destroy($request);
+			}
+			else{
+				api_forbidden();
+			}
+		break;
+
 
 		default:
 			$result['message'] = 'action not supported.';
@@ -148,14 +180,25 @@ function api_read($request){
 
 function api_update($request){
 
-    $item = R::load( $request['edge'], $request['param'] );
+	$item = R::load( $request['edge'], $request['param'] );
 
 	foreach ($request['content'] as $k => $v) {
 		$item[$k] = $v;
 	}
 
 	R::store( $item );
-	$result = 'Sucesso. (id: '.$request['param'].')';
+	$result = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+
+	// OUTPUT
+	api_output($result);
+}
+
+function api_destroy($request){
+
+    $item = R::load( $request['edge'], $request['param'] );
+
+    R::trash( $item );
+	$result = 'Excluído com Sucesso. (id: '.$request['param'].')';
 
 	// OUTPUT
 	api_output($result);

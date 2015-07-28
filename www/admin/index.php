@@ -39,5 +39,9 @@
 
 <script type="text/javascript" src ="assets/js/app.js"></script>
 
+<?php 
+	$api = json_decode(file_get_contents('http://'.$_SERVER[HTTP_HOST].'/admin/api/edges'), true);
+?>
+
 </body>
 </html>
