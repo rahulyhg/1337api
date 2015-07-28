@@ -1,0 +1,21 @@
+<h2>items</h2>
+
+<table class="table table-condensed">
+
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Título</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		<tr ng-repeat="item in items">
+			<td>{{item.id}}</td>
+			<td>{{item.title}}</td>
+			<td><a href="#/edit/{{item.id}}" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-pencil"></i></button></td>
+		</tr>
+	</tbody>
+</table>
+
+<a class="btn btn-primary" href="#/add-item">Add New item</a>

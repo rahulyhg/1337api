@@ -19,66 +19,108 @@ $config['api']['beansList'] = R::inspect();
 ** GET ROUTES ****************************************************************************************
 *************************************************************************************************** */ 
 
-if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist'])){
+if($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-	$request['action']	 = $_GET['action'];
-	$request['edge']	 = $_GET['edge'];
-	$request['param']	 = $_GET['param'];
+	if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist'])){
 
-	switch($request['action']) {
+		$request['action']	 = $_GET['action'];
+		$request['edge']	 = $_GET['edge'];
+		$request['param']	 = $_GET['param'];
 
-		case 'hi':
-			$result['message'] = 'Hi, Elijah!';
-			output($result);
-		break;
+		switch($request['action']) {
 
-		case 'edges':
-			edges($config);
-		break;
+			case 'hi':
+				$result['message'] = 'Hi, Elijah!';
+				api_output($result);
+			break;
 
-		case 'inspect':
-			$result[$request['edge']] = R::inspect($request['edge']);
-			output($result);
-		break;
+			case 'edges':
+				api_edges($config);
+			break;
 
-		case 'search':
-			$result['message'] = 'in development: action "search"';
-			output($result);
-		break;
+			case 'inspect':
+				$result[$request['edge']] = R::inspect($request['edge']);
+				output($result);
+			break;
 
-		case 'read':
-			if (in_array($_GET['edge'], $config['api']['beansList'])){
-				read($request);
-			}
-			else{
-				forbidden();
-			}
+			case 'search':
+				$result['message'] = 'in development: action "search"';
+				output($result);
+			break;
 
-		break;
+			case 'read':
+				if (in_array($_GET['edge'], $config['api']['beansList'])){
+					api_read($request);
+				}
+				else{
+					api_forbidden();
+				}
 
-		default:
-			$result['message'] = 'action not supported.';
-			output($result);
-		break;
+			break;
+
+			case 'count':
+				if (in_array($_GET['edge'], $config['api']['beansList'])){
+					api_count($request);
+				}
+				else{
+					forbidden();
+				}
+
+			break;		
+
+			default:
+				$result['message'] = 'action not supported.';
+				api_output($result);
+			break;
+		}
+
+	} 
+
+	else {
+		api_forbidden();
 	}
 
-} 
-
-else {
-	forbidden();
 }
 
 /* ***************************************************************************************************
-** POST ROUTES ***************************************************************************************
+** PUT ROUTES ****************************************************************************************
 *************************************************************************************************** */ 
 
+if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 
+	$request_array = explode('/', $_SERVER['REQUEST_URI']);
+
+	$request['action']	 = $request_array[sizeof($request_array) - 3];
+	$request['edge']	 = $request_array[sizeof($request_array) - 2];
+	$request['param']	 = $request_array[sizeof($request_array) - 1];
+	$request['content']	 = json_decode(file_get_contents("php://input"),true);
+
+	switch($request['action']) {
+
+		case 'update':
+			if (in_array($request['edge'], $config['api']['beansList'])){
+				api_update($request);
+			}
+			else{
+				api_forbidden();
+			}
+		break;
+
+
+		default:
+			$result['message'] = 'action not supported.';
+			api_output($result);
+		break;
+
+	}
+
+}
 
 /* ***************************************************************************************************
 ** RETURN FUNCTIONS **********************************************************************************
 *************************************************************************************************** */ 
 
-function read($request){
+function api_read($request){
 
 	// READ - list all
 	if(empty($request['param'])){
@@ -91,12 +133,6 @@ function read($request){
 		}
 	}
 
-	// READ - count all
-	elseif ($request['param'] == 'count') {
-		$pagesCount = R::count( $request['edge'] );
-		$result[$request['edge']] = $pagesCount;
-	}
-
 	// READ - view one
 	else{
 		$item = R::load( $request['edge'], $request['param'] );
@@ -106,21 +142,52 @@ function read($request){
 	}
 
 	// OUTPUT
-	output($result);
+	api_output($result);
 }
 
-function edges($config){
+
+function api_update($request){
+
+    $item = R::load( $request['edge'], $request['param'] );
+
+	foreach ($request['content'] as $k => $v) {
+		$item[$k] = $v;
+	}
+
+	R::store( $item );
+	$result = 'Sucesso. (id: '.$request['param'].')';
+
+	// OUTPUT
+	api_output($result);
+}
+
+function api_count($request){
+	
+	// COUNT - count all
+	$count = R::count( $request['edge'] );
+	$result[$request['edge']] = $count;
+	
+	// OUTPUT
+	api_output($result);
+}
+
+function api_edges($config){
 	$result['get actions'] = $config['api']['get']['whitelist'];
 	$result['post actions'] = $config['api']['post']['whitelist'];
-	$result['edges'] = $config['api']['beansList'];
-	output($result);
+	
+	foreach ($config['api']['beansList'] as $k => $v) {
+		$edges[$k]['name'] = $v;
+	}
+	$result['edges'] = $edges;
+
+	api_output($result);
 }
 
-function output($result){
+function api_output($result){
 	echo json_encode($result);
 }
 
-function forbidden($result){
+function api_forbidden($result){
 	$result['message'] = 'elijah says: NO.';
 	echo json_encode($result);
 }

@@ -1,0 +1,31 @@
+<h2>Edit item</h2>
+<div class="row">
+	<div class="col-md-6">
+
+		<form novalidate name="AddNewForm" id="add-new-form" method="post" action="">
+			
+			<input type="hidden" ng-model="item.id" value="{{item.id}}" />
+			
+			<div class="form-group">
+				<label for="title">Título:</label>
+				<input class="form-control" type="text" ng-model="item.title" value="{{item.title}}" required />
+			</div>
+			
+			<div class="form-group">
+				<label for="shortdescription">Descrição Curta:</label>
+				<input class="form-control" type="text" ng-model="item.shortdescription" value="{{item.shortdescription}}" required />
+			</div>
+			
+			<div class="form-group">
+				<label for="description">Descrição:</label>
+				<input class="form-control" type="text" ng-model="item.description" value="{{item.description}}" required />
+			</div>
+		
+			<button class="btn btn-primary" ng-disabled="AddNewForm.$invalid || isUnchanged(item)" id="add-new-btn" ng-click="update(item)">Update <span class="glyphicon glyphicon-floppy-disk"></span></button>
+			<button class="btn btn-danger" ng-click="delete(item)">Delete <span class="glyphicon glyphicon-trash"></span></button>
+
+			<a href="#/" class="btn">Cancel</a>
+
+		</form>
+	</div>
+</div>
