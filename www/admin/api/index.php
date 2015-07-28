@@ -13,32 +13,31 @@ if($config['api']['debug']){
 	R::debug( TRUE, 0 );
 }
 
-/* ***************************************************************************************************
-** BEANS *********************************************************************************************
-*************************************************************************************************** */ 
-
-
-
+$config['api']['beansList'] = R::inspect();
 
 /* ***************************************************************************************************
 ** GET ROUTES ****************************************************************************************
 *************************************************************************************************** */ 
 
-if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist']) ){
+if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist'])){
 
-	$api['action']	 = $_GET['action'];
-	$api['edge']	 = $_GET['edge'];
-	$api['param']	 = $_GET['param'];
+	$request['action']	 = $_GET['action'];
+	$request['edge']	 = $_GET['edge'];
+	$request['param']	 = $_GET['param'];
 
-	switch($api['action']) {
+	switch($request['action']) {
 
 		case 'hi':
 			$result['message'] = 'Hi, Elijah!';
 			output($result);
 		break;
 
+		case 'edges':
+			edges($config);
+		break;
+
 		case 'inspect':
-			$result[$api['edge']] = R::inspect($api['edge']);
+			$result[$request['edge']] = R::inspect($request['edge']);
 			output($result);
 		break;
 
@@ -48,10 +47,12 @@ if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist'
 		break;
 
 		case 'read':
-			$page = R::load( $api['edge'], $api['param'] );			
-			$result['id'] = $page['id'];
-			$result['title'] = $page['title'];
-			output($result);
+			if (in_array($_GET['edge'], $config['api']['beansList'])){
+				read($request);
+			}
+			else{
+				forbidden();
+			}
 
 		break;
 
@@ -64,8 +65,7 @@ if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist'
 } 
 
 else {
-	$result['message'] = 'elijah says: you shall not pass.';
-	output($result);
+	forbidden();
 }
 
 /* ***************************************************************************************************
@@ -78,8 +78,50 @@ else {
 ** RETURN FUNCTIONS **********************************************************************************
 *************************************************************************************************** */ 
 
+function read($request){
+
+	// READ - list all
+	if(empty($request['param'])){
+		$items = R::findAll( $request['edge'] );
+
+		foreach ($items as $item => $content) {
+			foreach ($content as $k => $v) {
+				$result[$item][$k] = $v;
+			}
+		}
+	}
+
+	// READ - count all
+	elseif ($request['param'] == 'count') {
+		$pagesCount = R::count( $request['edge'] );
+		$result[$request['edge']] = $pagesCount;
+	}
+
+	// READ - view one
+	else{
+		$item = R::load( $request['edge'], $request['param'] );
+		foreach ($item as $k => $v) {
+			$result[$k] = $v;
+		}
+	}
+
+	// OUTPUT
+	output($result);
+}
+
+function edges($config){
+	$result['get actions'] = $config['api']['get']['whitelist'];
+	$result['post actions'] = $config['api']['post']['whitelist'];
+	$result['edges'] = $config['api']['beansList'];
+	output($result);
+}
 
 function output($result){
+	echo json_encode($result);
+}
+
+function forbidden($result){
+	$result['message'] = 'elijah says: NO.';
 	echo json_encode($result);
 }
 

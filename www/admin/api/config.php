@@ -7,7 +7,7 @@
 
 	/* CONFIG API - GLOBALS */
 	$config['api']['debug']				 = FALSE;
-	$config['api']['get']['whitelist']	 = array('hi','inspect','search','read');
+	$config['api']['get']['whitelist']	 = array('hi','edges','inspect','search','read');
 	$config['api']['post']['whitelist']	 = array('create','update','destroy');
 
 ?>
