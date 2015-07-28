@@ -39,8 +39,12 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			break;
 
 			case 'search':
-				$result['message'] = 'in development: action "search"';
-				output($result);
+				if (in_array($_GET['edge'], $config['api']['beansList'])){
+					api_search($request);
+				}
+				else{
+					api_forbidden();
+				}
 			break;
 
 			case 'read':
@@ -50,7 +54,6 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 				else{
 					api_forbidden();
 				}
-
 			break;
 
 			case 'count':
@@ -58,7 +61,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 					api_count($request);
 				}
 				else{
-					forbidden();
+					api_forbidden();
 				}
 			break;		
 
@@ -67,13 +70,12 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 					api_schema($request);
 				}
 				else{
-					forbidden();
+					api_forbidden();
 				}
 			break;		
 
 			default:
-				$result['message'] = 'action not supported.';
-				api_output($result);
+				api_forbidden();
 			break;
 		}
 
@@ -141,7 +143,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 			}
 		break;
 
-
 		default:
 			$result['message'] = 'action not supported.';
 			api_output($result);
@@ -207,6 +208,13 @@ function api_destroy($request){
 	api_output($result);
 }
 
+function api_search($request){
+	$result['message'] = 'in development: action "search"';
+
+	// OUTPUT
+	api_output($result);
+}
+
 function api_count($request){
 	
 	// COUNT - count all
@@ -235,13 +243,15 @@ function api_schema($request){
 }
 
 function api_edges($config){
-	$result['get actions'] = $config['api']['get']['whitelist'];
-	$result['post actions'] = $config['api']['post']['whitelist'];
 	
 	foreach ($config['api']['beansList'] as $k => $v) {
-		$edges[$k]['name'] = $v;
+		$beans[$k]['name'] = $v;
 	}
-	$result['edges'] = $edges;
+
+	$result['beans']			 = $beans;
+	$result['actions']['get']	 = $config['api']['get']['whitelist'];
+	$result['actions']['put']	 = $config['api']['put']['whitelist'];
+	$result['actions']['del']	 = $config['api']['delete']['whitelist'];
 
 	api_output($result);
 }
@@ -255,4 +265,4 @@ function api_forbidden($result){
 	echo json_encode($result);
 }
 
-?>	
+?>

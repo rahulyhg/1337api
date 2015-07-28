@@ -1,9 +1,8 @@
 <?php 
-	$api = json_decode(file_get_contents('http://'.$_SERVER[HTTP_HOST].'/admin/api/edges'), true);
-
-	foreach ($api['edges'] as $k => $v) {
-		$edges[$k] = $v['name'];
-		}	
+	$edges = json_decode(file_get_contents('http://'.$_SERVER[HTTP_HOST].'/admin/api/edges'), true);
+	foreach ($edges['beans'] as $k => $v) {
+		$beans[$k] = $v['name'];
+	}	
 ?>
 
 <!DOCTYPE html>
@@ -20,7 +19,7 @@
 		<!-- NAVIGATION -->
 		<nav class="text-center">
 			<a href="/admin"><h1>Admin Sandbox</h1></a>
-			<ul class="list-inline" ng-controller="MainMenu">
+			<ul class="list-inline" ng-controller="MenuController">
 				<li ng-repeat="menu in menus"><a href="#/{{menu.name}}">{{menu.name}}</a></li>
 			</ul>
 		</nav>
@@ -40,7 +39,7 @@
 		when('/', {templateUrl: 'assets/tpl/dashboard.html'}).
 
 		<?php
-			foreach ($edges as $k => $v) {
+			foreach ($beans as $k => $v) {
 				echo 'when(\'/'.$v.'\', {templateUrl: \'assets/tpl/list.html\', controller: ListController}).';
 			};
 		?>

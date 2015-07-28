@@ -1,7 +1,10 @@
+/* ************************************************************
+ANGULAR CONTROLLER
+************************************************************ */
 
-function MainMenu($scope, $http) {
+function MenuController($scope, $http) {
 	$http.get('api/edges').success(function(data){
-		$scope.menus  = data.edges;
+		$scope.menus  = data.beans;
 	});
 }
 
