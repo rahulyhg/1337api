@@ -38,11 +38,6 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 				api_edges($config);
 			break;
 
-			case 'inspect':
-				$result[$request['edge']] = R::inspect($request['edge']);
-				output($result);
-			break;
-
 			case 'search':
 				$result['message'] = 'in development: action "search"';
 				output($result);
@@ -65,7 +60,15 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 				else{
 					forbidden();
 				}
+			break;		
 
+			case 'schema':
+				if (in_array($_GET['edge'], $config['api']['beansList'])){
+					api_schema($request);
+				}
+				else{
+					forbidden();
+				}
 			break;		
 
 			default:
@@ -208,7 +211,24 @@ function api_count($request){
 	
 	// COUNT - count all
 	$count = R::count( $request['edge'] );
-	$result[$request['edge']] = $count;
+	$result['sum'] = $count;
+	
+	// OUTPUT
+	api_output($result);
+}
+
+function api_schema($request){
+
+	$schema['raw'] =  R::inspect($request['edge']);
+	
+	// SCHEMA - inspect all
+	$result['bean'] = $request['edge'];
+	$result['title'] = strtoupper($request['edge']);
+	foreach ($schema['raw'] as $key => $value) {
+		$result['structure'][$key]['field'] = $key;
+		$result['structure'][$key]['name'] = ucfirst($key);
+		$result['structure'][$key]['type'] = $value;
+	}
 	
 	// OUTPUT
 	api_output($result);

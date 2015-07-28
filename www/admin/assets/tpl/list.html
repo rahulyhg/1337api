@@ -1,11 +1,12 @@
-<h2>items</h2>
+<h2>{{schema.title}}</h2>
 
-<table class="table table-condensed">
+<table class="table">
 
 	<thead>
 		<tr>
 			<th>#</th>
 			<th>Título</th>
+			<th>Ações</th>
 		</tr>
 	</thead>
 
@@ -13,9 +14,20 @@
 		<tr ng-repeat="item in items">
 			<td>{{item.id}}</td>
 			<td>{{item.title}}</td>
-			<td><a href="#/update/{{item.id}}" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-pencil"></i></button></td>
+			<td>
+				<a href="#/update/{{item.id}}" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-pencil"></i></button>
+			</td>
 		</tr>
 	</tbody>
 </table>
 
 <a class="btn btn-primary" href="#/add-item">Add New item</a>
+<hr/>
+<h6>Debug:</h6>
+<pre>
+	Total: {{count.sum}} itens.
+	Objetos:
+		<blockquote>{{schema}}</blockquote>
+		<blockquote>{{items}}</blockquote>
+		<blockquote>{{count}}</blockquote>
+</pre>
