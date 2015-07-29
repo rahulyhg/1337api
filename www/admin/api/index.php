@@ -30,7 +30,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 		switch($request['action']) {
 
 			case 'hi':
-				$result['message'] = 'Hi, Elijah!';
+				$result['message'] = 'Hi, Elijah! Your API is UP!';
 				api_output($result);
 			break;
 
@@ -112,8 +112,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 		break;
 
 		default:
-			$result['message'] = 'action not supported.';
-			api_output($result);
+				api_forbidden();
+		break;
+
+	}
+
+}
+
+/* ***************************************************************************************************
+** POST ROUTES ****************************************************************************************
+*************************************************************************************************** */ 
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+	$request_array = explode('/', $_SERVER['REQUEST_URI']);
+
+	$request['action']	 = $request_array[sizeof($request_array) - 2];
+	$request['edge']	 = $request_array[sizeof($request_array) - 1];
+	$request['content']	 = json_decode(file_get_contents("php://input"),true);
+
+	switch($request['action']) {
+
+		case 'create':
+			if (in_array($request['edge'], $config['api']['beansList'])){
+				api_create($request);
+			}
+			else{
+				api_forbidden();
+			}
+		break;
+
+		default:
+				api_forbidden();
 		break;
 
 	}
@@ -144,8 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 		break;
 
 		default:
-			$result['message'] = 'action not supported.';
-			api_output($result);
+				api_forbidden();
 		break;
 
 	}
@@ -181,6 +210,23 @@ function api_read($request){
 	api_output($result);
 }
 
+
+function api_create($request){
+
+	$item = R::dispense( $request['edge'] );
+
+	foreach ($request['content'] as $k => $v) {
+		$item[$k] = $v;
+	}
+		$item['created'] = R::isoDateTime();
+		$item['modified'] = R::isoDateTime();
+
+	$id = R::store($item);
+	$result = 'Criado com Sucesso. (id: '.$id.')';
+
+	// OUTPUT
+	api_output($result);
+}
 
 function api_update($request){
 

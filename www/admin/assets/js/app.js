@@ -27,15 +27,20 @@ function ListController($scope, $http, $location) {
 	});
 }
 
-function AddCtrl($scope, $http, $location) {
+function CreateController($scope, $http, $location) {
 	$scope.master = {};
 	$scope.activePath = null;
+	var edge = $location.$$path.split('/');
+
+	$http.get('api/schema/'+edge[2]).success(function(data) {
+		$scope.schema = data;
+	});
 
 	$scope.add_new = function(item, AddNewForm) {
 
-		$http.post('api/add_item', item).success(function(){
+		$http.post('api/create/'+edge[2], item).success(function(){
 			$scope.reset();
-			$scope.activePath = $location.path('/');
+			$scope.activePath = $location.path('/'+edge[2]);
 		});
 
 		$scope.reset = function() {
@@ -47,10 +52,10 @@ function AddCtrl($scope, $http, $location) {
 	};
 }
 
-function EditController($scope, $http, $location, $routeParams) {
+function UpdateController($scope, $http, $location, $routeParams) {
 	var id = $routeParams.id;
-	var edge = $location.$$path.split('/');
 	$scope.activePath = null;
+	var edge = $location.$$path.split('/');
 
 	$http.get('api/schema/'+edge[2]).success(function(data) {
 		$scope.schema = data;
@@ -74,5 +79,6 @@ function EditController($scope, $http, $location, $routeParams) {
 			$http.delete('api/destroy/'+edge[2]+'/'+item.id);
 			$scope.activePath = $location.path('/'+edge[2]);
 		}
+
 	};
 }

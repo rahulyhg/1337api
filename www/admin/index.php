@@ -100,11 +100,11 @@
 		<?php
 			foreach ($beans as $k => $v) {
 				echo 'when(\'/'.$v.'\', {templateUrl: \'assets/tpl/list.html\', controller: ListController}).';
-				echo 'when(\'/update/'.$v.'/:id\', {templateUrl: \'assets/tpl/update.html\', controller: EditController}).';
+				echo 'when(\'/update/'.$v.'/:id\', {templateUrl: \'assets/tpl/update.html\', controller: UpdateController}).';
+				echo 'when(\'/create/'.$v.'\', {templateUrl: \'assets/tpl/create.html\', controller: CreateController}).';
+
 			};
 		?>
-
-		when('/create', {templateUrl: 'assets/tpl/create.html', controller: AddCtrl}).
 		otherwise({redirectTo: '/'});
 	}]);
 </script>
