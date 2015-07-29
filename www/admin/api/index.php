@@ -189,6 +189,7 @@ function api_update($request){
 	foreach ($request['content'] as $k => $v) {
 		$item[$k] = $v;
 	}
+		$item['modified'] = R::isoDateTime();
 
 	R::store( $item );
 	$result = 'Atualizado com Sucesso. (id: '.$request['param'].')';
@@ -231,7 +232,7 @@ function api_schema($request){
 	
 	// SCHEMA - inspect all
 	$result['bean'] = $request['edge'];
-	$result['title'] = strtoupper($request['edge']);
+	$result['title'] = ucfirst($request['edge']);
 	foreach ($schema['raw'] as $key => $value) {
 		$result['structure'][$key]['field'] = $key;
 		$result['structure'][$key]['name'] = ucfirst($key);
@@ -246,6 +247,7 @@ function api_edges($config){
 	
 	foreach ($config['api']['beansList'] as $k => $v) {
 		$beans[$k]['name'] = $v;
+		$beans[$k]['title'] = ucfirst($v);
 	}
 
 	$result['beans']			 = $beans;

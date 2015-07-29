@@ -2,6 +2,12 @@
 ANGULAR CONTROLLER
 ************************************************************ */
 
+function DashboardController($scope, $http) {
+	$http.get('api/hi').success(function(data){
+		$scope.hi  = data;
+	});
+}
+
 function MenuController($scope, $http) {
 	$http.get('api/edges').success(function(data){
 		$scope.menus  = data.beans;
@@ -41,29 +47,32 @@ function AddCtrl($scope, $http, $location) {
 	};
 }
 
-function EditCtrl($scope, $http, $location, $routeParams) {
+function EditController($scope, $http, $location, $routeParams) {
 	var id = $routeParams.id;
+	var edge = $location.$$path.split('/');
 	$scope.activePath = null;
 
-	$http.get('api/read/items/'+id).success(function(data) {
+	$http.get('api/schema/'+edge[2]).success(function(data) {
+		$scope.schema = data;
+	});
+
+	$http.get('api/read/'+edge[2]+'/'+id).success(function(data) {
 		$scope.item = data;
 	});
 
 	$scope.update = function(item){
-		
-		$http.put('api/update/items/'+id, item).success(function(data) {
+		$http.put('api/update/'+edge[2]+'/'+id, item).success(function(data) {
 			$scope.item = data;
-			$scope.activePath = $location.path('/');
+			$scope.activePath = $location.path('/'+edge[2]);
 		});
 	};
 
 	$scope.delete = function(item) {
-		console.log(item);
+		var deleteitem = confirm('Tem certeza que deseja excluir?');
 
-		var deleteitem = confirm('Are you absolutely sure you want to delete?');
 		if (deleteitem) {
-			$http.delete('api/destroy/items/'+item.id);
-			$scope.activePath = $location.path('/');
+			$http.delete('api/destroy/'+edge[2]+'/'+item.id);
+			$scope.activePath = $location.path('/'+edge[2]);
 		}
 	};
 }
