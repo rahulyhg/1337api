@@ -89,10 +89,11 @@
 
 <script type="text/javascript" src="assets/js/jquery.min.js"></script>
 <script type="text/javascript" src="assets/js/angular.min.js"></script>
+<script type="text/javascript" src="assets/js/angular-route.min.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
-	angular.module('AdminApp', []).
+	angular.module('AdminApp', ['ngRoute']).
 	config(['$routeProvider', function($routeProvider) {
 		$routeProvider.
 		when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:DashboardController}).
@@ -106,6 +107,12 @@
 			};
 		?>
 		otherwise({redirectTo: '/'});
+	}]).
+
+	controller('MenuController', ['$scope','$http', function ($scope, $http) {
+		$http.get('api/edges').success(function(data){
+			$scope.menus  = data.beans;
+		})
 	}]);
 </script>
 

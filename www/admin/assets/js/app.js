@@ -8,12 +8,6 @@ function DashboardController($scope, $http) {
 	});
 }
 
-function MenuController($scope, $http) {
-	$http.get('api/edges').success(function(data){
-		$scope.menus  = data.beans;
-	});
-}
-
 function ListController($scope, $http, $location) {
 	var edge = $location.$$path;
 	$http.get('api/schema'+edge).success(function(data) {
