@@ -1,3 +1,31 @@
+
+
+
+
+
+angular.module('AdminApp').config(
+		function(JSONEditorProvider) {
+				JSONEditorProvider.configure({
+					defaults: {
+						options: {
+							iconlib: 			'fontawesome4',
+							theme: 				'bootstrap3',
+							disable_collapse: 	true,
+							disable_edit_json: 	true,
+							disable_properties: true
+						}
+					}
+				})
+			}
+		)
+
+
+
+
+
+
+
+
 /* ************************************************************
 ANGULAR CONTROLLER
 ************************************************************ */
@@ -32,7 +60,7 @@ function CreateController($scope, $http, $location) {
 
 	$scope.add_new = function(item, AddNewForm) {
 
-		$http.post('api/create/'+edge[2], item).success(function(){
+/*		$http.post('api/create/'+edge[2], item).success(function(){
 			$scope.reset();
 			$scope.activePath = $location.path('/'+edge[2]);
 		});
@@ -42,8 +70,29 @@ function CreateController($scope, $http, $location) {
 		};
 
 		$scope.reset();
+*/	};
 
-	};
+    $scope.mySchema = {
+        type: 'object',
+        properties: {
+            title: {
+                type: 'string',
+                title: 'Item Name',
+                required: true,
+                minLength: 1
+            }
+        }
+    };
+
+    $scope.myStartVal = {
+
+    };
+
+    $scope.onChange = function (data) {
+        console.log('Form changed!');
+        console.dir(data);
+    };
+
 }
 
 function UpdateController($scope, $http, $location, $routeParams) {

@@ -88,28 +88,66 @@
 </div>
 
 <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="assets/js/jsoneditor.min.js"></script>
 <script type="text/javascript" src="assets/js/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-route.min.js"></script>
+<script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
-	angular.module('AdminApp', ['ngRoute']).
-	config(['$routeProvider', function($routeProvider) {
-		$routeProvider.
-		when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:DashboardController}).
 
-		<?php
-			foreach ($beans as $k => $v) {
-				echo 'when(\'/'.$v.'\', {templateUrl: \'assets/tpl/list.html\', controller: ListController}).';
-				echo 'when(\'/update/'.$v.'/:id\', {templateUrl: \'assets/tpl/update.html\', controller: UpdateController}).';
-				echo 'when(\'/create/'.$v.'\', {templateUrl: \'assets/tpl/create.html\', controller: CreateController}).';
+	angular
+	.module(	
+			'AdminApp', 
+			[	'ngRoute', 
+				'angular-json-editor'
+			]
+	)
+	.config(
+		[
+			'$routeProvider', 
+			function($routeProvider) {
+				$routeProvider.
+				when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:DashboardController}).
 
-			};
-		?>
-		otherwise({redirectTo: '/'});
-	}]).
+				<?php
+					foreach ($beans as $k => $v) {
+						echo 'when(\'/'.$v.'\', {templateUrl: \'assets/tpl/list.html\', controller: ListController}).';
+						echo 'when(\'/update/'.$v.'/:id\', {templateUrl: \'assets/tpl/update.html\', controller: UpdateController}).';
+						echo 'when(\'/create/'.$v.'\', {templateUrl: \'assets/tpl/create.html\', controller: CreateController}).';
+					};
+				?>
+				otherwise({redirectTo: '/'});
+			}
+		]	
+	)
 
-	controller('MenuController', ['$scope','$http', function ($scope, $http) {
+	.controller('JSONEditorFormButtonsController', function ($scope, $http) {
+
+    $scope.onSubmit = function () {
+        console.log('onSubmit data in sync controller', $scope.editor.getValue());
+        var item = $scope.editor.getValue();
+
+		$http.post('api/create/items', item).success(function(){
+			$scope.reset();
+		});
+
+		$scope.reset = function() {
+			$scope.item = angular.copy($scope.master);
+		};
+
+		$scope.reset();
+    };
+
+    $scope.onAction2 = function () {
+        console.log('onAction2');
+    };
+
+
+})
+
+
+	.controller('MenuController', ['$scope','$http', function ($scope, $http) {
 		$http.get('api/edges').success(function(data){
 			$scope.menus  = data.beans;
 		})
