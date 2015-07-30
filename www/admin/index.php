@@ -93,68 +93,30 @@
 <script type="text/javascript" src="assets/js/angular-route.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="assets/js/app.js"></script>
 
 <script type="text/javascript">
 
-	angular
-	.module(	
-			'AdminApp', 
-			[	'ngRoute', 
-				'angular-json-editor'
-			]
-	)
-	.config(
+	AdminApp.config(
 		[
 			'$routeProvider', 
 			function($routeProvider) {
 				$routeProvider.
-				when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:DashboardController}).
+				when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:'DashboardController'}).
 
-				<?php
+				<?php 
 					foreach ($beans as $k => $v) {
-						echo 'when(\'/'.$v.'\', {templateUrl: \'assets/tpl/list.html\', controller: ListController}).';
-						echo 'when(\'/update/'.$v.'/:id\', {templateUrl: \'assets/tpl/update.html\', controller: UpdateController}).';
-						echo 'when(\'/create/'.$v.'\', {templateUrl: \'assets/tpl/create.html\', controller: CreateController}).';
+						echo 'when(\'/'.$v.'\', {templateUrl: \'assets/tpl/list.html\', controller: \'ListController\'}).';
+						echo 'when(\'/update/'.$v.'/:id\', {templateUrl: \'assets/tpl/update.html\', controller: \'UpdateController\'}).';
+						echo 'when(\'/create/'.$v.'\', {templateUrl: \'assets/tpl/create.html\', controller: \'CreateController\'}).';
 					};
 				?>
 				otherwise({redirectTo: '/'});
 			}
 		]	
-	)
+	);
 
-	.controller('JSONEditorFormButtonsController', function ($scope, $http) {
-
-    $scope.onSubmit = function () {
-        console.log('onSubmit data in sync controller', $scope.editor.getValue());
-        var item = $scope.editor.getValue();
-
-		$http.post('api/create/items', item).success(function(){
-			$scope.reset();
-		});
-
-		$scope.reset = function() {
-			$scope.item = angular.copy($scope.master);
-		};
-
-		$scope.reset();
-    };
-
-    $scope.onAction2 = function () {
-        console.log('onAction2');
-    };
-
-
-})
-
-
-	.controller('MenuController', ['$scope','$http', function ($scope, $http) {
-		$http.get('api/edges').success(function(data){
-			$scope.menus  = data.beans;
-		})
-	}]);
 </script>
-
-<script type="text/javascript" src ="assets/js/app.js"></script>
 
 </body>
 </html>
