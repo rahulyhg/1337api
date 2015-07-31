@@ -1,10 +1,3 @@
-<?php 
-	$edges = json_decode(file_get_contents('http://'.$_SERVER[HTTP_HOST].'/admin/api/edges'), true);
-	foreach ($edges['beans'] as $k => $v) {
-		$beans[$k] = $v['name'];
-	}	
-?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -85,8 +78,19 @@
 
 	</div>
 	<!-- END CONTAINER -->	
-
+	
 </div>
+
+<script type="text/javascript">
+<?php 
+	$edges = json_decode(file_get_contents('http://'.$_SERVER[HTTP_HOST].'/admin/api/edges'), true);
+	echo 'var beans = [];'. "\n";
+	foreach ($edges['beans'] as $k => $v) {
+		$beans[$k] = $v['name'];
+		echo 'beans.push(\''.$v['name'].'\');'. "\n";
+	};
+?>
+</script>
 
 <script type="text/javascript" src="assets/js/jquery.min.js"></script>
 <script type="text/javascript" src="assets/js/jsoneditor.min.js"></script>
@@ -95,29 +99,6 @@
 <script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/app.js"></script>
-
-<script type="text/javascript">
-
-	AdminApp.config(
-		[
-			'$routeProvider', 
-			function($routeProvider) {
-				$routeProvider.
-				when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:'DashboardController'}).
-
-				<?php 
-					foreach ($beans as $k => $v) {
-						echo 'when(\'/'.$v.'\', {templateUrl: \'assets/tpl/list.html\', controller: \'ListController\'}).';
-						echo 'when(\'/update/'.$v.'/:id\', {templateUrl: \'assets/tpl/update.html\', controller: \'UpdateController\'}).';
-						echo 'when(\'/create/'.$v.'\', {templateUrl: \'assets/tpl/create.html\', controller: \'CreateController\'}).';
-					};
-				?>
-				otherwise({redirectTo: '/'});
-			}
-		]	
-	);
-
-</script>
 
 </body>
 </html>

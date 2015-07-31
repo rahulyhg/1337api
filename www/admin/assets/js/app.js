@@ -7,6 +7,37 @@ var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor']);
 ANGULAR MODULES CONFIG
 ************************************************************ */			
 
+// NG Routes Provider
+var edgeObj = {};
+var edgeRoutes = [];
+var edgeRoutesArr = [];
+
+for(bean in beans){	
+	edgeObj = 
+		[
+			{route: '/'+beans[bean], obj: {templateUrl: 'assets/tpl/list.html', controller: 'ListController'}},
+			{route: '/create/'+beans[bean], obj: {templateUrl: 'assets/tpl/create.html', controller: 'CreateController'}},
+			{route: '/update/'+beans[bean]+'/:id', obj: {templateUrl: 'assets/tpl/update.html', controller: 'UpdateController'}}
+		];
+	edgeRoutes.push(edgeObj);
+}
+
+AdminApp.config([
+	'$routeProvider',
+	function($routeProvider) {
+		$routeProvider.when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:'DashboardController'});
+
+		for (var k in edgeRoutes){
+			edgeRoutesArr = edgeRoutes[k];
+			$routeProvider.when(edgeRoutesArr[0].route, edgeRoutesArr[0].obj);
+			$routeProvider.when(edgeRoutesArr[1].route, edgeRoutesArr[1].obj);
+			$routeProvider.when(edgeRoutesArr[2].route, edgeRoutesArr[2].obj);
+		}
+
+		$routeProvider.otherwise({redirectTo: '/'});
+	}
+]);
+
 // JSON Editor Provider
 AdminApp.config(
 	function(JSONEditorProvider) {
