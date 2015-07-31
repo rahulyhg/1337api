@@ -16,22 +16,15 @@
 <div class="row">
 	<div class="col-lg-6">
 
-			<json-editor schema="mySchema" startval="myStartVal" on-change="onChange($editorValue)" buttons-controller="JSONEditorFormButtonsController">
+			<json-editor schema="formSchema" startval="myStartVal" on-change="onChange($editorValue)" buttons-controller="FormController">
 
 		        <button type="submit" class="btn btn-primary" ng-click="onSubmit($event)" ng-disabled="!isValid">
 		            Salvar <span class="fa fa-floppy-o"></span>
 		        </button>
 
-		        <button type="button" class="btn btn-danger" ng-click="onAction2($event)">
-		            Ação 2 <span class="fa fa-trash"></span>
-		        </button>
+				<a href="#/{{schema.bean}}" class="btn">Cancelar</a>
 
 			</json-editor>
-
-<!--
-			<button class="btn btn-danger" ng-click="delete(item)">Excluir <span class="fa fa-trash"></span></button>
-			<a href="#/{{schema.bean}}" class="btn">Cancelar</a>
--->
 
 	</div>
 </div>

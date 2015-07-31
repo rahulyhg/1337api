@@ -67,7 +67,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 			case 'schema':
 				if (in_array($_GET['edge'], $config['api']['beansList'])){
-					api_schema($request);
+					api_schema($request, $config);
 				}
 				else{
 					api_forbidden();
@@ -272,19 +272,29 @@ function api_count($request){
 	api_output($result);
 }
 
-function api_schema($request){
+function api_schema($request, $config){
 
 	$schema['raw'] =  R::inspect($request['edge']);
 	
 	// SCHEMA - inspect all
 	$result['bean'] = $request['edge'];
 	$result['title'] = ucfirst($request['edge']);
+	$result['type'] = 'object';
+
 	foreach ($schema['raw'] as $key => $value) {
+
+		if(!in_array($key, $config['api']['form']['fields']['blacklist'])){
+			$result['properties'][$key]['type'] = 'string';
+			$result['properties'][$key]['title'] = ucfirst($key);
+			$result['properties'][$key]['required'] = true;
+			$result['properties'][$key]['minLength'] = 1;			
+		}
+
 		$result['structure'][$key]['field'] = $key;
 		$result['structure'][$key]['name'] = ucfirst($key);
 		$result['structure'][$key]['type'] = $value;
 	}
-	
+
 	// OUTPUT
 	api_output($result);
 }

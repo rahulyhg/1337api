@@ -64,7 +64,7 @@ AdminApp.controller('ListController',
 
 // Create Controller
 AdminApp.controller('CreateController', 
-	function ($scope, $http, $location) {
+	function ($scope, $http, $location, $timeout) {
 		$scope.master = {};
 		$scope.activePath = null;
 		var edge = $location.$$path.split('/');
@@ -73,40 +73,11 @@ AdminApp.controller('CreateController',
 			$scope.schema = data;
 		});
 
-		$scope.add_new = function(item, AddNewForm) {
+		$scope.formSchema = $http.get('api/schema/'+edge[2])
+		$scope.myStartVal = {};
 
-	/*		$http.post('api/create/'+edge[2], item).success(function(){
-				$scope.reset();
-				$scope.activePath = $location.path('/'+edge[2]);
-			});
+	    $scope.onChange = function (data) {};
 
-			$scope.reset = function() {
-				$scope.item = angular.copy($scope.master);
-			};
-
-			$scope.reset();
-	*/	};
-
-	    $scope.mySchema = {
-	        type: 'object',
-	        properties: {
-	            title: {
-	                type: 'string',
-	                title: 'Item Name',
-	                required: true,
-	                minLength: 1
-	            }
-	        }
-	    };
-
-	    $scope.myStartVal = {
-
-	    };
-
-	    $scope.onChange = function (data) {
-	        console.log('Form changed!');
-	        console.dir(data);
-	    };
 	}
 );
 
@@ -144,39 +115,27 @@ AdminApp.controller('UpdateController',
 );
 
 // Forms Controller
-	AdminApp.controller('JSONEditorFormButtonsController', function ($scope, $http) {
+AdminApp.controller('FormController', 
+	function ($scope, $http, $location) {
+		var edge = $location.$$path.split('/');
 
-    $scope.onSubmit = function () {
-        console.log('onSubmit data in sync controller', $scope.editor.getValue());
-        var item = $scope.editor.getValue();
-
-		$http.post('api/create/items', item).success(function(){
-			$scope.reset();
+		$http.get('api/schema/'+edge[2]).success(function(data) {
+			$scope.schema = data;
 		});
 
-		$scope.reset = function() {
-			$scope.item = angular.copy($scope.master);
+		$scope.onSubmit = function() {
+			var item = $scope.editor.getValue();
+
+			$http.post('api/create/'+edge[2], item).success(function(){
+				$scope.reset();
+				$scope.activePath = $location.path('/'+edge[2]);
+			});
+
+			$scope.reset = function() {
+				$scope.item = angular.copy($scope.master);
+			};
+
+			$scope.reset();
 		};
-
-		$scope.reset();
-    };
-
-    $scope.onAction2 = function () {
-        console.log('onAction2');
-    };
-
-
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
+	}
+);
