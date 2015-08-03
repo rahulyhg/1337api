@@ -13,9 +13,10 @@
 	<meta name="author" content="de elijah">
 
 	<!-- CSS -->
-	<link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-	<link href="assets/css/sb-admin.css" rel="stylesheet" type="text/css">
-	<link href="assets/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	<link href="assets/css/sb-admin.css" rel="stylesheet" type="text/css" />
+	<link href="assets/css/nprogress.css" rel="stylesheet" type="text/css"/>
+	<link href="assets/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -77,7 +78,7 @@
 
 	<!-- CONTAINER -->	
 	<div id="page-wrapper">
-		<div class="container-fluid">
+		<div class="container-fluid" ng-controller="MainController">
 			<div ng-view></div>
 		</div>
 	</div>
@@ -98,6 +99,7 @@
 </script>
 
 <script type="text/javascript" src="assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="assets/js/nprogress.js"></script>
 <script type="text/javascript" src="assets/js/jsoneditor.min.js"></script>
 <script type="text/javascript" src="assets/js/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-route.min.js"></script>

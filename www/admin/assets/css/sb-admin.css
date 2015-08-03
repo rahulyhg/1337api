@@ -236,5 +236,6 @@ json-editor h3{
     display:none;
 }
 
-
-
+#nprogress .spinner {
+    top: 65px !important;
+}

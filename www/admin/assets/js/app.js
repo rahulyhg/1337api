@@ -60,16 +60,23 @@ AdminApp.config(
 /* ************************************************************
 ANGULAR SERVICES
 ************************************************************ */		
-
-
-
-
-
-
+// nothing here.
 
 /* ************************************************************
 ANGULAR CONTROLLERS
 ************************************************************ */
+
+// Main Controller
+AdminApp.controller('MainController', 
+	function ($scope) {
+		NProgress.start();
+
+		$scope.$on('$viewContentLoaded', function(){
+			NProgress.done();
+		});
+
+	}
+);
 
 // Dashboard Controller
 AdminApp.controller('DashboardController', 
@@ -81,7 +88,6 @@ AdminApp.controller('DashboardController',
 		$http.get('api/edges').success(function(data){
 			$scope.beans  = data.beans;
 		});
-
 	}
 );
 
