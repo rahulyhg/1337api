@@ -61,7 +61,7 @@
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav" ng-controller="MenuController">
 				<li class="active"><a href="/admin	"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-				<li ng-repeat="menu in menus"><a href="#/{{menu.name}}"><i class="fa fa-fw fa-th-list"></i> {{menu.title}}</a></li>
+				<li ng-repeat="menu in menus"><a href="#/{{menu.name}}"><i class="fa fa-fw fa-{{menu.icon}}"></i> {{menu.title}}</a></li>
 			</ul>
 		</div>
 		<!-- /.navbar-collapse -->

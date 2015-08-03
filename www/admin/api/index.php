@@ -30,7 +30,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 		switch($request['action']) {
 
 			case 'hi':
-				$result['message'] = 'Hi, Elijah! Your API is UP!';
+				$result['message'] = 'Hi Elijah, your API is UP!';
 				api_output($result);
 			break;
 
@@ -305,8 +305,10 @@ function api_schema($request, $config){
 function api_edges($config){
 	
 	foreach ($config['api']['beansList'] as $k => $v) {
-		$beans[$k]['name'] = $v;
+		$beans[$k]['name'] 	= $v;
 		$beans[$k]['title'] = ucfirst($v);
+		$beans[$k]['count'] = R::count($v);
+		$beans[$k]['icon'] 	= 'th-list'; 
 	}
 
 	$result['beans']			 = $beans;

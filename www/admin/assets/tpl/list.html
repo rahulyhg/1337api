@@ -23,7 +23,7 @@
 						<th>Título</th>
 						<th>Criado</th>
 						<th>Atualizado</th>
-						<th>Ações</th>
+						<th class="text-center">Ações</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -32,11 +32,12 @@
 						<td><a href="#/read/{{schema.bean}}/{{item.id}}">{{item.title}}</a></td>
 						<td>{{item.created}}</td>
 						<td>{{item.modified}}</td>
-						<td>
+						<td class="text-right">
 							<a href="#/read/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-eye"></i></a>
 							<a href="#/update/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
 							<button ng-click="onDestroy(item.id)" class="btn btn-default btn-sm"><i class="fa fa-trash"></i></button>
 						</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>

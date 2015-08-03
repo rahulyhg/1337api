@@ -77,6 +77,11 @@ AdminApp.controller('DashboardController',
 		$http.get('api/hi').success(function(data){
 			$scope.hi  = data;
 		});
+
+		$http.get('api/edges').success(function(data){
+			$scope.beans  = data.beans;
+		});
+
 	}
 );
 
@@ -199,6 +204,12 @@ AdminApp.controller('FormController',
 			$scope.schema = data;
 		});
 
+		if(action == 'read'){
+			$scope.$on('disableForm', function(event, obj) {
+				$scope.editor.disable();
+			});
+		};
+
 		$scope.onCreate = function() {
 			var item = $scope.editor.getValue();
 
@@ -231,11 +242,5 @@ AdminApp.controller('FormController',
 			}
 		}
 
-		if(action == 'read'){
-			$scope.$on('disableForm', function(event, obj) {
-				$scope.editor.disable();
-			});
-		};
-	
 	}
 );
