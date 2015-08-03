@@ -1,7 +1,9 @@
+
 /* ************************************************************
-ANGULAR INIT
+INIT
 ************************************************************ */
 var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor']);
+NProgress.start();
 
 /* ************************************************************
 ANGULAR MODULES CONFIG
@@ -69,7 +71,6 @@ ANGULAR CONTROLLERS
 // Main Controller
 AdminApp.controller('MainController', 
 	function ($scope) {
-		NProgress.start();
 
 		$scope.$on('$viewContentLoaded', function(){
 			NProgress.done();
@@ -81,6 +82,8 @@ AdminApp.controller('MainController',
 // Dashboard Controller
 AdminApp.controller('DashboardController', 
 	function ($scope, $http) {
+		NProgress.start();
+
 		$http.get('api/hi').success(function(data){
 			$scope.hi  = data;
 		});
@@ -94,6 +97,8 @@ AdminApp.controller('DashboardController',
 // Menu Controller
 AdminApp.controller('MenuController', 
 	function ($scope, $http) {
+		NProgress.start();
+
 		$http.get('api/edges').success(function(data){
 			$scope.menus  = data.beans;
 		});
@@ -103,6 +108,8 @@ AdminApp.controller('MenuController',
 // List Controller
 AdminApp.controller('ListController', 
 	function ($scope, $http, $location) {
+		NProgress.start();
+
 		var path = $location.$$path.split('/');
 		var edge = path[1];
 
@@ -130,6 +137,7 @@ AdminApp.controller('ListController',
 // Create Controller
 AdminApp.controller('CreateController', 
 	function ($scope, $http, $location) {
+		NProgress.start();
 		// $scope.master = {};
 		// $scope.activePath = null;
 
@@ -150,6 +158,7 @@ AdminApp.controller('CreateController',
 // Read Controller
 AdminApp.controller('ReadController', 
 	function ($scope, $http, $location, $routeParams) {
+		NProgress.start();
 		// $scope.master = {};
 		// $scope.activePath = null;
 
@@ -174,6 +183,7 @@ AdminApp.controller('ReadController',
 // Update Controller
 AdminApp.controller('UpdateController', 
 	function ($scope, $http, $location, $routeParams) {
+		NProgress.start();
 		// $scope.master = {};
 		// $scope.activePath = null;
 
@@ -199,6 +209,7 @@ AdminApp.controller('UpdateController',
 // Forms Controller
 AdminApp.controller('FormController', 
 	function ($scope, $http, $location) {
+		NProgress.start();
 
 		var path 	= $location.$$path.split('/');
 		var action 	= path[1];

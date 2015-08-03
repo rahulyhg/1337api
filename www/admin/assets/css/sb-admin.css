@@ -239,3 +239,7 @@ json-editor h3{
 #nprogress .spinner {
     top: 65px !important;
 }
+
+.container-fluid{
+    min-height: 200px;
+}
