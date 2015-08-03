@@ -1,7 +1,6 @@
-<!-- Heading row -->
+<!-- HEADING ROW -->
 <div class="row">
 	<div class="col-lg-12">
-
 		<h1 class="page-header">{{schema.title}}</h1>
 		<a class="btn btn-primary pull-right" href="#/create/{{schema.bean}}"> Adicionar {{schema.title}}</a>
 		<ol class="breadcrumb">
@@ -10,9 +9,9 @@
 		</ol>
 	</div>
 </div>
-<!-- /.row -->
+<!-- END HEADING ROW -->
 
-<!-- Table row -->
+<!-- LIST TABLE ROW -->
 <div class="row">
 	<div class="col-lg-12">
 		<div class="table-responsive">
@@ -43,7 +42,13 @@
 		</div>
 	</div>
 </div>
-<!-- /.row -->
+<!-- END LIST TABLE ROW -->
 
-<hr/>
-<p>Total: {{count.sum}} {{schema.title}}.</p>
+<!-- LIST INFO ROW -->
+<div class="row">
+	<div class="col-lg-12">
+		<hr/>
+		<h6>Total: {{count.sum}} {{schema.title}}.</h6>
+	</div>
+</div>
+<!-- END LIST INFO ROW -->

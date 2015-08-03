@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+	<!-- META -->
 	<meta charset='utf-8'>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" type="image/gif" href="assets/favicon.gif"/>
+	<link rel="icon" type="image/gif" href="assets/images/favicon.gif"/>
 
 	<title>Admin Dashboard</title>
 	<meta name="description" content="">
@@ -21,6 +23,7 @@
 		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
 		<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 	<![endif]-->
+
 </head>
 
 <body ng-app="AdminApp">
@@ -29,17 +32,18 @@
 
 	<!-- NAVIGATION -->
 	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-		<!-- Brand and toggle get grouped for better mobile display -->
+
+		<!-- NAVIGATION - HEADER MENU -->
 		<div class="navbar-header">
 			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
 				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
+				<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
 			</button>
 			<a class="navbar-brand" href="/admin">umstudio.com</a>
 		</div>
-		<!-- Top Menu Items -->
+		<!-- END NAVIGATION - HEADER MENU -->
+
+		<!-- NAVIGATION - TOP MENU -->
 		<ul class="nav navbar-right top-nav">
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> Elijah Hatem <b class="caret"></b></a>
@@ -57,30 +61,31 @@
 				</ul>
 			</li>
 		</ul>
-		<!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+		<!-- END NAVIGATION - TOP MENU -->
+
+		<!-- NAVIGATION - MAIN MENU -->
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav" ng-controller="MenuController">
 				<li class="active"><a href="/admin	"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
 				<li ng-repeat="menu in menus"><a href="#/{{menu.name}}"><i class="fa fa-fw fa-{{menu.icon}}"></i> {{menu.title}}</a></li>
 			</ul>
 		</div>
-		<!-- /.navbar-collapse -->
+		<!-- END NAVIGATION - MAIN MENU -->
+
 	</nav>
 	<!-- END NAVIGATION -->
 
 	<!-- CONTAINER -->	
 	<div id="page-wrapper">
-
 		<div class="container-fluid">
 			<div ng-view></div>
 		</div>
-		<!-- /.container-fluid -->
-
 	</div>
 	<!-- END CONTAINER -->	
 	
 </div>
 
+<!-- JAVASCRIPT -->
 <script type="text/javascript">
 <?php 
 	$edges = json_decode(file_get_contents('http://'.$_SERVER[HTTP_HOST].'/admin/api/edges'), true);
@@ -99,6 +104,7 @@
 <script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/app.js"></script>
+<!-- END JAVASCRIPT -->
 
 </body>
 </html>
