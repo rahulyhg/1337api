@@ -16,30 +16,19 @@
 <div class="row">
 	<div class="col-lg-6">
 
-		<form role="form" novalidate name="AddNewForm" id="add-new-form" method="post" action="">
-			
-			<input type="hidden" ng-model="item.id" value="{{item.id}}" />
-			
-			<div class="form-group">
-				<label for="title">Título:</label>
-				<input class="form-control" type="text" ng-model="item.title" value="{{item.title}}" required />
-			</div>
-			
-			<div class="form-group">
-				<label for="shortdescription">Descrição Curta:</label>
-				<input class="form-control" type="text" ng-model="item.shortdescription" value="{{item.shortdescription}}" required />
-			</div>
-			
-			<div class="form-group">
-				<label for="description">Descrição:</label>
-				<input class="form-control" type="text" ng-model="item.description" value="{{item.description}}" required />
-			</div>
-		
-			<button class="btn btn-primary" ng-disabled="AddNewForm.$invalid || isUnchanged(item)" id="add-new-btn" ng-click="update(item)">Salvar <span class="fa fa-floppy-o"></span></button>
-			<button class="btn btn-danger" ng-click="delete(item)">Excluir <span class="fa fa-trash"></span></button>
-			<a href="#/{{schema.bean}}" class="btn">Cancelar</a>
+			<json-editor schema="schema" startval="schemaData" on-change="onChange($editorValue)" buttons-controller="FormController">
 
-		</form>
+		        <button type="submit" class="btn btn-primary" ng-click="onUpdate($event)" ng-disabled="!isValid">
+		            Salvar <span class="fa fa-floppy-o"></span>
+		        </button>
+
+				<button class="btn btn-danger" ng-click="onDestroy($event)">
+					Excluir <span class="fa fa-trash"></span>
+				</button>
+
+				<a href="#/{{schema.bean}}" class="btn">Cancelar</a>
+
+			</json-editor>
 
 	</div>
 </div>

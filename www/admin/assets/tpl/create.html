@@ -16,9 +16,9 @@
 <div class="row">
 	<div class="col-lg-6">
 
-			<json-editor schema="formSchema" startval="myStartVal" on-change="onChange($editorValue)" buttons-controller="FormController">
+			<json-editor schema="schema" startval="schemaData" on-change="onChange($editorValue)" buttons-controller="FormController">
 
-		        <button type="submit" class="btn btn-primary" ng-click="onSubmit($event)" ng-disabled="!isValid">
+		        <button type="submit" class="btn btn-primary" ng-click="onCreate($event)" ng-disabled="!isValid">
 		            Salvar <span class="fa fa-floppy-o"></span>
 		        </button>
 

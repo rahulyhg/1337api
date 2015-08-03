@@ -29,11 +29,13 @@
 				<tbody>
 					<tr ng-repeat="item in items">
 						<td>{{item.id}}</td>
-						<td>{{item.title}}</td>
+						<td><a href="#/read/{{schema.bean}}/{{item.id}}">{{item.title}}</a></td>
 						<td>{{item.created}}</td>
 						<td>{{item.modified}}</td>
 						<td>
-							<a href="#/update/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></button>
+							<a href="#/read/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-eye"></i></a>
+							<a href="#/update/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
+							<button ng-click="onDestroy(item.id)" class="btn btn-default btn-sm"><i class="fa fa-trash"></i></button>
 						</td>
 				</tbody>
 			</table>
@@ -43,11 +45,4 @@
 <!-- /.row -->
 
 <hr/>
-<h6>Debug:</h6>
-<pre>
-Total: {{count.sum}} itens.
-Objetos:
-<blockquote>{{schema}}</blockquote>
-<blockquote>{{items}}</blockquote>
-<blockquote>{{count}}</blockquote>
-</pre>
+<p>Total: {{count.sum}} {{schema.title}}.</p>

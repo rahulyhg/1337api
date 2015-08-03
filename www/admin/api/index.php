@@ -49,7 +49,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 			case 'read':
 				if (in_array($_GET['edge'], $config['api']['beansList'])){
-					api_read($request);
+					api_read($request, $config);
 				}
 				else{
 					api_forbidden();
@@ -185,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 ** RETURN FUNCTIONS **********************************************************************************
 *************************************************************************************************** */ 
 
-function api_read($request){
+function api_read($request, $config){
 
 	// READ - list all
 	if(empty($request['param'])){
@@ -201,8 +201,11 @@ function api_read($request){
 	// READ - view one
 	else{
 		$item = R::load( $request['edge'], $request['param'] );
+
 		foreach ($item as $k => $v) {
-			$result[$k] = $v;
+			if(!in_array($k, $config['api']['form']['fields']['blacklist'])) {
+				$result[$k] = $v;
+			}
 		}
 	}
 

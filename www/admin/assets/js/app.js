@@ -15,9 +15,10 @@ var edgeRoutesArr = [];
 for(bean in beans){	
 	edgeObj = 
 		[
-			{route: '/'+beans[bean], obj: {templateUrl: 'assets/tpl/list.html', controller: 'ListController'}},
-			{route: '/create/'+beans[bean], obj: {templateUrl: 'assets/tpl/create.html', controller: 'CreateController'}},
-			{route: '/update/'+beans[bean]+'/:id', obj: {templateUrl: 'assets/tpl/update.html', controller: 'UpdateController'}}
+			{route: '/'			+beans[bean]		,obj: {templateUrl: 'assets/tpl/list.html'	, controller: 'ListController'}		},
+			{route: '/create/'	+beans[bean]		,obj: {templateUrl: 'assets/tpl/create.html', controller: 'CreateController'}	},
+			{route: '/read/'	+beans[bean]+'/:id'	,obj: {templateUrl: 'assets/tpl/read.html'	, controller: 'ReadController'}		},
+			{route: '/update/'	+beans[bean]+'/:id'	,obj: {templateUrl: 'assets/tpl/update.html', controller: 'UpdateController'}	}
 		];
 	edgeRoutes.push(edgeObj);
 }
@@ -32,6 +33,7 @@ AdminApp.config([
 			$routeProvider.when(edgeRoutesArr[0].route, edgeRoutesArr[0].obj);
 			$routeProvider.when(edgeRoutesArr[1].route, edgeRoutesArr[1].obj);
 			$routeProvider.when(edgeRoutesArr[2].route, edgeRoutesArr[2].obj);
+			$routeProvider.when(edgeRoutesArr[3].route, edgeRoutesArr[3].obj);
 		}
 
 		$routeProvider.otherwise({redirectTo: '/'});
@@ -54,6 +56,16 @@ AdminApp.config(
 		});
 	}
 );
+
+/* ************************************************************
+ANGULAR SERVICES
+************************************************************ */		
+
+
+
+
+
+
 
 /* ************************************************************
 ANGULAR CONTROLLERS
@@ -80,34 +92,70 @@ AdminApp.controller('MenuController',
 // List Controller
 AdminApp.controller('ListController', 
 	function ($scope, $http, $location) {
-		var edge = $location.$$path;
-		$http.get('api/schema'+edge).success(function(data) {
+		var path = $location.$$path.split('/');
+		var edge = path[1];
+
+		$http.get('api/schema/'+edge).success(function(data) {
 			$scope.schema = data;
 		});
-		$http.get('api/read'+edge).success(function(data) {
+		$http.get('api/read/'+edge).success(function(data) {
 			$scope.items = data;
 		});
-		$http.get('api/count'+edge).success(function(data) {
+		$http.get('api/count/'+edge).success(function(data) {
 			$scope.count = data;
 		});
+
+		$scope.onDestroy = function(id) {
+			var destroyItem = confirm('Tem certeza que deseja excluir?');
+
+			if (destroyItem) {
+				$http.delete('api/destroy/'+edge+'/'+id);
+			}
+		}
+
 	}
 );
 
 // Create Controller
 AdminApp.controller('CreateController', 
-	function ($scope, $http, $location, $timeout) {
-		$scope.master = {};
-		$scope.activePath = null;
-		var edge = $location.$$path.split('/');
+	function ($scope, $http, $location) {
+		// $scope.master = {};
+		// $scope.activePath = null;
 
-		$http.get('api/schema/'+edge[2]).success(function(data) {
-			$scope.schema = data;
+		var path = $location.$$path.split('/');
+		var edge = path[2];
+
+		$scope.schema = $http.get('api/schema/'+edge)
+		$scope.schemaData = {};
+
+		$scope.onChange = function(data) {
+			console.log('onChange: ');
+			console.dir(data);
+		};
+
+	}
+);
+
+// Read Controller
+AdminApp.controller('ReadController', 
+	function ($scope, $http, $location, $routeParams) {
+		// $scope.master = {};
+		// $scope.activePath = null;
+
+		var path = $location.$$path.split('/');
+		var edge = path[2];
+		var id = $routeParams.id;
+
+		$http.get('api/read/'+edge+'/'+id).success(function(data) {
+			$scope.item = data;
 		});
 
-		$scope.formSchema = $http.get('api/schema/'+edge[2])
-		$scope.myStartVal = {};
+		$scope.schema = $http.get('api/schema/'+edge);
+		$scope.schemaData = $http.get('api/read/'+edge+'/'+id);
 
-	    $scope.onChange = function (data) {};
+		$scope.onLoad = function() {
+			$scope.$broadcast('disableForm', {});
+		};
 
 	}
 );
@@ -115,51 +163,48 @@ AdminApp.controller('CreateController',
 // Update Controller
 AdminApp.controller('UpdateController', 
 	function ($scope, $http, $location, $routeParams) {
+		// $scope.master = {};
+		// $scope.activePath = null;
+
+		var path = $location.$$path.split('/');
+		var edge = path[2];
 		var id = $routeParams.id;
-		$scope.activePath = null;
-		var edge = $location.$$path.split('/');
 
-		$http.get('api/schema/'+edge[2]).success(function(data) {
-			$scope.schema = data;
-		});
-
-		$http.get('api/read/'+edge[2]+'/'+id).success(function(data) {
+		$http.get('api/read/'+edge+'/'+id).success(function(data) {
 			$scope.item = data;
 		});
 
-		$scope.update = function(item){
-			$http.put('api/update/'+edge[2]+'/'+id, item).success(function(data) {
-				$scope.item = data;
-				$scope.activePath = $location.path('/'+edge[2]);
-			});
+		$scope.schema = $http.get('api/schema/'+edge);
+		$scope.schemaData = $http.get('api/read/'+edge+'/'+id);
+
+		$scope.onChange = function(data) {
+			console.log('onChange: ');
+			console.dir(data);
 		};
 
-		$scope.delete = function(item) {
-			var deleteitem = confirm('Tem certeza que deseja excluir?');
-
-			if (deleteitem) {
-				$http.delete('api/destroy/'+edge[2]+'/'+item.id);
-				$scope.activePath = $location.path('/'+edge[2]);
-			}
-		}
 	}
 );
 
 // Forms Controller
 AdminApp.controller('FormController', 
 	function ($scope, $http, $location) {
-		var edge = $location.$$path.split('/');
 
-		$http.get('api/schema/'+edge[2]).success(function(data) {
+		var path 	= $location.$$path.split('/');
+		var action 	= path[1];
+		var edge 	= path[2];
+		var id 		= path[3];
+
+		$http.get('api/schema/'+edge).success(function(data) {
+			data.itemId = id;			
 			$scope.schema = data;
 		});
 
-		$scope.onSubmit = function() {
+		$scope.onCreate = function() {
 			var item = $scope.editor.getValue();
 
-			$http.post('api/create/'+edge[2], item).success(function(){
+			$http.post('api/create/'+edge, item).success(function(){
 				$scope.reset();
-				$scope.activePath = $location.path('/'+edge[2]);
+				$scope.activePath = $location.path('/'+edge);
 			});
 
 			$scope.reset = function() {
@@ -168,5 +213,29 @@ AdminApp.controller('FormController',
 
 			$scope.reset();
 		};
+
+		$scope.onUpdate = function(){
+			var item = $scope.editor.getValue();
+
+			$http.put('api/update/'+edge+'/'+id, item).success(function() {
+				$scope.activePath = $location.path('/'+edge);
+			});
+		};
+
+		$scope.onDestroy = function() {
+			var destroyItem = confirm('Tem certeza que deseja excluir?');
+
+			if (destroyItem) {
+				$http.delete('api/destroy/'+edge+'/'+id);
+				$scope.activePath = $location.path('/'+edge);
+			}
+		}
+
+		if(action == 'read'){
+			$scope.$on('disableForm', function(event, obj) {
+				$scope.editor.disable();
+			});
+		};
+	
 	}
 );
