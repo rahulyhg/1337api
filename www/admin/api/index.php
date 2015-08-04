@@ -277,26 +277,52 @@ function api_count($request){
 
 function api_schema($request, $config){
 
-	$schema['raw'] =  R::inspect($request['edge']);
-	
+	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
+
 	// SCHEMA - inspect all
 	$result['bean'] = $request['edge'];
 	$result['title'] = ucfirst($request['edge']);
 	$result['type'] = 'object';
+	$result['required'] = true;
+	$result['additionalProperties'] = false;
 
 	foreach ($schema['raw'] as $key => $value) {
 
 		if(!in_array($key, $config['api']['form']['fields']['blacklist'])){
-			$result['properties'][$key]['type'] = 'string';
-			$result['properties'][$key]['title'] = ucfirst($key);
-			$result['properties'][$key]['required'] = true;
-			$result['properties'][$key]['minLength'] = 1;			
-		}
+
+			// ALLOW NULL?
+			$minLenght = ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
+
+			// TYPE AND FORMAT
+			switch ($schema['raw'][$key]['Type']) {
+				case 'date':
+					$type = 'string';
+					$format = 'date';
+					break;
+				case 'text':
+					$type = 'string';
+					$format = 'textarea';
+					break;
+				case 'tinyint(1)':
+					$type = 'boolean';
+					$format = 'checkbox';
+					break;
+				default:
+					$type = 'string';
+					$format = 'string';
+					break;
+			};
+
+			$result['properties'][$key]['type'] 		= $type;
+			$result['properties'][$key]['format'] 		= $format;
+			$result['properties'][$key]['title'] 		= ucfirst($key);
+			$result['properties'][$key]['required'] 	= true;
+			$result['properties'][$key]['minLength'] 	= $minLenght;
+		};
 
 		$result['structure'][$key]['field'] = $key;
-		$result['structure'][$key]['name'] = ucfirst($key);
 		$result['structure'][$key]['type'] = $value;
-	}
+	};
 
 	// OUTPUT
 	api_output($result);
