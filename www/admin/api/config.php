@@ -1,24 +1,31 @@
 <?php
 
 	/* CONFIG DB - MySQL */
-	$config['db']['host']					 		= 'mysql:host=186.202.152.193; dbname=umstudiohomolo12';
-	$config['db']['user']					 		= 'umstudiohomolo12';
-	$config['db']['pass']					 		= 'studio0001';
+	$config['db'] = array(
+		'host' => 'mysql:host=186.202.152.193; dbname=umstudiohomolo12',
+		'user' => 'umstudiohomolo12',
+		'pass' => 'studio0001',
+	);
 
 	/* CONFIG API - GLOBALS */
-	$config['api']['debug']					 		= FALSE;
-	$config['api']['get']['whitelist']		 		= array('hi','edges','search','read', 'count', 'schema');
-	$config['api']['post']['whitelist']		 		= array('create');
-	$config['api']['put']['whitelist']		 		= array('update');
-	$config['api']['delete']['whitelist']	 		= array('destroy');
-	$config['api']['form']['fields']['blacklist'] 	= array('id','created','modified');
+	$config['api'] = array(
+		'debug' 	=> FALSE,
+		'actions' 	=> array(
+			'get' 	=> array('hi','edges','search','read', 'count', 'schema'),
+			'post' 	=> array('create'),
+			'put' 	=> array('update'),
+			'del' 	=> array('destroy'),
+		),
+		'messages'	=> array(
+			'hi' 		=> 'Hi Elijah, your API is UP!',
+			'forbidden' => 'elijah says: NO.'
+		),
+	);
 
-	/* CONFIG API - MESSAGES */
-	$config['api']['messages']				 		= array(
-														'hi' 		=> 'Hi Elijah, your API is UP!',
-														'forbidden' => 'elijah says: NO.'
-													);
-
+	/* CONFIG FORM BUILDER - GLOBALS */
+	$config['schema']['fields'] = array(
+		'blacklist' => array('id','created','modified')
+	);
 
 	/* CONFIG API - FORMAT */
 

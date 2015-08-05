@@ -9,11 +9,11 @@ require 'config.php';
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 R::setAutoResolve( TRUE );
 
-if($config['api']['debug']){    
+$config['api']['beans'] = R::inspect();
+
+if($config['api']['debug']){
 	R::debug( TRUE, 0 );
 }
-
-$config['api']['beansList'] = R::inspect();
 
 /* ***************************************************************************************************
 ** GET ROUTES ****************************************************************************************
@@ -21,7 +21,7 @@ $config['api']['beansList'] = R::inspect();
 
 if($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-	if( !empty($_GET) && in_array($_GET['action'], $config['api']['get']['whitelist'])){
+	if( !empty($_GET) && in_array($_GET['action'], $config['api']['actions']['get'])){
 
 		$request = array(
 			'action' 	=> $_GET['action'],
@@ -45,7 +45,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			break;
 
 			case 'search':
-				if (in_array($_GET['edge'], $config['api']['beansList'])){
+				if (in_array($request['edge'], $config['api']['beans'])){
 					api_search($request);
 				}
 				else{
@@ -54,7 +54,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			break;
 
 			case 'read':
-				if (in_array($_GET['edge'], $config['api']['beansList'])){
+				if (in_array($request['edge'], $config['api']['beans'])){
 					api_read($request, $config);
 				}
 				else{
@@ -63,7 +63,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			break;
 
 			case 'count':
-				if (in_array($_GET['edge'], $config['api']['beansList']) && empty($request['param'])){
+				if (in_array($request['edge'], $config['api']['beans']) && empty($request['param'])){
 					api_count($request);
 				}
 				else{
@@ -72,7 +72,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			break;		
 
 			case 'schema':
-				if (in_array($_GET['edge'], $config['api']['beansList'])){
+				if (in_array($request['edge'], $config['api']['beans'])){
 					api_schema($request, $config);
 				}
 				else{
@@ -83,18 +83,17 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			default:
 				api_forbidden($config);
 			break;
-		}
+		};
 
 	} 
-
 	else {
 		api_forbidden($config);
-	}
+	};
 
-}
+};
 
 /* ***************************************************************************************************
-** POST ROUTES ****************************************************************************************
+** POST ROUTES ***************************************************************************************
 *************************************************************************************************** */ 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -110,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	switch($request['action']) {
 
 		case 'create':
-			if (in_array($request['edge'], $config['api']['beansList'])){
+			if (in_array($request['edge'], $config['api']['beans'])){
 				api_create($request);
 			}
 			else{
@@ -121,9 +120,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		default:
 				api_forbidden($config);
 		break;
-	}
+	};
 
-}
+};
 
 /* ***************************************************************************************************
 ** PUT ROUTES ****************************************************************************************
@@ -143,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 	switch($request['action']) {
 
 		case 'update':
-			if (in_array($request['edge'], $config['api']['beansList'])){
+			if (in_array($request['edge'], $config['api']['beans'])){
 				api_update($request);
 			}
 			else{
@@ -154,9 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 		default:
 				api_forbidden($config);
 		break;
-	}
+	};
 
-}
+};
 
 /* ***************************************************************************************************
 ** DELETE ROUTES ****************************************************************************************
@@ -175,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 	switch($request['action']) {
 
 		case 'destroy':
-			if (in_array($request['edge'], $config['api']['beansList'])){
+			if (in_array($request['edge'], $config['api']['beans'])){
 				api_destroy($request);
 			}
 			else{
@@ -186,13 +185,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 		default:
 				api_forbidden($config);
 		break;
-	}
+	};
 
-}
+};
 
 /* ***************************************************************************************************
 ** RETURN FUNCTIONS **********************************************************************************
 *************************************************************************************************** */ 
+
+function api_create($request){
+	$item = R::dispense( $request['edge'] );
+
+	foreach ($request['content'] as $k => $v) {
+		$item[$k] = $v;
+	};
+		$item['created'] = R::isoDateTime();
+		$item['modified'] = R::isoDateTime();
+
+	$id = R::store($item);
+	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
+
+	// OUTPUT
+	api_output($result);
+
+};
 
 function api_read($request, $config){
 
@@ -203,8 +219,8 @@ function api_read($request, $config){
 		foreach ($items as $item => $content) {
 			foreach ($content as $k => $v) {
 				$result[$item][$k] = $v;
-			}
-		}
+			};
+		};
 	}
 
 	// READ - view one
@@ -212,33 +228,15 @@ function api_read($request, $config){
 		$item = R::load( $request['edge'], $request['param'] );
 
 		foreach ($item as $k => $v) {
-			if(!in_array($k, $config['api']['form']['fields']['blacklist'])) {
+			if(!in_array($k, $config['schema']['fields']['blacklist'])) {
 				$result[$k] = $v;
-			}
-		}
-	}
+			};
+		};
+	};
 
 	// OUTPUT
 	api_output($result);
-}
-
-
-function api_create($request){
-
-	$item = R::dispense( $request['edge'] );
-
-	foreach ($request['content'] as $k => $v) {
-		$item[$k] = $v;
-	}
-		$item['created'] = R::isoDateTime();
-		$item['modified'] = R::isoDateTime();
-
-	$id = R::store($item);
-	$result = 'Criado com Sucesso. (id: '.$id.')';
-
-	// OUTPUT
-	api_output($result);
-}
+};
 
 function api_update($request){
 
@@ -246,33 +244,33 @@ function api_update($request){
 
 	foreach ($request['content'] as $k => $v) {
 		$item[$k] = $v;
-	}
+	};
 		$item['modified'] = R::isoDateTime();
 
 	R::store( $item );
-	$result = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+	$result['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
 
 	// OUTPUT
 	api_output($result);
-}
+};
 
 function api_destroy($request){
 
 	$item = R::load( $request['edge'], $request['param'] );
     R::trash( $item );
 
-	$result = 'Excluído com Sucesso. (id: '.$request['param'].')';
+	$result['message'] = 'Excluído com Sucesso. (id: '.$request['param'].')';
 
 	// OUTPUT
 	api_output($result);
-}
+};
 
 function api_search($request){
 	$result['message'] = 'in development: action "search"';
 
 	// OUTPUT
 	api_output($result);
-}
+};
 
 function api_count($request){
 	
@@ -282,7 +280,7 @@ function api_count($request){
 	
 	// OUTPUT
 	api_output($result);
-}
+};
 
 function api_schema($request, $config){
 
@@ -299,14 +297,14 @@ function api_schema($request, $config){
 
 	foreach ($schema['raw'] as $key => $value) {
 
-		if(!in_array($key, $config['api']['form']['fields']['blacklist'])){
+		if(!in_array($key, $config['schema']['fields']['blacklist'])){
 
 			// PREPARE DATA;
-			$schemaType = preg_split("/[()]+/", $schema['raw'][$key]['Type']);
-			$type = $schemaType[0];
-			$maxLength = (int)$schemaType[1];
-
-			$minLength = ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
+			$schemaType 		= preg_split("/[()]+/", $schema['raw'][$key]['Type']);
+			$type 				= $schemaType[0];
+			$maxLength 			= (int)$schemaType[1];
+			$minLength 			= ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
+			$requiredLabel 		= ($minLength == 0 ? '' : '*');
 
 			// TYPE AND FORMAT
 			switch ($type) {
@@ -332,7 +330,7 @@ function api_schema($request, $config){
 			$result['properties'][$key] = array(
 				'type'			=> $type,
 				'format' 		=> $format,
-				'title' 		=> ucfirst($key),
+				'title' 		=> ucfirst($key) . $requiredLabel,
 				'required'	 	=> true,
 				'minLength' 	=> $minLength,
 				'maxLength'		=> $maxLength
@@ -358,31 +356,28 @@ function api_schema($request, $config){
 
 function api_edges($config){
 	
-	foreach ($config['api']['beansList'] as $k => $v) {
-		$beans[$k]['name'] 	= $v;
-		$beans[$k]['title'] = ucfirst($v);
-		$beans[$k]['count'] = R::count($v);
-		$beans[$k]['icon'] 	= 'th-list'; 
-	}
+	foreach ($config['api']['beans'] as $k => $v) {
+		$beans[$k] = array(
+			'name' 	=> $v,
+			'title' => ucfirst($v),
+			'count' => R::count($v),
+			'icon' 	=> 'th-list'
+		);
+	};
 
-	$result['beans']			 = $beans;
-	$result['actions']			 = array(
-		'get'	 => $config['api']['get']['whitelist'],
-		'post'	 => $config['api']['post']['whitelist'],
-		'put'	 => $config['api']['put']['whitelist'],
-		'del'	 => $config['api']['delete']['whitelist']
-	);
+	$result['beans'] 	= $beans;
+	$result['actions'] 	= $config['api']['actions'];
 
 	api_output($result);
-}
+};
 
 function api_output($result){
 	echo json_encode($result);
-}
+};
 
 function api_forbidden($config){
 	$result['message'] = $config['api']['messages']['forbidden'];
 	echo json_encode($result);
-}
+};
 
 ?>
