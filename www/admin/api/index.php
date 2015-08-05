@@ -228,7 +228,7 @@ function api_read($request, $config){
 		$item = R::load( $request['edge'], $request['param'] );
 
 		foreach ($item as $k => $v) {
-			if(!in_array($k, $config['schema']['fields']['blacklist'])) {
+			if(!in_array($k, $config['schema']['default']['blacklist'])) {
 				$result[$k] = $v;
 			};
 		};
@@ -297,48 +297,49 @@ function api_schema($request, $config){
 
 	foreach ($schema['raw'] as $key => $value) {
 
-		if(!in_array($key, $config['schema']['fields']['blacklist'])){
+		if(!in_array($key, $config['schema']['default']['blacklist'])){
 
 			// PREPARE DATA;
-			$schemaType 		= preg_split("/[()]+/", $schema['raw'][$key]['Type']);
-			$type 				= $schemaType[0];
-			$maxLength 			= (int)$schemaType[1];
-			$minLength 			= ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
-			$requiredLabel 		= ($minLength == 0 ? '' : '*');
+			$dbType 	= preg_split("/[()]+/", $schema['raw'][$key]['Type']);
+			$type 		= $dbType[0];
+			$format 	= $dbType[0];
+			$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
+			$minLength 	= ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
 
-			// TYPE AND FORMAT
-			switch ($type) {
-				case 'date':
-					$type = 'string';
-					$format = 'date';
-					break;
-				case 'text':
-					$type = 'string';
-					$format = 'textarea';
-					break;
-				case 'tinyint':
-					$type = 'boolean';
-					$format = 'checkbox';
-					break;
-				default:
-					$type = 'string';
-					$format = 'string';
-					break;
+			// converts db type to json-editor expected type
+			if(array_key_exists($type, $config['schema']['default']['type'])){
+				$type = $config['schema']['default']['type'][$type];
 			};
 
-			
+			// converts db type to json-editor expected format
+			if(array_key_exists($format, $config['schema']['default']['format'])){
+
+				if($format == 'varchar' && $maxLength > 256){
+					$format = 'textarea';
+				}
+				else{
+					$format = $config['schema']['default']['format'][$format];
+				};
+			};
+
+			// builds default properties array to json-editor
 			$result['properties'][$key] = array(
 				'type'			=> $type,
 				'format' 		=> $format,
-				'title' 		=> ucfirst($key) . $requiredLabel,
+				'title' 		=> ucfirst($key),
 				'required'	 	=> true,
 				'minLength' 	=> $minLength,
 				'maxLength'		=> $maxLength
 			);
 
-			if(isset($config['schema']['custom'][$key])){
-				$result['properties'][$key] = array_merge($result['properties'][$key], $config['schema']['custom'][$key]);
+			if(isset($config['schema']['custom']['fields'][$key])){
+				$result['properties'][$key] = array_merge($result['properties'][$key], $config['schema']['custom']['fields'][$key]);
 			};
+
+			// add '*' to field title if required.
+			if($result['properties'][$key]['minLength'] > 0){
+				$result['properties'][$key]['title'] = $result['properties'][$key]['title'] . '*';
+			}
 
 		};
 

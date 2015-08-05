@@ -46,13 +46,25 @@ AdminApp.config([
 AdminApp.config(
 	function(JSONEditorProvider) {
 		JSONEditorProvider.configure({
+            plugins: {
+                sceditor: {
+			        plugins: 			'',
+                    style: 				'assets/js/sceditor/jquery.sceditor.default.min.css',
+					toolbar: 			'bold,italic,underline|strike,subscript,superscript|link,unlink|removeformat|bulletlist,orderedlist|source',
+					locale: 			'pt-BR',
+					emoticonsEnabled: 	false,
+					width: 				'98%',
+					resizeEnabled: 		false,
+				}
+            },
 			defaults: {
 				options: {
 					iconlib: 			'fontawesome4',
 					theme: 				'bootstrap3',
+                    ajax: 				true,
 					disable_collapse: 	true,
 					disable_edit_json: 	true,
-					disable_properties: true
+					disable_properties: true,
 				}
 			}
 		});
@@ -227,6 +239,8 @@ AdminApp.controller('FormController',
 
 		if(action == 'read'){
 			$scope.$on('disableForm', function(event, obj) {
+
+				// TODO: when using sceditor WYSIWYG, need to fire function to "readOnly = true"
 				$scope.editor.disable();
 			});
 		};

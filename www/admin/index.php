@@ -17,6 +17,7 @@
 	<link href="assets/css/sb-admin.css" rel="stylesheet" type="text/css" />
 	<link href="assets/css/nprogress.css" rel="stylesheet" type="text/css"/>
 	<link href="assets/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+	<link href="assets/js/sceditor/themes/default.min.css" rel="stylesheet" type="text/css" />
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -103,6 +104,8 @@
 <script type="text/javascript" src="assets/js/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-route.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
+<script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.min.js"></script>
+<script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.pt-BR.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/app.js"></script>
 <!-- END JAVASCRIPT -->

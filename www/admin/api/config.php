@@ -23,20 +23,48 @@
 	);
 
 	/* CONFIG FORM BUILDER - GLOBALS */
-	$config['schema']['fields'] = array(
-		'blacklist' => array('id','created','modified')
+	$config['schema']['default'] = array(
+		'blacklist' 	=> array('id','created','modified'),
+		'type' 			=> array(
+			'date' 		=> 'string',
+			'int' 		=> 'integer',
+			'text' 		=> 'string',
+			'tinyint' 	=> 'boolean',
+			'varchar' 	=> 'string',
+		),
+		'format' 		=> array(
+			'varchar' 	=> 'string',
+			'int' 		=> 'number',
+			'date' 		=> 'date',
+			'text' 		=> 'textarea',
+			'tinyint' 	=> 'checkbox',
+		),
 	);
 
 	/* CONFIG API - FORMAT */
 
 	$config['schema']['custom'] = array(
-/*		'title' => array(
-			'type' 		=> 'batatinha',
-			'format' 	=> 'quando nasce',
-			'title' 	=> 'se esparrama',
-			'required' 	=> true,
-			'minLength' => 'pelo chão',
-		),*/
+		'fields' => array(
+			'title' => array(
+				'title' 	=> 'Título',
+			),
+			'description' => array(
+				'title' 	=> 'Descrição',
+				'type'		=> 'string',
+				'format'	=> 'html',
+				'options' 	=> array(
+					'wysiwyg' 	=> true,
+					),
+			),
+			'email' => array(
+				'title' 	=> 'E-Mail',
+				'format' 	=> 'email',
+			),
+			'phone' => array(
+				'title' 	=> 'Telefone',
+				'format' 	=> 'tel',
+			),
+		),
 	);
 
 
