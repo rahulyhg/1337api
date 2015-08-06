@@ -325,7 +325,7 @@ function api_schema($request, $config){
 					),
 				);
 
-				$parentOptions = R::getAssoc( 'SELECT id, title FROM '.$parentBean );
+				$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parentBean );
 
 				foreach ($parentOptions as $key => $value) {
 					$result['properties'][$parentBean]['enum'][] = $key;

@@ -45,8 +45,8 @@
 
 	$config['schema']['custom'] = array(
 		'fields' => array(
-			'title' => array(
-				'title' 	=> 'Título',
+			'name' => array(
+				'title' 	=> 'Nome',
 			),
 			'description' => array(
 				'title' 	=> 'Descrição',
