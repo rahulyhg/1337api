@@ -229,7 +229,18 @@ function api_read($request, $config){
 
 		foreach ($item as $k => $v) {
 			if(!in_array($k, $config['schema']['default']['blacklist'])) {
-				$result[$k] = $v;
+
+				if(substr($k, -3, 3) == '_id'){
+					$parentBean = substr($k, 0, -3);
+					$parent = R::load( $parentBean , $v );
+					
+					foreach ($parent as $key => $value) {
+						$result[$parentBean][$v][$key] = $value;
+					};
+				}
+				else{
+					$result[$k] = $v;
+				};
 			};
 		};
 	};
@@ -299,56 +310,99 @@ function api_schema($request, $config){
 
 		if(!in_array($key, $config['schema']['default']['blacklist'])){
 
-			// PREPARE DATA;
-			$dbType 	= preg_split("/[()]+/", $schema['raw'][$key]['Type']);
-			$type 		= $dbType[0];
-			$format 	= $dbType[0];
-			$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-			$minLength 	= ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
+			if(substr($key, -3, 3) == '_id'){
+				$parentBean = substr($key, 0, -3);
+				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
-			// converts db type to json-editor expected type
-			if(array_key_exists($type, $config['schema']['default']['type'])){
-				$type = $config['schema']['default']['type'][$type];
-			};
+				$result['properties'][$parentBean] = array(
+					'type' 				=> 'string',
+					'title' 			=> ucfirst($parentBean),
+					'required'	 		=> true,
+					'minLength'	 		=> 1,
+					'enum' 				=> array(),
+					'options' 			=> array(
+						'enum_titles' 	=> array(),
+					),
+				);
 
-			// converts db type to json-editor expected format
-			if(array_key_exists($format, $config['schema']['default']['format'])){
+				$parentOptions = R::getAssoc( 'SELECT id, title FROM '.$parentBean );
 
-				if($format == 'varchar' && $maxLength > 256){
-					$format = 'textarea';
-				}
-				else{
-					$format = $config['schema']['default']['format'][$format];
+				foreach ($parentOptions as $key => $value) {
+					$result['properties'][$parentBean]['enum'][] = $key;
+					$result['properties'][$parentBean]['options']['enum_titles'][] = $value;					
 				};
-			};
 
-			// builds default properties array to json-editor
-			$result['properties'][$key] = array(
-				'type'			=> $type,
-				'format' 		=> $format,
-				'title' 		=> ucfirst($key),
-				'required'	 	=> true,
-				'minLength' 	=> $minLength,
-				'maxLength'		=> $maxLength
-			);
-
-			if(isset($config['schema']['custom']['fields'][$key])){
-				$result['properties'][$key] = array_merge($result['properties'][$key], $config['schema']['custom']['fields'][$key]);
-			};
-
-			// add '*' to field title if required.
-			if($result['properties'][$key]['minLength'] > 0){
-				$result['properties'][$key]['title'] = $result['properties'][$key]['title'] . '*';
 			}
+			else{
+
+				// PREPARE DATA;
+				$dbType 	= preg_split("/[()]+/", $schema['raw'][$key]['Type']);
+				$type 		= $dbType[0];
+				$format 	= $dbType[0];
+				$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
+				$minLength 	= ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
+
+				// converts db type to json-editor expected type
+				if(array_key_exists($type, $config['schema']['default']['type'])){
+					$type = $config['schema']['default']['type'][$type];
+				};
+
+				// converts db type to json-editor expected format
+				if(array_key_exists($format, $config['schema']['default']['format'])){
+
+					if($format == 'varchar' && $maxLength > 256){
+						$format = 'textarea';
+					}
+					else{
+						$format = $config['schema']['default']['format'][$format];
+					};
+				};
+
+				// builds default properties array to json-editor
+				$result['properties'][$key] = array(
+					'type'			=> $type,
+					'format' 		=> $format,
+					'title' 		=> ucfirst($key),
+					'required'	 	=> true,
+					'minLength' 	=> $minLength,
+					'maxLength'		=> $maxLength
+				);
+
+				if(isset($config['schema']['custom']['fields'][$key])){
+					$result['properties'][$key] = array_merge($result['properties'][$key], $config['schema']['custom']['fields'][$key]);
+				};
+
+				// add '*' to field title if required.
+				if($result['properties'][$key]['minLength'] > 0){
+					$result['properties'][$key]['title'] = $result['properties'][$key]['title'] . '*';
+				}
+
+			};
 
 		};
 
 		// RAW STRUCTURE
-		$result['structure'][$key] = array(
-			'field' 		=> $key,
-			'properties' 	=> $value,
-		);
 
+		if(substr($key, -3, 3) == '_id'){
+			$parentBean = substr($key, 0, -3);
+			$parent = R::getAssoc('DESCRIBE '. $parentBean);
+
+			foreach ($parent as $key => $value) {
+
+				$result['structure'][$parentBean] = array(
+					'field' 		=> $key,
+					'properties' 	=> $value,
+				);
+			
+			}
+
+		}
+		else{
+			$result['structure'][$key] = array(
+				'field' 		=> $key,
+				'properties' 	=> $value,
+			);
+		};
 	};
 
 	// OUTPUT
