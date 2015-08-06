@@ -410,14 +410,27 @@ function api_schema($request, $config){
 }
 
 function api_edges($config){
+
+	$hierarchy = R::getAssoc('
+		SELECT TABLE_NAME, REFERENCED_TABLE_NAME
+		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+		WHERE REFERENCED_TABLE_NAME IS NOT NULL
+	');
 	
 	foreach ($config['api']['beans'] as $k => $v) {
-		$beans[$k] = array(
+
+		$beans[$v] = array(
 			'name' 	=> $v,
 			'title' => ucfirst($v),
 			'count' => R::count($v),
-			'icon' 	=> 'th-list'
+			'icon' 	=> 'th-list',
 		);
+
+		if(array_key_exists($v, $hierarchy)){
+			$beans[$v]['parent'] = $hierarchy[$v];
+			$beans[$hierarchy[$v]]['child'] = $v;
+		}
+
 	};
 
 	$result['beans'] 	= $beans;
