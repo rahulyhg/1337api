@@ -18,6 +18,7 @@
 	<link href="assets/css/nprogress.css" rel="stylesheet" type="text/css"/>
 	<link href="assets/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
 	<link href="assets/js/sceditor/themes/default.min.css" rel="stylesheet" type="text/css" />
+	<link href="assets/css/custom.css" rel="stylesheet" type="text/css" />
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -83,7 +84,7 @@
 					</a>
 					
 					<ul ng-if="bean.parent" id="menu-{{bean.name}}" class="collapse in">
-						<li><a href="#/{{bean.parent}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.parent.title}}</a></li>
+						<li><a href="#/{{bean.parent.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.parent.title}}</a></li>
 						<li><a href="#/{{bean.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}</a></li>
 					</ul>	
 					<!-- end if -->

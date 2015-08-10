@@ -1,0 +1,20 @@
+
+/* custom */
+
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+    vertical-align: middle;
+}
+
+json-editor h3{
+    display:none;
+}
+
+#nprogress .spinner {
+    top: 65px !important;
+}
+
+.container-fluid{
+    min-height: 200px;
+}
+
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
