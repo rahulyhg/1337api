@@ -69,21 +69,24 @@
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav" ng-controller="MenuController">
 				<li><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-				<li ng-repeat="menu in menus">
-					<a ng-if=" !menu.child && !menu.parent " href="#/{{menu.name}}">
-						<i class="fa fa-fw fa-{{menu.icon}}"></i> {{menu.title}}
-					</a>
+				<li ng-repeat="bean in beans">
 
-					<a ng-if="menu.parent" href="javascript:;" data-target="#menu-{{menu.name}}" data-toggle="collapse">
-						<i class="fa fa-fw fa-arrow-circle-o-right"></i> {{menu.title}} <i class="fa fa-fw fa-caret-down"></i>
+					<!-- if no relationship -->
+					<a ng-if=" !bean.child && !bean.parent " href="#/{{bean.name}}">
+						<i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}
+					</a>
+					<!-- endif -->
+
+					<!-- if one-to-many relationship -->
+					<a ng-if="bean.parent" href="javascript:;" data-target="#menu-{{bean.name}}" data-toggle="collapse">
+						<i class="fa fa-fw fa-arrow-circle-o-right"></i> {{bean.title}} <i class="fa fa-fw fa-caret-down"></i>
 					</a>
 					
-					<ul ng-if="menu.parent" id="menu-{{menu.name}}" class="collapse in">
-						<li><a href="#/{{menu.parent}}"><i class="fa fa-fw fa-{{menu.icon}}"></i> {{menu.parent}}</a></li>
-						<li><a href="#/{{menu.name}}"><i class="fa fa-fw fa-{{menu.icon}}"></i> {{menu.title}}</a></li>
+					<ul ng-if="bean.parent" id="menu-{{bean.name}}" class="collapse in">
+						<li><a href="#/{{bean.parent}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.parent.title}}</a></li>
+						<li><a href="#/{{bean.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}</a></li>
 					</ul>	
-
-
+					<!-- end if -->
 					
 				</li>
 

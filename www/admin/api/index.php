@@ -427,8 +427,21 @@ function api_edges($config){
 		);
 
 		if(array_key_exists($v, $hierarchy)){
-			$beans[$v]['parent'] = $hierarchy[$v];
-			$beans[$hierarchy[$v]]['child'] = $v;
+
+			$beans[$v]['parent'] = array(
+				'name' 	=> $hierarchy[$v],
+				'title' => ucfirst($hierarchy[$v]),
+				'count' => R::count($hierarchy[$v]),
+				'icon' 	=> 'th-list',
+			);
+
+			$beans[$hierarchy[$v]]['child'] = array(
+				'name' 	=> $v,
+				'title' => ucfirst($v),
+				'count' => R::count($v),
+				'icon' 	=> 'th-list',
+			);
+
 		}
 
 	};

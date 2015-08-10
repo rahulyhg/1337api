@@ -110,11 +110,9 @@ AdminApp.controller('DashboardController',
 AdminApp.controller('MenuController', 
 	function ($scope, $http) {
 		NProgress.start();
-
 		
 		$http.get('api/edges').success(function(data){
-			$scope.menus  = data.beans;
-			console.dir(data.beans);
+			$scope.beans  = data.beans;
 		});
 	}
 );

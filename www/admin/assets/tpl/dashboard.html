@@ -22,8 +22,10 @@
 
 <!-- DASHBOARD ROW -->	
 <div class="row">
-	<div ng-repeat="bean in beans" class="col-lg-3 col-md-6">
-		<div class="panel panel-primary">
+	<div ng-repeat="bean in beans" ng-if="!bean.child" class="col-lg-4 col-md-6">
+
+		<!-- if no relationship -->
+		<div ng-if=" !bean.child && !bean.parent " class="panel panel-primary">
 			<div class="panel-heading">
 				<div class="row">
 					<div class="col-xs-3">
@@ -31,7 +33,7 @@
 					</div>
 					<div class="col-xs-9 text-right">
 						<div class="huge">{{bean.count}}</div>
-						<div>{{bean.name}}</div>
+						<div>{{bean.title}}</div>
 					</div>
 				</div>
 			</div>
@@ -43,6 +45,36 @@
 				</div>
 			</a>
 		</div>
+		<!-- endif -->
+
+		<!-- if one-to-many relationship -->
+		<div ng-if="bean.parent" href="javascript:;" class="panel panel-green">
+			<div class="panel-heading">
+				<div class="row">
+					<div class="col-xs-4">
+						<i class="fa fa-{{bean.icon}} fa-5x"></i>
+					</div>
+					<div class="col-xs-4 text-right">
+						<div class="huge">{{bean.parent.count}}</div>
+						<div>{{bean.parent.title}}</div>
+					</div>
+					<div class="col-xs-4 text-right">
+						<div class="huge">{{bean.count}}</div>
+						<div>{{bean.title}}</div>
+					</div>
+				</div>
+			</div>
+			<a href="#/{{bean.name}}">
+				<div class="panel-footer">
+					<span class="pull-left">Ver Todos</span>
+					<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+					<div class="clearfix"></div>
+				</div>
+			</a>
+		</div>
+		<!-- end if -->
+
 	</div>
 </div>
 <!-- END ROW -->
+
