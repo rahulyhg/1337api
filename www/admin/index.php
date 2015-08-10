@@ -127,6 +127,7 @@
 <script type="text/javascript" src="assets/js/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-route.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
+<script type="text/javascript" src="assets/js/angular-ui-bootstrap/ui-bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.min.js"></script>
 <script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.pt-BR.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>

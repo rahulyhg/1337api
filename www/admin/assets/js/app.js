@@ -2,7 +2,7 @@
 /* ************************************************************
 INIT
 ************************************************************ */
-var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor']);
+var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor', 'ui.bootstrap']);
 NProgress.start();
 
 /* ************************************************************
