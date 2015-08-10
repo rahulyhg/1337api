@@ -306,12 +306,12 @@ function api_schema($request, $config){
 		'additionalProperties' 	=> false,
 	);
 
-	foreach ($schema['raw'] as $key => $value) {
+	foreach ($schema['raw'] as $field => $properties) {
 
-		if(!in_array($key, $config['schema']['default']['blacklist'])){
+		if(!in_array($field, $config['schema']['default']['blacklist'])){
 
-			if(substr($key, -3, 3) == '_id'){
-				$parentBean = substr($key, 0, -3);
+			if(substr($field, -3, 3) == '_id'){
+				$parentBean = substr($field, 0, -3);
 				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
 				$result['properties'][$parentBean] = array(
@@ -336,11 +336,11 @@ function api_schema($request, $config){
 			else{
 
 				// PREPARE DATA;
-				$dbType 	= preg_split("/[()]+/", $schema['raw'][$key]['Type']);
+				$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
 				$type 		= $dbType[0];
 				$format 	= $dbType[0];
 				$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-				$minLength 	= ($schema['raw'][$key]['Null'] == 'YES' ? 0 : 1);
+				$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
 
 				// converts db type to json-editor expected type
 				if(array_key_exists($type, $config['schema']['default']['type'])){
@@ -359,22 +359,22 @@ function api_schema($request, $config){
 				};
 
 				// builds default properties array to json-editor
-				$result['properties'][$key] = array(
+				$result['properties'][$field] = array(
 					'type'			=> $type,
 					'format' 		=> $format,
-					'title' 		=> ucfirst($key),
+					'title' 		=> ucfirst($field),
 					'required'	 	=> true,
 					'minLength' 	=> $minLength,
 					'maxLength'		=> $maxLength
 				);
 
-				if(isset($config['schema']['custom']['fields'][$key])){
-					$result['properties'][$key] = array_merge($result['properties'][$key], $config['schema']['custom']['fields'][$key]);
+				if(isset($config['schema']['custom']['fields'][$field])){
+					$result['properties'][$field] = array_merge($result['properties'][$field], $config['schema']['custom']['fields'][$field]);
 				};
 
 				// add '*' to field title if required.
-				if($result['properties'][$key]['minLength'] > 0){
-					$result['properties'][$key]['title'] = $result['properties'][$key]['title'] . '*';
+				if($result['properties'][$field]['minLength'] > 0){
+					$result['properties'][$field]['title'] = $result['properties'][$field]['title'] . '*';
 				}
 
 			};
@@ -383,8 +383,8 @@ function api_schema($request, $config){
 
 		// RAW STRUCTURE
 
-		if(substr($key, -3, 3) == '_id'){
-			$parentBean = substr($key, 0, -3);
+		if(substr($field, -3, 3) == '_id'){
+			$parentBean = substr($field, 0, -3);
 			$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
 			foreach ($parent as $key => $value) {
@@ -398,9 +398,9 @@ function api_schema($request, $config){
 
 		}
 		else{
-			$result['structure'][$key] = array(
-				'field' 		=> $key,
-				'properties' 	=> $value,
+			$result['structure'][$field] = array(
+				'field' 		=> $field,
+				'properties' 	=> $properties,
 			);
 		};
 	};
