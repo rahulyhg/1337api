@@ -54,8 +54,17 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			break;
 
 			case 'read':
-				if (in_array($request['edge'], $config['api']['beans'])){
+				if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
 					api_read($request, $config);
+				}
+				else{
+					api_forbidden($config);
+				}
+			break;
+
+			case 'list':
+				if (in_array($request['edge'], $config['api']['beans'])){
+					api_list($request, $config);
 				}
 				else{
 					api_forbidden($config);
@@ -64,7 +73,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 			case 'count':
 				if (in_array($request['edge'], $config['api']['beans']) && empty($request['param'])){
-					api_count($request);
+					api_count($request, $config);
 				}
 				else{
 					api_forbidden($config);
@@ -212,35 +221,22 @@ function api_create($request){
 
 function api_read($request, $config){
 
-	// READ - list all
-	if(empty($request['param'])){
-		$items = R::findAll( $request['edge'] );
-
-		foreach ($items as $item => $content) {
-			foreach ($content as $k => $v) {
-				$result[$item][$k] = $v;
-			};
-		};
-	}
-
 	// READ - view one
-	else{
-		$item = R::load( $request['edge'], $request['param'] );
+	$item = R::load( $request['edge'], $request['param'] );
 
-		foreach ($item as $k => $v) {
-			if(!in_array($k, $config['schema']['default']['blacklist'])) {
+	foreach ($item as $k => $v) {
+		if(!in_array($k, $config['schema']['default']['blacklist'])) {
 
-				if(substr($k, -3, 3) == '_id'){
-					$parentBean = substr($k, 0, -3);
-					$parent = R::load( $parentBean , $v );
-					
-					foreach ($parent as $key => $value) {
-						$result[$parentBean][$v][$key] = $value;
-					};
-				}
-				else{
-					$result[$k] = $v;
+			if(substr($k, -3, 3) == '_id'){
+				$parentBean = substr($k, 0, -3);
+				$parent = R::load( $parentBean , $v );
+				
+				foreach ($parent as $key => $value) {
+					$result[$parentBean][$v][$key] = $value;
 				};
+			}
+			else{
+				$result[$k] = $v;
 			};
 		};
 	};
@@ -276,6 +272,37 @@ function api_destroy($request){
 	api_output($result);
 };
 
+function api_list($request, $config){
+
+	// LIST - list all
+	if(empty($request['param'])){
+		$items = R::findAll( $request['edge'] );
+
+		foreach ($items as $item => $content) {
+			foreach ($content as $k => $v) {
+				$result[$item][$k] = $v;
+			};
+		};
+	}
+
+	// LIST - paginated
+	else{
+		
+		$page 	= $request['param'];
+		$limit 	= $config['api']['params']['pagination'];
+		$items 	= R::findAll( $request['edge'], 'ORDER BY id LIMIT '.(($page-1)*$limit).', '.$limit);
+
+		foreach ($items as $item => $content) {
+			foreach ($content as $k => $v) {
+				$result[$item][$k] = $v;
+			};
+		};
+	};
+
+	// OUTPUT
+	api_output($result);
+};
+
 function api_search($request){
 	$result['message'] = 'in development: action "search"';
 
@@ -283,11 +310,14 @@ function api_search($request){
 	api_output($result);
 };
 
-function api_count($request){
+function api_count($request, $config){
 	
 	// COUNT - count all
 	$count = R::count( $request['edge'] );
-	$result['sum'] = $count;
+	$limit = $config['api']['params']['pagination'];
+
+	$result['sum'] 		= $count;
+	$result['pages'] 	= round($count/$limit);
 	
 	// OUTPUT
 	api_output($result);

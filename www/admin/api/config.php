@@ -11,10 +11,13 @@
 	$config['api'] = array(
 		'debug' 	=> FALSE,
 		'actions' 	=> array(
-			'get' 	=> array('hi','edges','search','read', 'count', 'schema'),
+			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema'),
 			'post' 	=> array('create'),
 			'put' 	=> array('update'),
 			'del' 	=> array('destroy'),
+		),
+		'params' => array(
+			'pagination' => 5,
 		),
 		'messages'	=> array(
 			'hi' 		=> 'Hi Elijah, your API is UP!',

@@ -114,26 +114,42 @@ AdminApp.controller('MenuController',
 		$http.get('api/edges').success(function(data){
 			$scope.beans  = data.beans;
 		});
+
+
 	}
 );
 
 // List Controller
 AdminApp.controller('ListController', 
-	function ($scope, $http, $location) {
+	function ($scope, $http, $location, $routeParams) {
 		NProgress.start();
-
-		var path = $location.$$path.split('/');
-		var edge = path[1];
+		var path = $location.path().split('/');
+		var edge = path[2];
+		var page = $routeParams.page;
 
 		$http.get('api/schema/'+edge).success(function(data) {
 			$scope.schema = data;
 		});
-		$http.get('api/read/'+edge).success(function(data) {
+
+		$http.get('api/list/'+edge+'/'+page).success(function(data) {
 			$scope.items = data;
-		});
+		});			
+
 		$http.get('api/count/'+edge).success(function(data) {
-			$scope.count = data;
+			$scope.totalItems = data.sum;
+			$scope.setPage(page);
 		});
+
+		$scope.itemsPerPage = 5;
+		$scope.maxSize = 10;
+
+		$scope.setPage = function (page) {
+			$scope.currentPage = page;
+		};
+
+		$scope.pageChanged = function() {
+			$location.url('/list/'+edge+'/p/'+$scope.currentPage);
+		};
 
 		$scope.onDestroy = function(id) {
 			var destroyItem = confirm('Tem certeza que deseja excluir?');
@@ -153,7 +169,7 @@ AdminApp.controller('CreateController',
 		// $scope.master = {};
 		// $scope.activePath = null;
 
-		var path = $location.$$path.split('/');
+		var path = $location.path().split('/');
 		var edge = path[2];
 
 		$scope.schema = $http.get('api/schema/'+edge)
@@ -174,8 +190,18 @@ AdminApp.controller('ReadController',
 		// $scope.master = {};
 		// $scope.activePath = null;
 
-		var path = $location.$$path.split('/');
-		var edge = path[2];
+		var path = $location.path().split('/');
+		var edge = $routeParams.bean;
+
+		$http.get('api/edges').success(function(data) {
+			$scope.edges = data.beans;
+
+			if(data.beans[edge] === undefined){
+				$location.url('/');
+			};
+
+		});
+
 		var id = $routeParams.id;
 
 		$http.get('api/read/'+edge+'/'+id).success(function(data) {
@@ -199,9 +225,9 @@ AdminApp.controller('UpdateController',
 		// $scope.master = {};
 		// $scope.activePath = null;
 
-		var path = $location.$$path.split('/');
-		var edge = path[2];
-		var id = $routeParams.id;
+		var path 	= $location.path().split('/');
+		var edge 	= path[2];
+		var id 		= $routeParams.id;
 
 		$http.get('api/read/'+edge+'/'+id).success(function(data) {
 			$scope.item = data;
@@ -223,7 +249,7 @@ AdminApp.controller('FormController',
 	function ($scope, $http, $location) {
 		NProgress.start();
 
-		var path 	= $location.$$path.split('/');
+		var path 	= $location.path().split('/');
 		var action 	= path[1];
 		var edge 	= path[2];
 		var id 		= path[3];

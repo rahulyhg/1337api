@@ -73,7 +73,7 @@
 				<li ng-repeat="bean in beans">
 
 					<!-- if no relationship -->
-					<a ng-if=" !bean.child && !bean.parent " href="#/{{bean.name}}">
+					<a ng-if=" !bean.child && !bean.parent " href="#/list/{{bean.name}}">
 						<i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}
 					</a>
 					<!-- endif -->
@@ -84,8 +84,8 @@
 					</a>
 					
 					<ul ng-if="bean.parent" id="menu-{{bean.name}}" class="collapse in">
-						<li><a href="#/{{bean.parent.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.parent.title}}</a></li>
-						<li><a href="#/{{bean.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}</a></li>
+						<li><a href="#/list/{{bean.parent.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.parent.title}}</a></li>
+						<li><a href="#/list/{{bean.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}</a></li>
 					</ul>	
 					<!-- end if -->
 					
@@ -128,6 +128,7 @@
 <script type="text/javascript" src="assets/js/angular-route.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/angular-ui-bootstrap/ui-bootstrap.min.js"></script>
+<script type="text/javascript" src="assets/js/angular-ui-bootstrap/ui-bootstrap-tpls.min.js"></script>
 <script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.min.js"></script>
 <script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.pt-BR.js"></script>
 <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
