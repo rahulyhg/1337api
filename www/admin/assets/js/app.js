@@ -51,7 +51,11 @@ AdminApp.config([
 				controllerAs: 'read',
 				resolve: {
 
-					validateId: function ($q, $route, $location, existsService) {
+					testResolve: function($http) {
+						return $http.get('api/exists/item/1');
+					},
+
+/*					id: function ($q, $route, $location, existsService) {
 
 						var deferred = $q.defer(),
 						edge = $route.current.params.edge;
@@ -60,25 +64,22 @@ AdminApp.config([
 						// ASYNC GET & BROADCAST BEANS LIST
 						existsService.async(edge, id).then(function(data) {
 							var exists = data;
+							console.log(data);
 
-							if(exists == true){
+							if(data == true){
 								deferred.resolve();
 							}
-							else {
+
+							else{
+								console.log('redirect');
 								deferred.reject('invalid id');
 								$location.url('/');
 							}
+
 						});
 
 						return deferred.promise;
-					}
-
-//				    user: function($stateParams, UserService) {
-//				      return UserService.find($stateParams.id);
-//				    },
-//				    tasks: function(TaskService, user) {
-//				      return user.canHaveTasks() ?
-//				        TaskService.find(user.id) : [];
+					}*/
 
 				},
 			}		
@@ -308,8 +309,11 @@ AdminApp.controller('CreateController',
 
 // Read Controller
 AdminApp.controller('ReadController', 
-	function ($scope, $http, $location, $routeParams) {
+	function ($scope, $http, $location, $routeParams, testResolve) {
 		NProgress.start();
+
+		console.dir(testResolve);
+
 
 		var edge = $routeParams.edge;
 		var id = $routeParams.id;
