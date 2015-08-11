@@ -31,10 +31,10 @@
 
 <body ng-app="AdminApp">
 
-<div id="wrapper">
+<div id="wrapper" ng-controller="MainController">
 
 	<!-- NAVIGATION -->
-	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="MenuController">
 
 		<!-- NAVIGATION - HEADER MENU -->
 		<div class="navbar-header">
@@ -68,24 +68,24 @@
 
 		<!-- NAVIGATION - MAIN MENU -->
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
-			<ul class="nav navbar-nav side-nav" ng-controller="MenuController">
+			<ul class="nav navbar-nav side-nav">
 				<li><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-				<li ng-repeat="bean in beans">
+				<li ng-repeat="edge in edges">
 
 					<!-- if no relationship -->
-					<a ng-if=" !bean.child && !bean.parent " href="#/list/{{bean.name}}">
-						<i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}
+					<a ng-if=" !edge.child && !edge.parent " href="#/list/{{edge.name}}">
+						<i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}
 					</a>
 					<!-- endif -->
 
 					<!-- if one-to-many relationship -->
-					<a ng-if="bean.parent" href="javascript:;" data-target="#menu-{{bean.name}}" data-toggle="collapse">
-						<i class="fa fa-fw fa-arrow-circle-o-right"></i> {{bean.title}} <i class="fa fa-fw fa-caret-down"></i>
+					<a ng-if="edge.parent" href="javascript:;" data-target="#menu-{{edge.name}}" data-toggle="collapse">
+						<i class="fa fa-fw fa-arrow-circle-o-right"></i> {{edge.title}} <i class="fa fa-fw fa-caret-down"></i>
 					</a>
 					
-					<ul ng-if="bean.parent" id="menu-{{bean.name}}" class="collapse in">
-						<li><a href="#/list/{{bean.parent.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.parent.title}}</a></li>
-						<li><a href="#/list/{{bean.name}}"><i class="fa fa-fw fa-{{bean.icon}}"></i> {{bean.title}}</a></li>
+					<ul ng-if="edge.parent" id="menu-{{edge.name}}" class="collapse in">
+						<li><a href="#/list/{{edge.parent.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.parent.title}}</a></li>
+						<li><a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a></li>
 					</ul>	
 					<!-- end if -->
 					
@@ -101,9 +101,7 @@
 
 	<!-- CONTAINER -->	
 	<div id="page-wrapper">
-		<div class="container-fluid" ng-controller="MainController">
-			<div ng-view></div>
-		</div>
+		<div ng-view class="container-fluid"></div>
 	</div>
 	<!-- END CONTAINER -->	
 	

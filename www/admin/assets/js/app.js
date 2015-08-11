@@ -19,52 +19,54 @@ AdminApp.config([
 			'/', 
 			{
 				templateUrl: 'assets/tpl/dashboard.html', 
-				controller:'DashboardController'
+				controller: 'DashboardController',
+				controllerAs: 'dashboard'
 			}
 		);
 
-		// CRUD
+		// CRUD		
 		$routeProvider.when( 
-			'/list/:bean', 
+			'/list/:edge/p/:page', 
 			{
 				templateUrl: 'assets/tpl/list.html', 
-				controller: 'ListController', 
-				redirectTo: function (routeParams, path, search) { 
-					return path+'p/1'; 
-				} 
-			}
-		);
-		
-		$routeProvider.when( 
-			'/list/:bean/p/:page', 
-			{
-				templateUrl: 'assets/tpl/list.html', 
-				controller: 'ListController'
+				controller: 'ListController',
+				controllerAs: 'list'				
 			}		
 		);
 
 		$routeProvider.when( 
-			'/create/:bean', 
+			'/create/:edge', 
 			{
 				templateUrl: 'assets/tpl/create.html', 
-				controller: 'CreateController'
+				controller: 'CreateController',
+				controllerAs: 'create'				
 			}	
 		);
 
 		$routeProvider.when( 
-			'/read/:bean/:id', 
+			'/read/:edge/:id', 
 			{
 				templateUrl: 'assets/tpl/read.html', 
-				controller: 'ReadController'
+				controller: 'ReadController',
+				controllerAs: 'read'
 			}		
 		);
 
 		$routeProvider.when(
-			'/update/:bean/:id', 
+			'/update/:edge/:id', 
 			{
 				templateUrl: 'assets/tpl/update.html', 
-				controller: 'UpdateController'
+				controller: 'UpdateController',
+				controllerAs: 'update'
 			}	
+		);
+
+		// REDIRECTS
+		$routeProvider.when( 
+			'/list/:edge', 
+			{
+				redirectTo: function (routeParams, path, search) { return path+'/p/1'; }
+			}
 		);
 
 		// OTHERWISE
@@ -107,7 +109,30 @@ AdminApp.config(
 /* ************************************************************
 ANGULAR SERVICES
 ************************************************************ */		
-// nothing here.
+
+AdminApp.factory('edgesService', function($http) {
+
+	var promise;	
+	var edgesService = {
+		async: function() {
+			if ( !promise ) {
+				// $http returns a promise, which has a then function, which also returns a promise
+				promise = $http.get('api/edges').then(function (response) {
+	
+					// The then function here is an opportunity to modify the response
+					// console.log(response);
+				
+					// The return value gets picked up by the then in the controller.
+					return response.data;
+				});
+			}
+	
+			// Return the promise to the controller
+			return promise;
+		}
+	};
+	return edgesService;
+});
 
 /* ************************************************************
 ANGULAR CONTROLLERS
@@ -115,22 +140,26 @@ ANGULAR CONTROLLERS
 
 // Main Controller
 AdminApp.controller('MainController', 
-	function ($scope, $http, $routeParams, $location) {
+	function ($scope, $routeParams, $location, edgesService) {
 
+		// ASYNC GET & BROADCAST BEANS LIST
+		edgesService.async().then(function(data) {
+			var edges = data.beans;
+			$scope.$broadcast('edges', {edges});
+		});
+	
 		$scope.$on('$viewContentLoaded', function(){
 			NProgress.done();
 		});
 
-		var edge = $routeParams.bean;
-
-		$http.get('api/edges').success(function(data) {
-			$scope.edges = data.beans;
-
-			if(data.beans[edge] === undefined){
-				$location.url('/');
-			};
-
-		});
+//		$http.get('api/edges').success(function(data) {
+//			$scope.edges = data.beans;
+//
+//			if(data.beans[edge] === undefined){
+//				$location.url('/');
+//			};
+//
+//		});
 
 	}
 );
@@ -144,9 +173,12 @@ AdminApp.controller('DashboardController',
 			$scope.hi  = data;
 		});
 
-		$http.get('api/edges').success(function(data){
-			$scope.beans  = data.beans;
+		// TODO: Quando saio dessa tela e volto, o $scope do broadcast "sumiu".
+
+		$scope.$on('edges', function(event, data) {
+			$scope.edges = data.edges;
 		});
+
 	}
 );
 
@@ -154,11 +186,10 @@ AdminApp.controller('DashboardController',
 AdminApp.controller('MenuController', 
 	function ($scope, $http) {
 		NProgress.start();
-		
-		$http.get('api/edges').success(function(data){
-			$scope.beans  = data.beans;
-		});
 
+		$scope.$on('edges', function(event, data) {
+			$scope.edges = data.edges;
+		});
 
 	}
 );
@@ -167,8 +198,8 @@ AdminApp.controller('MenuController',
 AdminApp.controller('ListController', 
 	function ($scope, $http, $location, $routeParams) {
 		NProgress.start();
-		var path = $location.path().split('/');
-		var edge = path[2];
+
+		var edge = $routeParams.edge;
 		var page = $routeParams.page;
 
 		$http.get('api/schema/'+edge).success(function(data) {
@@ -208,15 +239,12 @@ AdminApp.controller('ListController',
 
 // Create Controller
 AdminApp.controller('CreateController', 
-	function ($scope, $http, $location) {
+	function ($scope, $http, $location, $routeParams) {
 		NProgress.start();
-		// $scope.master = {};
-		// $scope.activePath = null;
 
-		var path = $location.path().split('/');
-		var edge = path[2];
+		var edge = $routeParams.edge;
 
-		$scope.schema = $http.get('api/schema/'+edge)
+		$scope.schema = $http.get('api/schema/'+edge);
 		$scope.schemaData = {};
 
 		$scope.onChange = function(data) {
@@ -231,21 +259,8 @@ AdminApp.controller('CreateController',
 AdminApp.controller('ReadController', 
 	function ($scope, $http, $location, $routeParams) {
 		NProgress.start();
-		// $scope.master = {};
-		// $scope.activePath = null;
 
-		var path = $location.path().split('/');
-		var edge = $routeParams.bean;
-
-		$http.get('api/edges').success(function(data) {
-			$scope.edges = data.beans;
-
-			if(data.beans[edge] === undefined){
-				$location.url('/');
-			};
-
-		});
-
+		var edge = $routeParams.edge;
 		var id = $routeParams.id;
 
 		$http.get('api/read/'+edge+'/'+id).success(function(data) {
@@ -266,11 +281,8 @@ AdminApp.controller('ReadController',
 AdminApp.controller('UpdateController', 
 	function ($scope, $http, $location, $routeParams) {
 		NProgress.start();
-		// $scope.master = {};
-		// $scope.activePath = null;
 
-		var path 	= $location.path().split('/');
-		var edge 	= path[2];
+		var edge 	= $routeParams.edge;
 		var id 		= $routeParams.id;
 
 		$http.get('api/read/'+edge+'/'+id).success(function(data) {
@@ -290,28 +302,27 @@ AdminApp.controller('UpdateController',
 
 // Forms Controller
 AdminApp.controller('FormController', 
-	function ($scope, $http, $location) {
+	function ($scope, $http, $location, $routeParams) {
 		NProgress.start();
 
-		var path 	= $location.path().split('/');
-		var action 	= path[1];
-		var edge 	= path[2];
-		var id 		= path[3];
+		var edge 	= $routeParams.edge;
+		var id 		= $routeParams.id;
 
 		$http.get('api/schema/'+edge).success(function(data) {
 			data.itemId = id;			
 			$scope.schema = data;
 		});
 
-		if(action == 'read'){
+		if($scope.$parent.read !== undefined){
 			$scope.$on('disableForm', function(event, obj) {
 
-				console.dir($scope.editor);
-				// TODO: when using sceditor WYSIWYG, need to fire function to "readOnly = true"
-				//instance.readOnly(1);
-
 				$scope.editor.disable();
-				$scope.editor.plugins.sceditor.readOnly(true);
+
+				// TODO: when using sceditor WYSIWYG, need to fire function to "readOnly = true"
+				// Examples that doesn't work: 
+				// instance.readOnly(1);
+				// $scope.editor.plugins.sceditor.readOnly(true);
+				
 			});
 		};
 

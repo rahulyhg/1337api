@@ -5,16 +5,16 @@
     vertical-align: middle;
 }
 
+html{
+	background-color: #ffffff;
+}
+
 json-editor h3{
     display:none;
 }
 
 #nprogress .spinner {
     top: 65px !important;
-}
-
-.container-fluid{
-    min-height: 200px;
 }
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
