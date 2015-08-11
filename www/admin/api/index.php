@@ -62,6 +62,15 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 				}
 			break;
 
+			case 'exists':
+				if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
+					api_exists($request, $config);
+				}
+				else{
+					api_forbidden($config);
+				}
+			break;
+
 			case 'list':
 				if (in_array($request['edge'], $config['api']['beans'])){
 					api_list($request, $config);
@@ -78,7 +87,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 				else{
 					api_forbidden($config);
 				}
-			break;		
+			break;
 
 			case 'schema':
 				if (in_array($request['edge'], $config['api']['beans'])){
@@ -240,6 +249,23 @@ function api_read($request, $config){
 			};
 		};
 	};
+
+	// OUTPUT
+	api_output($result);
+};
+
+function api_exists($request, $config){
+
+	// EXISTS?
+	$exists = R::find($request['edge'],' id = '.$request['param'].' ' );
+
+	if( empty( $exists ) )
+	{
+		$result['exists'] = false;
+	}
+	else{
+		$result['exists'] = true;
+	}
 
 	// OUTPUT
 	api_output($result);

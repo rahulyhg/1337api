@@ -11,7 +11,7 @@
 	$config['api'] = array(
 		'debug' 	=> FALSE,
 		'actions' 	=> array(
-			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema'),
+			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists'),
 			'post' 	=> array('create'),
 			'put' 	=> array('update'),
 			'del' 	=> array('destroy'),
