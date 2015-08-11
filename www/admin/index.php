@@ -110,17 +110,6 @@
 </div>
 
 <!-- JAVASCRIPT -->
-<script type="text/javascript">
-<?php 
-	$edges = json_decode(file_get_contents('http://'.$_SERVER[HTTP_HOST].'/admin/api/edges'), true);
-	echo 'var beans = [];'. "\n";
-	foreach ($edges['beans'] as $k => $v) {
-		$beans[$k] = $v['name'];
-		echo 'beans.push(\''.$v['name'].'\');'. "\n";
-	};
-?>
-</script>
-
 <script type="text/javascript" src="assets/js/jquery.min.js"></script>
 <script type="text/javascript" src="assets/js/nprogress.js"></script>
 <script type="text/javascript" src="assets/js/jsoneditor.min.js"></script>

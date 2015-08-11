@@ -1,44 +1,77 @@
-
 /* ************************************************************
 INIT
 ************************************************************ */
-var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor', 'ui.bootstrap']);
 NProgress.start();
+var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor', 'ui.bootstrap']);
 
 /* ************************************************************
 ANGULAR MODULES CONFIG
 ************************************************************ */			
 
 // NG Routes Provider
-var edgeObj = {};
-var edgeRoutes = [];
-var edgeRoutesArr = [];
-
-for(bean in beans){	
-	edgeObj = 
-		[
-			{route: '/'			+beans[bean]		,obj: {templateUrl: 'assets/tpl/list.html'	, controller: 'ListController'}		},
-			{route: '/create/'	+beans[bean]		,obj: {templateUrl: 'assets/tpl/create.html', controller: 'CreateController'}	},
-			{route: '/read/'	+beans[bean]+'/:id'	,obj: {templateUrl: 'assets/tpl/read.html'	, controller: 'ReadController'}		},
-			{route: '/update/'	+beans[bean]+'/:id'	,obj: {templateUrl: 'assets/tpl/update.html', controller: 'UpdateController'}	}
-		];
-	edgeRoutes.push(edgeObj);
-}
 
 AdminApp.config([
 	'$routeProvider',
 	function($routeProvider) {
-		$routeProvider.when('/', {templateUrl: 'assets/tpl/dashboard.html', controller:'DashboardController'});
 
-		for (var k in edgeRoutes){
-			edgeRoutesArr = edgeRoutes[k];
-			$routeProvider.when(edgeRoutesArr[0].route, edgeRoutesArr[0].obj);
-			$routeProvider.when(edgeRoutesArr[1].route, edgeRoutesArr[1].obj);
-			$routeProvider.when(edgeRoutesArr[2].route, edgeRoutesArr[2].obj);
-			$routeProvider.when(edgeRoutesArr[3].route, edgeRoutesArr[3].obj);
-		}
+		// DASHBOARD
+		$routeProvider.when(
+			'/', 
+			{
+				templateUrl: 'assets/tpl/dashboard.html', 
+				controller:'DashboardController'
+			}
+		);
 
-		$routeProvider.otherwise({redirectTo: '/'});
+		// CRUD
+		$routeProvider.when( 
+			'/list/:bean', 
+			{
+				templateUrl: 'assets/tpl/list.html', 
+				controller: 'ListController', 
+				redirectTo: function (routeParams, path, search) { 
+					return path+'p/1'; 
+				} 
+			}
+		);
+		
+		$routeProvider.when( 
+			'/list/:bean/p/:page', 
+			{
+				templateUrl: 'assets/tpl/list.html', 
+				controller: 'ListController'
+			}		
+		);
+
+		$routeProvider.when( 
+			'/create/:bean', 
+			{
+				templateUrl: 'assets/tpl/create.html', 
+				controller: 'CreateController'
+			}	
+		);
+
+		$routeProvider.when( 
+			'/read/:bean/:id', 
+			{
+				templateUrl: 'assets/tpl/read.html', 
+				controller: 'ReadController'
+			}		
+		);
+
+		$routeProvider.when(
+			'/update/:bean/:id', 
+			{
+				templateUrl: 'assets/tpl/update.html', 
+				controller: 'UpdateController'
+			}	
+		);
+
+		// OTHERWISE
+		$routeProvider.otherwise(
+			{redirectTo: '/'}
+		);
+
 	}
 ]);
 
@@ -82,10 +115,21 @@ ANGULAR CONTROLLERS
 
 // Main Controller
 AdminApp.controller('MainController', 
-	function ($scope) {
+	function ($scope, $http, $routeParams, $location) {
 
 		$scope.$on('$viewContentLoaded', function(){
 			NProgress.done();
+		});
+
+		var edge = $routeParams.bean;
+
+		$http.get('api/edges').success(function(data) {
+			$scope.edges = data.beans;
+
+			if(data.beans[edge] === undefined){
+				$location.url('/');
+			};
+
 		});
 
 	}
@@ -262,8 +306,12 @@ AdminApp.controller('FormController',
 		if(action == 'read'){
 			$scope.$on('disableForm', function(event, obj) {
 
+				console.dir($scope.editor);
 				// TODO: when using sceditor WYSIWYG, need to fire function to "readOnly = true"
+				//instance.readOnly(1);
+
 				$scope.editor.disable();
+				$scope.editor.plugins.sceditor.readOnly(true);
 			});
 		};
 
