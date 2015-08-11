@@ -48,7 +48,39 @@ AdminApp.config([
 			{
 				templateUrl: 'assets/tpl/read.html', 
 				controller: 'ReadController',
-				controllerAs: 'read'
+				controllerAs: 'read',
+				resolve: {
+
+					validateId: function ($q, $route, $location, existsService) {
+
+						var deferred = $q.defer(),
+						edge = $route.current.params.edge;
+						id = $route.current.params.id;
+
+						// ASYNC GET & BROADCAST BEANS LIST
+						existsService.async(edge, id).then(function(data) {
+							var exists = data;
+
+							if(exists == true){
+								deferred.resolve();
+							}
+							else {
+								deferred.reject('invalid id');
+								$location.url('/');
+							}
+						});
+
+						return deferred.promise;
+					}
+
+//				    user: function($stateParams, UserService) {
+//				      return UserService.find($stateParams.id);
+//				    },
+//				    tasks: function(TaskService, user) {
+//				      return user.canHaveTasks() ?
+//				        TaskService.find(user.id) : [];
+
+				},
 			}		
 		);
 
@@ -133,6 +165,25 @@ AdminApp.factory('edgesService', function($http) {
 	};
 	return edgesService;
 });
+
+AdminApp.factory('existsService', function($http) {
+
+	var promise;	
+	var existsService = {
+		async: function(edge, id) {
+			if ( !promise ) {
+				promise = $http.get('api/exists/'+edge+'/'+id).then(function (response) {
+					return response.data.exists;
+				});
+			}
+	
+			// Return the promise to the controller
+			return promise;
+		}
+	};
+	return existsService;
+});
+
 
 /* ************************************************************
 ANGULAR CONTROLLERS
