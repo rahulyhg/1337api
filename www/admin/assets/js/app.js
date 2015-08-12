@@ -36,9 +36,10 @@ AdminApp.config([
 				controller: 	'ListController',
 				controllerAs: 	'list',
 				resolve: {
-					schema: function(apiService){ return apiService.getSchema(); 	},
-					list: 	function(apiService){ return apiService.getList(); 		},
-					count: 	function(apiService){ return apiService.getCount(); 	},
+					valid: 	function(apiService){ return apiService.validateParams(); 	},					
+					schema: function(apiService){ return apiService.getSchema(); 		},
+					list: 	function(apiService){ return apiService.getList(); 			},
+					count: 	function(apiService){ return apiService.getCount(); 		},
 				}
 			}		
 		);
@@ -50,6 +51,7 @@ AdminApp.config([
 				controller: 	'CreateController',
 				controllerAs: 	'create',
 				resolve: {
+					valid: 	function(apiService){ return apiService.validateParams(); 	},
 					schema: function(apiService){ return apiService.getSchema(); 	},
 				}
 			}	
@@ -62,6 +64,7 @@ AdminApp.config([
 				controller: 	'ReadController',
 				controllerAs: 	'read',
 				resolve: {	
+					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 	},
 					read: 	function(apiService){ return apiService.getRead(); 		},
 				},
@@ -75,6 +78,7 @@ AdminApp.config([
 				controller: 	'UpdateController',
 				controllerAs: 	'update',
 				resolve: {	
+					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 	},
 					read: 	function(apiService){ return apiService.getRead(); 		},
 				},				
@@ -144,6 +148,51 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 			return deferred.promise;
 		},
 
+		validateParams: function() {
+
+			// define variables
+			var deferred = $q.defer();
+			var edge 	= $route.current.params.edge;
+			var page 	= $route.current.params.page;
+			var id 		= $route.current.params.id;
+
+			edges = apiService.getEdges().then(function(edges) {
+
+				// validate if edge exist in beans
+				if (edges[edge]){
+
+					// validate if id param is required
+					if(id !== undefined){
+						
+						idCheck = $http.get('api/exists/'+edge+'/'+id).then(function(response) {
+
+							// validate if ID exist in database					
+							if(response.data.exists === true){
+								deferred.resolve();
+							}
+							else{
+								deferred.reject('ID dos not exist');
+								console.log('ID dos not exist.');
+								$location.url('/');
+							}
+
+						});
+					}
+					else{
+						deferred.resolve();
+					}
+
+				}
+				else{
+					deferred.reject('Edge dos not exist');
+					console.log('Edge dos not exist.');
+					$location.url('/');
+				}
+			});
+
+			return deferred.promise;
+		},
+
 		getEdges: function() {
 			var deferred = $q.defer();
 
@@ -204,25 +253,6 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 
 	return apiService;
 });
-
-/*AdminApp.factory('existsService', function($http) {
-
-	var promise;	
-	var existsService = {
-		async: function(edge, id) {
-			if ( !promise ) {
-				promise = $http.get('api/exists/'+edge+'/'+id).then(function (response) {
-					return response.data.exists;
-				});
-			}
-	
-			// Return the promise to the controller
-			return promise;
-		}
-	};
-	return existsService;
-});
-*/
 
 /* ************************************************************
 ANGULAR CONTROLLERS
