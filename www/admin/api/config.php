@@ -67,6 +67,20 @@
 				'title' 	=> 'Telefone',
 				'format' 	=> 'tel',
 			),
+			'image' => array(
+				'title' 	=> 'Imagem',
+				'type'		=> 'string',
+				'format' 	=> 'url',
+  				'options'	=> array(
+  					'upload' 	=> true,
+  				),
+				'links' 	=> array(
+					array(
+						'href' 	=> '{{self}}',
+					),
+				),
+			),
+
 		),
 	);
 
