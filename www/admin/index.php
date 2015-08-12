@@ -70,22 +70,25 @@
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav">
 				<li ng-class="isActive('dashboard')"><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-				<li ng-class="isActive(edge.name) || isActive(edge.parent.name)" ng-repeat="edge in edges">
+				<li ng-if=" !edge.child && !edge.parent " ng-class="isActive(edge.name)" ng-repeat="edge in edges">
 
 					<!-- if no relationship -->
-					<a ng-if=" !edge.child && !edge.parent " href="#/list/{{edge.name}}">
+					<a href="#/list/{{edge.name}}">
 						<i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}
 					</a>
 					<!-- endif -->
+				</li>
+
+				<li ng-if="edge.parent" ng-repeat="edge in edges">
 
 					<!-- if one-to-many relationship -->
-					<a ng-if="edge.parent" href="javascript:;" data-target="#menu-{{edge.name}}" data-toggle="collapse">
+					<a href="javascript:;" data-target="#menu-{{edge.name}}" data-toggle="collapse">
 						<i class="fa fa-fw fa-arrow-circle-o-right"></i> {{edge.title}} <i class="fa fa-fw fa-caret-down"></i>
 					</a>
-					
-					<ul ng-if="edge.parent" id="menu-{{edge.name}}" class="collapse in">
-						<li><a href="#/list/{{edge.parent.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.parent.title}}</a></li>
-						<li><a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a></li>
+
+					<ul id="menu-{{edge.name}}" class="nav navbar-nav side-nav-sub collapse in">
+						<li ng-class="isActive(edge.parent.name)"><a href="#/list/{{edge.parent.name}}"><i class="fa fa-fw fa-{{edge.parent.icon}}"></i> {{edge.parent.title}}</a></li>
+						<li ng-class="isActive(edge.name)"><a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a></li>
 					</ul>	
 					<!-- end if -->
 					

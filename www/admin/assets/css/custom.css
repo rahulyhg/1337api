@@ -18,3 +18,10 @@ json-editor h3{
 }
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+
+@media(min-width:768px) {
+
+    .side-nav-sub>li>a {
+        width: 225px;
+    }
+}

@@ -172,7 +172,7 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 							}
 							else{
 								deferred.reject('ID dos not exist');
-								console.log('ID dos not exist.');
+								console.log('ID does not exist.');
 								$location.url('/');
 							}
 
