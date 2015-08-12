@@ -488,7 +488,7 @@ function api_edges($config){
 				'name' 	=> $hierarchy[$v],
 				'title' => ucfirst($hierarchy[$v]),
 				'count' => R::count($hierarchy[$v]),
-				'icon' 	=> 'th-list',
+				'icon' 	=> 'th-large',
 			);
 
 			$beans[$hierarchy[$v]]['child'] = array(

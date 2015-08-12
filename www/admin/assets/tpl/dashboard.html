@@ -51,12 +51,15 @@
 		<div ng-if="edge.parent" href="javascript:;" class="panel panel-green">
 			<div class="panel-heading">
 				<div class="row">
-					<div class="col-xs-4">
-						<i class="fa fa-{{edge.icon}} fa-5x"></i>
+					<div class="col-xs-2">
+						<i class="fa fa-{{edge.parent.icon}} fa-5x"></i>
 					</div>
 					<div class="col-xs-4 text-right">
 						<div class="huge">{{edge.parent.count}}</div>
 						<div>{{edge.parent.title}}</div>
+					</div>
+					<div class="col-xs-2">
+						<i class="fa fa-{{edge.icon}} fa-5x"></i>
 					</div>
 					<div class="col-xs-4 text-right">
 						<div class="huge">{{edge.count}}</div>

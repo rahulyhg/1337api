@@ -69,8 +69,8 @@
 		<!-- NAVIGATION - MAIN MENU -->
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav">
-				<li><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-				<li ng-repeat="edge in edges">
+				<li ng-class="isActive('dashboard')"><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
+				<li ng-class="isActive(edge.name) || isActive(edge.parent.name)" ng-repeat="edge in edges">
 
 					<!-- if no relationship -->
 					<a ng-if=" !edge.child && !edge.parent " href="#/list/{{edge.name}}">

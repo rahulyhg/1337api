@@ -279,12 +279,25 @@ AdminApp.controller('DashboardController',
 
 // Menu Controller
 AdminApp.controller('MenuController', 
-	function ($scope, $http, apiService) {
-		
+	function ($scope, $http, $location, apiService) {
+
 		// get service function to be used async
 		apiService.getEdges().then(function(edges) {
 			$scope.edges = edges;
 		});
+
+		$scope.isActive = function(edge) {
+			if ($location.path().split('/')[2] === edge) {
+				return 'active';
+			} 
+			if ($location.path() === '/' && edge === 'dashboard') {
+				return 'active';
+			} 
+			else 
+			{
+				return '';
+			}
+		};
 
 	}
 );
