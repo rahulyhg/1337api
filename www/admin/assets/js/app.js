@@ -20,8 +20,12 @@ AdminApp.config([
 			{
 				templateUrl: 'assets/tpl/dashboard.html', 
 				controller: 'DashboardController',
-				controllerAs: 'dashboard'
-			}
+				controllerAs: 'dashboard',
+				resolve: {
+					hi: 	function(apiService){ return apiService.getHi(); },
+					edges: 	function(apiService){ return apiService.getEdges(); },				
+				}
+			}	
 		);
 
 		// CRUD		
@@ -30,7 +34,12 @@ AdminApp.config([
 			{
 				templateUrl: 'assets/tpl/list.html', 
 				controller: 'ListController',
-				controllerAs: 'list'				
+				controllerAs: 'list',
+				resolve: {
+					schema: function(apiService){ return apiService.getSchema(); },
+					list: 	function(apiService){ return apiService.getList(); },
+					count: 	function(apiService){ return apiService.getCount(); },
+				}
 			}		
 		);
 
@@ -49,40 +58,9 @@ AdminApp.config([
 				templateUrl: 'assets/tpl/read.html', 
 				controller: 'ReadController',
 				controllerAs: 'read',
-				resolve: {
-
-					testResolve: function($http) {
-						return $http.get('api/exists/item/1');
-					},
-
-/*					id: function ($q, $route, $location, existsService) {
-
-						var deferred = $q.defer(),
-						edge = $route.current.params.edge;
-						id = $route.current.params.id;
-
-						// ASYNC GET & BROADCAST BEANS LIST
-						existsService.async(edge, id).then(function(data) {
-							var exists = data;
-							console.log(data);
-
-							if(data == true){
-								deferred.resolve();
-							}
-
-							else{
-								console.log('redirect');
-								deferred.reject('invalid id');
-								$location.url('/');
-							}
-
-						});
-
-						return deferred.promise;
-					}*/
-
+				resolve: {	
 				},
-			}		
+			}
 		);
 
 		$routeProvider.when(
@@ -114,22 +92,22 @@ AdminApp.config([
 AdminApp.config(
 	function(JSONEditorProvider) {
 		JSONEditorProvider.configure({
-            plugins: {
-                sceditor: {
-			        plugins: 			'',
-                    style: 				'assets/js/sceditor/jquery.sceditor.default.min.css',
+			plugins: {
+				sceditor: {
+					plugins: 			'',
+					style: 				'assets/js/sceditor/jquery.sceditor.default.min.css',
 					toolbar: 			'bold,italic,underline|strike,subscript,superscript|link,unlink|removeformat|bulletlist,orderedlist|source',
 					locale: 			'pt-BR',
 					emoticonsEnabled: 	false,
 					width: 				'98%',
 					resizeEnabled: 		false,
 				}
-            },
+			},
 			defaults: {
 				options: {
 					iconlib: 			'fontawesome4',
 					theme: 				'bootstrap3',
-                    ajax: 				true,
+					ajax: 				true,
 					disable_collapse: 	true,
 					disable_edit_json: 	true,
 					disable_properties: true,
@@ -143,31 +121,73 @@ AdminApp.config(
 ANGULAR SERVICES
 ************************************************************ */		
 
-AdminApp.factory('edgesService', function($http) {
+AdminApp.factory("apiService", function($q, $http, $route){
 
-	var promise;	
-	var edgesService = {
-		async: function() {
-			if ( !promise ) {
-				// $http returns a promise, which has a then function, which also returns a promise
-				promise = $http.get('api/edges').then(function (response) {
-	
-					// The then function here is an opportunity to modify the response
-					// console.log(response);
-				
-					// The return value gets picked up by the then in the controller.
+	var hi;
+	var edges;
+	var schema;
+	var list;
+
+	var apiService = {
+
+		getHi: function() {
+			if ( !hi ) {
+				hi = $http.get('api/hi').then(function(response) {
 					return response.data;
 				});
 			}
-	
-			// Return the promise to the controller
-			return promise;
-		}
+			return hi;
+		},
+
+		getEdges: function() {
+			if (!edges) {
+				edges = $http.get('api/edges').then(function(response) {
+					return response.data.beans;
+				});
+			}
+			return edges;
+		},
+
+		getSchema: function() {
+			var deferred = $q.defer();
+			var edge = $route.current.params.edge;
+
+			schema = $http.get('api/schema/'+edge).then(function(response) {
+				deferred.resolve(response.data);
+			});
+			
+			return deferred.promise;
+		},
+
+		getList: function() {
+			var deferred = $q.defer();
+			var edge = $route.current.params.edge;
+			var page = $route.current.params.page;
+
+			list = $http.get('api/list/'+edge+'/'+page).then(function(response) {
+				deferred.resolve(response.data);
+			});
+			
+			return deferred.promise;
+		},
+
+		getCount: function() {
+			var deferred = $q.defer();
+			var edge = $route.current.params.edge;
+
+			count = $http.get('api/count/'+edge).then(function(response) {
+				deferred.resolve(response.data);
+			});
+			
+			return deferred.promise;
+		},
+
 	};
-	return edgesService;
+
+	return apiService;
 });
 
-AdminApp.factory('existsService', function($http) {
+/*AdminApp.factory('existsService', function($http) {
 
 	var promise;	
 	var existsService = {
@@ -184,7 +204,7 @@ AdminApp.factory('existsService', function($http) {
 	};
 	return existsService;
 });
-
+*/
 
 /* ************************************************************
 ANGULAR CONTROLLERS
@@ -192,13 +212,7 @@ ANGULAR CONTROLLERS
 
 // Main Controller
 AdminApp.controller('MainController', 
-	function ($scope, $routeParams, $location, edgesService) {
-
-		// ASYNC GET & BROADCAST BEANS LIST
-		edgesService.async().then(function(data) {
-			var edges = data.beans;
-			$scope.$broadcast('edges', {edges});
-		});
+	function ($scope, $routeParams, $location) {
 	
 		$scope.$on('$viewContentLoaded', function(){
 			NProgress.done();
@@ -218,29 +232,19 @@ AdminApp.controller('MainController',
 
 // Dashboard Controller
 AdminApp.controller('DashboardController', 
-	function ($scope, $http) {
-		NProgress.start();
-
-		$http.get('api/hi').success(function(data){
-			$scope.hi  = data;
-		});
-
-		// TODO: Quando saio dessa tela e volto, o $scope do broadcast "sumiu".
-
-		$scope.$on('edges', function(event, data) {
-			$scope.edges = data.edges;
-		});
-
+	function ($scope, hi, edges) {
+		$scope.hi = hi;
+		$scope.edges = edges;
 	}
 );
 
 // Menu Controller
 AdminApp.controller('MenuController', 
-	function ($scope, $http) {
-		NProgress.start();
-
-		$scope.$on('edges', function(event, data) {
-			$scope.edges = data.edges;
+	function ($scope, $http, apiService) {
+		
+		// ASYNC GET SERVICE
+		apiService.getEdges().then(function(edges) {
+			$scope.edges = edges;
 		});
 
 	}
@@ -248,31 +252,23 @@ AdminApp.controller('MenuController',
 
 // List Controller
 AdminApp.controller('ListController', 
-	function ($scope, $http, $location, $routeParams) {
+	function ($scope, $location, $routeParams, schema, list, count) {
 		NProgress.start();
 
 		var edge = $routeParams.edge;
 		var page = $routeParams.page;
 
-		$http.get('api/schema/'+edge).success(function(data) {
-			$scope.schema = data;
-		});
-
-		$http.get('api/list/'+edge+'/'+page).success(function(data) {
-			$scope.items = data;
-		});			
-
-		$http.get('api/count/'+edge).success(function(data) {
-			$scope.totalItems = data.sum;
-			$scope.setPage(page);
-		});
-
+		$scope.schema 		= schema;
+		$scope.items 		= list;
+		$scope.totalItems 	= count.sum;
 		$scope.itemsPerPage = 5;
-		$scope.maxSize = 10;
+		$scope.maxSize 		= 10;
 
 		$scope.setPage = function (page) {
 			$scope.currentPage = page;
 		};
+
+		$scope.setPage(page);
 
 		$scope.pageChanged = function() {
 			$location.url('/list/'+edge+'/p/'+$scope.currentPage);
