@@ -18,12 +18,12 @@ AdminApp.config([
 		$routeProvider.when(
 			'/', 
 			{
-				templateUrl: 'assets/tpl/dashboard.html', 
-				controller: 'DashboardController',
-				controllerAs: 'dashboard',
+				templateUrl: 	'assets/tpl/dashboard.html', 
+				controller: 	'DashboardController',
+				controllerAs: 	'dashboard',
 				resolve: {
-					hi: 	function(apiService){ return apiService.getHi(); },
-					edges: 	function(apiService){ return apiService.getEdges(); },				
+					hi: 	function(apiService){ return apiService.getHi(); 		},
+					edges: 	function(apiService){ return apiService.getEdges(); 	},				
 				}
 			}	
 		);
@@ -32,13 +32,13 @@ AdminApp.config([
 		$routeProvider.when( 
 			'/list/:edge/p/:page', 
 			{
-				templateUrl: 'assets/tpl/list.html', 
-				controller: 'ListController',
-				controllerAs: 'list',
+				templateUrl: 	'assets/tpl/list.html', 
+				controller: 	'ListController',
+				controllerAs: 	'list',
 				resolve: {
-					schema: function(apiService){ return apiService.getSchema(); },
-					list: 	function(apiService){ return apiService.getList(); },
-					count: 	function(apiService){ return apiService.getCount(); },
+					schema: function(apiService){ return apiService.getSchema(); 	},
+					list: 	function(apiService){ return apiService.getList(); 		},
+					count: 	function(apiService){ return apiService.getCount(); 	},
 				}
 			}		
 		);
@@ -46,19 +46,24 @@ AdminApp.config([
 		$routeProvider.when( 
 			'/create/:edge', 
 			{
-				templateUrl: 'assets/tpl/create.html', 
-				controller: 'CreateController',
-				controllerAs: 'create'				
+				templateUrl: 	'assets/tpl/create.html', 
+				controller: 	'CreateController',
+				controllerAs: 	'create',
+				resolve: {
+					schema: function(apiService){ return apiService.getSchema(); 	},
+				}
 			}	
 		);
 
 		$routeProvider.when( 
 			'/read/:edge/:id', 
 			{
-				templateUrl: 'assets/tpl/read.html', 
-				controller: 'ReadController',
-				controllerAs: 'read',
+				templateUrl: 	'assets/tpl/read.html', 
+				controller: 	'ReadController',
+				controllerAs: 	'read',
 				resolve: {	
+					schema: function(apiService){ return apiService.getSchema(); 	},
+					read: 	function(apiService){ return apiService.getRead(); 		},
 				},
 			}
 		);
@@ -66,9 +71,13 @@ AdminApp.config([
 		$routeProvider.when(
 			'/update/:edge/:id', 
 			{
-				templateUrl: 'assets/tpl/update.html', 
-				controller: 'UpdateController',
-				controllerAs: 'update'
+				templateUrl: 	'assets/tpl/update.html', 
+				controller: 	'UpdateController',
+				controllerAs: 	'update',
+				resolve: {	
+					schema: function(apiService){ return apiService.getSchema(); 	},
+					read: 	function(apiService){ return apiService.getRead(); 		},
+				},				
 			}	
 		);
 
@@ -121,31 +130,28 @@ AdminApp.config(
 ANGULAR SERVICES
 ************************************************************ */		
 
-AdminApp.factory("apiService", function($q, $http, $route){
-
-	var hi;
-	var edges;
-	var schema;
-	var list;
+AdminApp.factory("apiService", function($q, $http, $location, $route){
 
 	var apiService = {
 
 		getHi: function() {
-			if ( !hi ) {
-				hi = $http.get('api/hi').then(function(response) {
-					return response.data;
-				});
-			}
-			return hi;
+			var deferred = $q.defer();
+			
+			hi = $http.get('api/hi').then(function(response) {
+				deferred.resolve(response.data);
+			});
+
+			return deferred.promise;
 		},
 
 		getEdges: function() {
-			if (!edges) {
-				edges = $http.get('api/edges').then(function(response) {
-					return response.data.beans;
-				});
-			}
-			return edges;
+			var deferred = $q.defer();
+
+			edges = $http.get('api/edges').then(function(response) {
+				deferred.resolve(response.data.beans);
+			});
+			
+			return deferred.promise;
 		},
 
 		getSchema: function() {
@@ -182,6 +188,18 @@ AdminApp.factory("apiService", function($q, $http, $route){
 			return deferred.promise;
 		},
 
+		getRead: function() {
+			var deferred = $q.defer();
+			var edge 	= $route.current.params.edge;
+			var id 		= $route.current.params.id;
+
+			read = $http.get('api/read/'+edge+'/'+id).then(function(response) {
+				deferred.resolve(response.data);
+			});
+			
+			return deferred.promise;
+		},
+
 	};
 
 	return apiService;
@@ -212,20 +230,11 @@ ANGULAR CONTROLLERS
 
 // Main Controller
 AdminApp.controller('MainController', 
-	function ($scope, $routeParams, $location) {
+	function ($scope) {
 	
 		$scope.$on('$viewContentLoaded', function(){
 			NProgress.done();
 		});
-
-//		$http.get('api/edges').success(function(data) {
-//			$scope.edges = data.beans;
-//
-//			if(data.beans[edge] === undefined){
-//				$location.url('/');
-//			};
-//
-//		});
 
 	}
 );
@@ -242,7 +251,7 @@ AdminApp.controller('DashboardController',
 AdminApp.controller('MenuController', 
 	function ($scope, $http, apiService) {
 		
-		// ASYNC GET SERVICE
+		// get service function to be used async
 		apiService.getEdges().then(function(edges) {
 			$scope.edges = edges;
 		});
@@ -287,12 +296,10 @@ AdminApp.controller('ListController',
 
 // Create Controller
 AdminApp.controller('CreateController', 
-	function ($scope, $http, $location, $routeParams) {
+	function ($scope, schema) {
 		NProgress.start();
 
-		var edge = $routeParams.edge;
-
-		$scope.schema = $http.get('api/schema/'+edge);
+		$scope.schema = schema;
 		$scope.schemaData = {};
 
 		$scope.onChange = function(data) {
@@ -305,21 +312,12 @@ AdminApp.controller('CreateController',
 
 // Read Controller
 AdminApp.controller('ReadController', 
-	function ($scope, $http, $location, $routeParams, testResolve) {
+	function ($scope, schema, read) {
 		NProgress.start();
 
-		console.dir(testResolve);
-
-
-		var edge = $routeParams.edge;
-		var id = $routeParams.id;
-
-		$http.get('api/read/'+edge+'/'+id).success(function(data) {
-			$scope.item = data;
-		});
-
-		$scope.schema = $http.get('api/schema/'+edge);
-		$scope.schemaData = $http.get('api/read/'+edge+'/'+id);
+		$scope.item = read;
+		$scope.schema = schema;
+		$scope.schemaData = read;
 
 		$scope.onLoad = function() {
 			$scope.$broadcast('disableForm', {});
@@ -330,18 +328,13 @@ AdminApp.controller('ReadController',
 
 // Update Controller
 AdminApp.controller('UpdateController', 
-	function ($scope, $http, $location, $routeParams) {
+	function ($scope, schema, read) {
 		NProgress.start();
 
-		var edge 	= $routeParams.edge;
-		var id 		= $routeParams.id;
+		$scope.item = read;
 
-		$http.get('api/read/'+edge+'/'+id).success(function(data) {
-			$scope.item = data;
-		});
-
-		$scope.schema = $http.get('api/schema/'+edge);
-		$scope.schemaData = $http.get('api/read/'+edge+'/'+id);
+		$scope.schema = schema;
+		$scope.schemaData = read;
 
 		$scope.onChange = function(data) {
 			console.log('onChange: ');
@@ -359,10 +352,10 @@ AdminApp.controller('FormController',
 		var edge 	= $routeParams.edge;
 		var id 		= $routeParams.id;
 
-		$http.get('api/schema/'+edge).success(function(data) {
-			data.itemId = id;			
-			$scope.schema = data;
-		});
+		$scope.schema = $scope.$parent.schema;
+		$scope.itemId = id;
+
+
 
 		if($scope.$parent.read !== undefined){
 			$scope.$on('disableForm', function(event, obj) {
