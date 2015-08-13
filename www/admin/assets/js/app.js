@@ -124,23 +124,42 @@ AdminApp.config(
 					disable_collapse: 	true,
 					disable_edit_json: 	true,
 					disable_properties: true,
-					upload: 			function($http, type, file, cbs) 
+					upload: 			function(type, file, cbs) 
 						{
-							var reader  = new FileReader();
-							
+
 							if (file) {
+								var reader = new FileReader();
+
+								reader.onloadend = function(evt){
+									var b = evt.target.result;
+
+									var uploadData = '{"filename":"'+file.name+'", "filesize":"'+file.size+'", "blob":"'+b+'"}';
+
+									$.ajax({
+										type: 'POST',
+										url: 'api/upload/page',
+										contentType: "application/json; charset=utf-8",
+										dataType: "json",
+										data: uploadData,
+									
+										success: function( data, textStatus, jQxhr ){
+											$('#response pre').html( data );
+										},
+										error: function( jqXhr, textStatus, errorThrown ){
+											console.log( errorThrown );
+										}
+									});
+
+								};
+
 								reader.readAsDataURL(file);
 
-								reader.onload = function (err) {
-									console.log(err);
-								}
 
 
-									var b = reader.result;
 
-								$http.post('api/upload/'+edge, b).success(function(){
-									console.log(b);
-								});
+//								$http.post('api/upload/'+edge, b).success(function(){
+//									console.log(b);
+//								});
 
 							};
 

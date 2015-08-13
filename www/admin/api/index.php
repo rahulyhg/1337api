@@ -519,15 +519,14 @@ function api_edges($config){
 
 function api_upload($request){
 
-	echo 'gotcha';
 
-//$data = 'data:image/png;base64,AAAFBfj42Pj4';
+$data = $request['content']['blob'];
 
-//list($type, $data) = explode(';', $data);
-//list(, $data)      = explode(',', $data);
-//$data = base64_decode($data);
+list($type, $data) = explode(';', $data);
+list(, $data)      = explode(',', $data);
+$data = base64_decode($data);
 
-//file_put_contents('/tmp/image.png', $data);
+file_put_contents('../uploads/'. $request['content']['filename'], $data);
 
 };
 
