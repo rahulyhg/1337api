@@ -136,6 +136,24 @@ AdminApp.config(
 									var uploadData = '{"filename":"'+file.name+'", "filesize":"'+file.size+'", "blob":"'+b+'"}';
 
 									$.ajax({
+
+										xhr: function(){
+											var xhr = new window.XMLHttpRequest();
+											
+											//Upload progress
+											xhr.upload.addEventListener("progress", function(evt){
+												
+												if (evt.lengthComputable) {
+													
+													var percentComplete = evt.loaded / evt.total;
+													//Do something with upload progress
+													console.log(percentComplete);
+												}
+
+											}, false);
+
+											return xhr;
+										},
 										type: 'POST',
 										url: 'api/upload/page',
 										contentType: "application/json; charset=utf-8",
@@ -143,19 +161,17 @@ AdminApp.config(
 										data: uploadData,
 									
 										success: function( data, textStatus, jQxhr ){
-											$('#response pre').html( data );
+//											$('#response pre').html( data );
 										},
 										error: function( jqXhr, textStatus, errorThrown ){
-											console.log( errorThrown );
+//											console.log( errorThrown );
 										}
+
 									});
 
 								};
 
 								reader.readAsDataURL(file);
-
-
-
 
 //								$http.post('api/upload/'+edge, b).success(function(){
 //									console.log(b);
@@ -165,27 +181,27 @@ AdminApp.config(
 
 
 
-							if (type === 'root.upload_fail') cbs.failure('Upload failed');
-							else {
-								var tick = 0;
+//							if (type === 'root.upload_fail') cbs.failure('Upload failed');
+//							else {
+//								var tick = 0;
 
-								var tickFunction = function() {
-									tick += 1;
+//								var tickFunction = function() {
+//									tick += 1;
 //									console.log('progress: ' + tick);
 
-								if (tick < 100) {
-									cbs.updateProgress(tick);
-									window.setTimeout(tickFunction, 50)
-								} else if (tick == 100) {
-									cbs.updateProgress();
-									window.setTimeout(tickFunction, 500)
-								} else {
-									cbs.success('http://www.example.com/images/' + file.name);
-								}
-							};
+//								if (tick < 100) {
+//									cbs.updateProgress(tick);
+//									window.setTimeout(tickFunction, 50)
+//								} else if (tick == 100) {
+//									cbs.updateProgress();
+//									window.setTimeout(tickFunction, 500)
+//								} else {
+//									cbs.success('http://www.example.com/images/' + file.name);
+//								}
+//							};
 
-							  window.setTimeout(tickFunction)
-							}
+//							  window.setTimeout(tickFunction)
+//							}
 
 						},
 				}
