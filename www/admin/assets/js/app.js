@@ -124,26 +124,46 @@ AdminApp.config(
 					disable_collapse: 	true,
 					disable_edit_json: 	true,
 					disable_properties: true,
-					upload: 			function(type, file, cbs) 
+					upload: 			function($http, type, file, cbs) 
 						{
+							var reader  = new FileReader();
+							
+							if (file) {
+								reader.readAsDataURL(file);
+
+								reader.onload = function (err) {
+									console.log(err);
+								}
+
+
+									var b = reader.result;
+
+								$http.post('api/upload/'+edge, b).success(function(){
+									console.log(b);
+								});
+
+							};
+
+
+
 							if (type === 'root.upload_fail') cbs.failure('Upload failed');
 							else {
-							  var tick = 0;
+								var tick = 0;
 
-							  var tickFunction = function() {
-								tick += 1;
-								console.log('progress: ' + tick);
+								var tickFunction = function() {
+									tick += 1;
+//									console.log('progress: ' + tick);
 
 								if (tick < 100) {
-								  cbs.updateProgress(tick);
-								  window.setTimeout(tickFunction, 50)
+									cbs.updateProgress(tick);
+									window.setTimeout(tickFunction, 50)
 								} else if (tick == 100) {
-								  cbs.updateProgress();
-								  window.setTimeout(tickFunction, 500)
+									cbs.updateProgress();
+									window.setTimeout(tickFunction, 500)
 								} else {
-								  cbs.success('http://www.example.com/images/' + file.name);
+									cbs.success('http://www.example.com/images/' + file.name);
 								}
-							  };
+							};
 
 							  window.setTimeout(tickFunction)
 							}

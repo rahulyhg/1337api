@@ -135,6 +135,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			}
 		break;
 
+		case 'upload':
+			if (in_array($request['edge'], $config['api']['beans'])){
+				api_upload($request);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;
+
 		default:
 				api_forbidden($config);
 		break;
@@ -506,6 +515,20 @@ function api_edges($config){
 	$result['actions'] 	= $config['api']['actions'];
 
 	api_output($result);
+};
+
+function api_upload($request){
+
+	echo 'gotcha';
+
+//$data = 'data:image/png;base64,AAAFBfj42Pj4';
+
+//list($type, $data) = explode(';', $data);
+//list(, $data)      = explode(',', $data);
+//$data = base64_decode($data);
+
+//file_put_contents('/tmp/image.png', $data);
+
 };
 
 function api_output($result){

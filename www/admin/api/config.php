@@ -12,7 +12,7 @@
 		'debug' 	=> FALSE,
 		'actions' 	=> array(
 			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists'),
-			'post' 	=> array('create'),
+			'post' 	=> array('create', 'upload'),
 			'put' 	=> array('update'),
 			'del' 	=> array('destroy'),
 		),
@@ -72,7 +72,7 @@
 				'type'		=> 'string',
 				'format' 	=> 'url',
   				'options'	=> array(
-  					'upload' 	=> true,
+  					'upload' 			=> true,
   				),
 				'links' 	=> array(
 					array(
