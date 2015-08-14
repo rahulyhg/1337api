@@ -16,6 +16,9 @@
 			'put' 	=> array('update'),
 			'del' 	=> array('destroy'),
 		),
+		'edges'		=> array(
+			'blacklist' 	=> array('uploads','page_uploads'),
+			),
 		'params' => array(
 			'pagination' => 5,
 		),
@@ -67,7 +70,7 @@
 				'title' 	=> 'Telefone',
 				'format' 	=> 'tel',
 			),
-			'image' => array(
+			'image_rel' => array(
 				'title' 	=> 'Imagem',
 				'type'		=> 'string',
 				'format' 	=> 'url',

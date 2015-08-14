@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		case 'create':
 			if (in_array($request['edge'], $config['api']['beans'])){
-				api_create($request);
+				api_create($request, $config);
 			}
 			else{
 				api_forbidden($config);
@@ -220,11 +220,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 ** RETURN FUNCTIONS **********************************************************************************
 *************************************************************************************************** */ 
 
-function api_create($request){
+function api_create($request, $config){
 	$item = R::dispense( $request['edge'] );
 
 	foreach ($request['content'] as $k => $v) {
-		$item[$k] = $v;
+
+		// IF rel uploads many-to-many relationship
+		if(substr($k, -4) == '_rel' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+			$upload = R::dispense( 'uploads' );
+			$upload->id = $v;
+			$item->sharedUploadList[] = $upload;
+			$item[$k] = TRUE;			
+		}
+		else{
+			$item[$k] = $v;			
+		}		
+
 	};
 		$item['created'] = R::isoDateTime();
 		$item['modified'] = R::isoDateTime();
@@ -484,30 +495,35 @@ function api_edges($config){
 	
 	foreach ($config['api']['beans'] as $k => $v) {
 
-		$beans[$v] = array(
-			'name' 	=> $v,
-			'title' => ucfirst($v),
-			'count' => R::count($v),
-			'icon' 	=> 'th-list',
-		);
+		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
 
-		if(array_key_exists($v, $hierarchy)){
-
-			$beans[$v]['parent'] = array(
-				'name' 	=> $hierarchy[$v],
-				'title' => ucfirst($hierarchy[$v]),
-				'count' => R::count($hierarchy[$v]),
-				'icon' 	=> 'th-large',
-			);
-
-			$beans[$hierarchy[$v]]['child'] = array(
+			$beans[$v] = array(
 				'name' 	=> $v,
 				'title' => ucfirst($v),
 				'count' => R::count($v),
 				'icon' 	=> 'th-list',
 			);
 
+			if(array_key_exists($v, $hierarchy)){
+
+				$beans[$v]['parent'] = array(
+					'name' 	=> $hierarchy[$v],
+					'title' => ucfirst($hierarchy[$v]),
+					'count' => R::count($hierarchy[$v]),
+					'icon' 	=> 'th-large',
+				);
+
+				$beans[$hierarchy[$v]]['child'] = array(
+					'name' 	=> $v,
+					'title' => ucfirst($v),
+					'count' => R::count($v),
+					'icon' 	=> 'th-list',
+				);
+
+			}
+
 		}
+
 
 	};
 
@@ -519,14 +535,50 @@ function api_edges($config){
 
 function api_upload($request){
 
+	$data = $request['content']['blob'];
 
-$data = $request['content']['blob'];
+	list($type, $data) = explode(';', $data);
+	list(, $data)      = explode(',', $data);
 
-list($type, $data) = explode(';', $data);
-list(, $data)      = explode(',', $data);
-$data = base64_decode($data);
+	$data = base64_decode($data);
+	$type = explode(':', $type)[1];
+	$extension = end(explode('.', $request['content']['filename']));
+	$filename = md5($request['content']['filename']) . '.' . $extension;
+	$date = explode('-', R::isoDate());
 
-file_put_contents('../uploads/'. $request['content']['filename'], $data);
+	$uploads_folder = '../uploads/';
+	$path = $date[0] . '/' . $date[1] . '/' . $date[2] . '/';
+	$fullpath = $uploads_folder . $path;
+
+	// helper method
+	function make_dir( $fullpath, $permissions = 0777 ) {
+	    return is_dir( $fullpath ) || mkdir( $fullpath, $permissions, true );
+	};
+
+	// for use inline
+	if ( ! file_exists( $fullpath ) ) {
+	    mkdir( $fullpath, 0777, true );
+	};
+
+	file_put_contents($fullpath . $filename, $data);
+
+	$upload = R::dispense('uploads');
+	
+		$upload['edge'] 		= $request['edge'];
+		$upload['path'] 		= $path . $filename;
+		$upload['filename'] 	= $filename;
+		$upload['size'] 		= $request['content']['filesize'];
+		$upload['type'] 		= $type;
+		$upload['created'] 	= R::isoDateTime();
+		$upload['modified'] 	= R::isoDateTime();
+
+	$id = R::store($upload);
+
+	$result['id'] = $id;
+	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
+
+	// OUTPUT
+	api_output($result);
 
 };
 
