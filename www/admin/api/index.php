@@ -170,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 
 		case 'update':
 			if (in_array($request['edge'], $config['api']['beans'])){
-				api_update($request);
+				api_update($request, $config);
 			}
 			else{
 				api_forbidden($config);
@@ -291,12 +291,21 @@ function api_exists($request, $config){
 	api_output($result);
 };
 
-function api_update($request){
+function api_update($request, $config){
 
 	$item = R::load( $request['edge'], $request['param'] );
 
 	foreach ($request['content'] as $k => $v) {
-		$item[$k] = $v;
+		// IF rel uploads many-to-many relationship
+		if(substr($k, -4) == '_rel' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+			$upload = R::dispense( 'uploads' );
+			$upload->id = $v;
+			$item->sharedUploadList[] = $upload;
+			$item[$k] = TRUE;			
+		}
+		else{
+			$item[$k] = $v;			
+		}		
 	};
 		$item['modified'] = R::isoDateTime();
 
@@ -551,7 +560,7 @@ function api_upload($request){
 
 	// build insert array
 	$file = array(
-		'path' 		=> $chronoPath . $filename,
+		'path' 		=> $chronoPath . $md5Filename,
 		'filename' 	=> $md5Filename,
 		'type' 		=> $type,
 		'size' 		=> $request['content']['filesize'],
