@@ -22,10 +22,11 @@
 
 <!-- DASHBOARD ROW -->	
 <div class="row">
-	<div ng-repeat="edge in edges" ng-if="!edge.child" class="col-lg-4 col-md-6">
 
-		<!-- if no relationship -->
-		<div ng-if=" !edge.child && !edge.parent " class="panel panel-primary">
+	<!-- if no relationship -->
+	<div ng-repeat="edge in edges" ng-if="!edge.child && !edge.parent" class="col-lg-3 col-md-6">
+
+		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<div class="row">
 					<div class="col-xs-3">
@@ -45,10 +46,13 @@
 				</div>
 			</a>
 		</div>
-		<!-- endif -->
+	</div>
+	<!-- endif -->
 
-		<!-- if one-to-many relationship -->
-		<div ng-if="edge.parent" href="javascript:;" class="panel panel-green">
+	<!-- if one-to-many relationship -->
+	<div ng-repeat="edge in edges" ng-if="edge.parent" class="col-lg-6 col-md-12">
+
+		<div href="javascript:;" class="panel panel-green">
 			<div class="panel-heading">
 				<div class="row">
 					<div class="col-xs-2">
@@ -75,9 +79,9 @@
 				</div>
 			</a>
 		</div>
-		<!-- end if -->
-
 	</div>
+	<!-- end if -->
+
 </div>
 <!-- END ROW -->
 

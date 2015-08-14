@@ -126,17 +126,14 @@ AdminApp.config(
 					disable_properties: true,
 					upload: 			function(type, file, cbs) 
 						{
-
 							if (file) {
 								var reader = new FileReader();
 
 								reader.onloadend = function(evt){
 									var b = evt.target.result;
-
 									var uploadData = '{"filename":"'+file.name+'", "filesize":"'+file.size+'", "blob":"'+b+'"}';
 
 									$.ajax({
-
 										xhr: function () {
 											var xhr = new window.XMLHttpRequest();
 											xhr.upload.addEventListener("progress", function (evt) {
@@ -163,7 +160,7 @@ AdminApp.config(
 											cbs.success(''+data.id+'');
 										},
 										error: function( jqXhr, textStatus, errorThrown ){
-//											console.log( errorThrown );
+											console.log( errorThrown );
 										}
 
 									});
@@ -490,7 +487,7 @@ AdminApp.controller('FormController',
 
 			$http.post('api/create/'+edge, item).success(function(){
 				$scope.reset();
-				$scope.activePath = $location.path('/'+edge);
+				$scope.activePath = $location.path('/list/'+edge);
 			});
 
 			$scope.reset = function() {
@@ -504,7 +501,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 
 			$http.put('api/update/'+edge+'/'+id, item).success(function() {
-				$scope.activePath = $location.path('/'+edge);
+				$scope.activePath = $location.path('/list/'+edge);
 			});
 		};
 
@@ -513,7 +510,7 @@ AdminApp.controller('FormController',
 
 			if (destroyItem) {
 				$http.delete('api/destroy/'+edge+'/'+id);
-				$scope.activePath = $location.path('/'+edge);
+				$scope.activePath = $location.path('/list/'+edge);
 			}
 		}
 

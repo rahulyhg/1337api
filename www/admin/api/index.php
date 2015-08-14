@@ -235,10 +235,10 @@ function api_create($request, $config){
 		else{
 			$item[$k] = $v;			
 		}		
-
 	};
-		$item['created'] = R::isoDateTime();
-		$item['modified'] = R::isoDateTime();
+
+	$item['created'] 	= R::isoDateTime();
+	$item['modified'] 	= R::isoDateTime();
 
 	$id = R::store($item);
 	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
@@ -535,45 +535,46 @@ function api_edges($config){
 
 function api_upload($request){
 
+	// var definition
 	$data = $request['content']['blob'];
 
-	list($type, $data) = explode(';', $data);
-	list(, $data)      = explode(',', $data);
-
+	list($type, $data) 	= explode(';', $data);
+	list(, $data)      	= explode(',', $data);
 	$data = base64_decode($data);
 	$type = explode(':', $type)[1];
-	$extension = end(explode('.', $request['content']['filename']));
-	$filename = md5($request['content']['filename']) . '.' . $extension;
-	$date = explode('-', R::isoDate());
 
-	$uploads_folder = '../uploads/';
-	$path = $date[0] . '/' . $date[1] . '/' . $date[2] . '/';
-	$fullpath = $uploads_folder . $path;
+	$basePath 		= '../uploads/';
+	$chronoPath 	= str_replace('-', '/', R::isoDate()) . '/';
+	$fullPath 		= $basePath . $chronoPath;
+	$filename 			= $request['content']['filename'];
+	$md5Filename 		= md5($filename) . '.' . end(explode('.', $filename));
 
-	// helper method
-	function make_dir( $fullpath, $permissions = 0777 ) {
-	    return is_dir( $fullpath ) || mkdir( $fullpath, $permissions, true );
+	// build insert array
+	$file = array(
+		'path' 		=> $chronoPath . $filename,
+		'filename' 	=> $md5Filename,
+		'type' 		=> $type,
+		'size' 		=> $request['content']['filesize'],
+		'edge' 		=> $request['edge'],
+		'created' 	=> R::isoDateTime(),
+		'modified' 	=> R::isoDateTime(),
+	);
+
+	// write file
+	if (!file_exists($fullPath)) {
+		mkdir( $fullPath, 0777, true );
 	};
 
-	// for use inline
-	if ( ! file_exists( $fullpath ) ) {
-	    mkdir( $fullpath, 0777, true );
-	};
+	file_put_contents($fullPath . $filename, $data);
 
-	file_put_contents($fullpath . $filename, $data);
-
+	// insert at database
 	$upload = R::dispense('uploads');
 	
-		$upload['edge'] 		= $request['edge'];
-		$upload['path'] 		= $path . $filename;
-		$upload['filename'] 	= $filename;
-		$upload['size'] 		= $request['content']['filesize'];
-		$upload['type'] 		= $type;
-		$upload['created'] 	= R::isoDateTime();
-		$upload['modified'] 	= R::isoDateTime();
+	foreach ($file as $k => $v) {
+		$upload[$k] = $v;
+	};
 
 	$id = R::store($upload);
-
 	$result['id'] = $id;
 	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
 

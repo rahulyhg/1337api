@@ -74,8 +74,9 @@
 				'title' 	=> 'Imagem',
 				'type'		=> 'string',
 				'format' 	=> 'url',
+				'maxLength' => 128,
   				'options'	=> array(
-  					'upload' 			=> true,
+  					'upload' 	=> true,
   				),
 				'links' 	=> array(
 					array(
