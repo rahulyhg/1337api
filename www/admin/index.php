@@ -110,18 +110,22 @@
 </div>
 
 <!-- JAVASCRIPT -->
-<script type="text/javascript" src="assets/js/jquery.min.js"></script>
-<script type="text/javascript" src="assets/js/nprogress.js"></script>
-<script type="text/javascript" src="assets/js/jsoneditor.min.js"></script>
-<script type="text/javascript" src="assets/js/angular.min.js"></script>
-<script type="text/javascript" src="assets/js/angular-route.min.js"></script>
-<script type="text/javascript" src="assets/js/angular-json-editor.min.js"></script>
-<script type="text/javascript" src="assets/js/angular-ui-bootstrap/ui-bootstrap.min.js"></script>
-<script type="text/javascript" src="assets/js/angular-ui-bootstrap/ui-bootstrap-tpls.min.js"></script>
-<script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.min.js"></script>
-<script type="text/javascript" src="assets/js/sceditor/jquery.sceditor.pt-BR.js"></script>
-<script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="assets/js/app.js"></script>
+<script type="text/javascript" src="assets/js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/jsoneditor.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/nprogress.min.js"></script>
+
+<script type="text/javascript" src="assets/js/libs/angular.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/angular-route.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/angular-json-editor.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/angular-ui-bootstrap/ui-bootstrap.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/angular-ui-bootstrap/ui-bootstrap-tpls.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/sceditor/jquery.sceditor.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/sceditor/jquery.sceditor.pt-BR.js"></script>
+
+<script type="text/javascript" src="assets/js/app.init.js"></script>
+<script type="text/javascript" src="assets/js/app.services.js"></script>
+<script type="text/javascript" src="assets/js/app.controllers.js"></script>
 <!-- END JAVASCRIPT -->
 
 </body>
