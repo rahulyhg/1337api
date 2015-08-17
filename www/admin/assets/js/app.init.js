@@ -106,7 +106,7 @@ AdminApp.config( function(JSONEditorProvider) {
 		plugins: {
 			sceditor: {
 				plugins: 			'',
-				style: 				'',
+				style: 				'assets/css/libs/jquery.sceditor.default.min.css',
 				toolbar: 			'bold,italic,underline|strike,subscript,superscript|link,unlink|removeformat|bulletlist,orderedlist|source',
 				locale: 			'pt-BR',
 				emoticonsEnabled: 	false,

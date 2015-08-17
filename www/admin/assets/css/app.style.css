@@ -1,12 +1,19 @@
+/* CSS LIBS */
+/******************************************************** */
+@import url("libs/bootstrap.min.css");
+@import url("libs/font-awesome.min.css");
+@import url("libs/sb-admin.min.css");
+@import url("libs/nprogress.min.css");
+@import url("libs/jquery.sceditor.theme.default.min.css");
 
-/* custom */
+/* CSS CUSTOM */
+/******************************************************** */
+html{
+	background-color: #ffffff;
+}
 
 .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
     vertical-align: middle;
-}
-
-html{
-	background-color: #ffffff;
 }
 
 json-editor h3{

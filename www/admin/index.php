@@ -13,12 +13,7 @@
 	<meta name="author" content="de elijah">
 
 	<!-- CSS -->
-	<link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-	<link href="assets/css/sb-admin.css" rel="stylesheet" type="text/css" />
-	<link href="assets/css/nprogress.css" rel="stylesheet" type="text/css"/>
-	<link href="assets/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
-	<link href="assets/js/sceditor/themes/default.min.css" rel="stylesheet" type="text/css" />
-	<link href="assets/css/custom.css" rel="stylesheet" type="text/css" />
+	<link type="text/css" rel="stylesheet" href="assets/css/app.style.css" />
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
