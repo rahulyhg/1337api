@@ -573,7 +573,8 @@ function api_upload($request){
 	list($type, $data) 	= explode(';', $data);
 	list(, $data)      	= explode(',', $data);
 	$data = base64_decode($data);
-	$type = explode(':', $type)[1];
+	$type = explode(':', $type);
+	$type = $type[1];
 
 	$basePath 		= '../uploads/';
 	$chronoPath 	= str_replace('-', '/', R::isoDate()) . '/';

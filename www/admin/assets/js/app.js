@@ -101,50 +101,46 @@ AdminApp.config([
 ]);
 
 // JSON Editor Provider
-AdminApp.config(
-	function(JSONEditorProvider) {
-		JSONEditorProvider.configure({
-			plugins: {
-				sceditor: {
-					plugins: 			'',
-					style: 				'assets/js/sceditor/jquery.sceditor.default.min.css',
-					toolbar: 			'bold,italic,underline|strike,subscript,superscript|link,unlink|removeformat|bulletlist,orderedlist|source',
-					locale: 			'pt-BR',
-					emoticonsEnabled: 	false,
-					width: 				'98%',
-					resizeEnabled: 		false,
-				}
-			},
-			defaults: {
-				options: {
-					iconlib: 			'fontawesome4',
-					theme: 				'bootstrap3',
-					ajax: 				true,
-					disable_collapse: 	true,
-					disable_edit_json: 	true,
-					disable_properties: true,
-					upload: 			function(type, file, cbs) 
-										{
-											if (file) {
-												var reader = new FileReader();
+AdminApp.config( function(JSONEditorProvider) {
+	JSONEditorProvider.configure({
+		plugins: {
+			sceditor: {
+				plugins: 			'',
+				style: 				'assets/js/sceditor/jquery.sceditor.default.min.css',
+				toolbar: 			'bold,italic,underline|strike,subscript,superscript|link,unlink|removeformat|bulletlist,orderedlist|source',
+				locale: 			'pt-BR',
+				emoticonsEnabled: 	false,
+				width: 				'98%',
+				resizeEnabled: 		false,
+			}
+		},
+		defaults: {
+			options: {
+				iconlib: 			'fontawesome4',
+				theme: 				'bootstrap3',
+				ajax: 				true,
+				disable_collapse: 	true,
+				disable_edit_json: 	true,
+				disable_properties: true,
+				upload: 			function(type, file, cbs) 
+									{
+										if (file) {
+											var reader = new FileReader();
 
-												reader.onloadend = function(evt){
-													var b = evt.target.result;
-													var uploadData = '{"filename":"'+file.name+'", "filesize":"'+file.size+'", "blob":"'+b+'"}';
+											reader.onloadend = function(evt){
+												var b = evt.target.result;
+												var uploadData = '{"filename":"'+file.name+'", "filesize":"'+file.size+'", "blob":"'+b+'"}';
+												var percentComplete = 0;
 
 													$.ajax({
 														xhr: function () {
 															var xhr = new window.XMLHttpRequest();
 															xhr.upload.addEventListener("progress", function (evt) {
 																if (evt.lengthComputable) {
-																	var percentComplete = evt.loaded / evt.total;
-																	console.log(percentComplete);
-																}
-															}, false);
-															xhr.addEventListener("progress", function (evt) {
-																if (evt.lengthComputable) {
-																	var percentComplete = evt.loaded / evt.total;
-																	console.log(percentComplete);
+																	var percentComplete = Math.round((evt.loaded / evt.total)*100);
+																	if(percentComplete <=100) {
+																		cbs.updateProgress(percentComplete);
+																	}
 																}
 															}, false);
 															return xhr;
@@ -164,39 +160,15 @@ AdminApp.config(
 
 													});
 
-												};
-
-												reader.readAsDataURL(file);
 											};
+											reader.readAsDataURL(file);
+										};
+									}
 
-											if (type === 'root.upload_fail') cbs.failure('Upload failed');
-											else {
-												var tick = 0;
-
-												var tickFunction = function() {
-													tick += 1;
-													// console.log('progress: ' + tick);
-
-												if (tick < 100) {
-													cbs.updateProgress(tick);
-													window.setTimeout(tickFunction, 50)
-												} else if (tick == 100) {
-													cbs.updateProgress();
-													window.setTimeout(tickFunction, 500)
-												} else {
-													//cbs.success('http:www.//example.com/images/' + file.name);
-												}
-											};
-
-											  window.setTimeout(tickFunction)
-											}
-
-										},
 				}
 			}
-		});
-	}
-);
+	});
+});
 
 /* ************************************************************
 ANGULAR SERVICES
