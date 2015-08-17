@@ -2,6 +2,7 @@
 INIT
 ************************************************************ */
 NProgress.start();
+
 var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor', 'ui.bootstrap']);
 
 /* ************************************************************
@@ -125,74 +126,74 @@ AdminApp.config(
 					disable_edit_json: 	true,
 					disable_properties: true,
 					upload: 			function(type, file, cbs) 
-						{
-							if (file) {
-								var reader = new FileReader();
+										{
+											if (file) {
+												var reader = new FileReader();
 
-								reader.onloadend = function(evt){
-									var b = evt.target.result;
-									var uploadData = '{"filename":"'+file.name+'", "filesize":"'+file.size+'", "blob":"'+b+'"}';
+												reader.onloadend = function(evt){
+													var b = evt.target.result;
+													var uploadData = '{"filename":"'+file.name+'", "filesize":"'+file.size+'", "blob":"'+b+'"}';
 
-									$.ajax({
-										xhr: function () {
-											var xhr = new window.XMLHttpRequest();
-											xhr.upload.addEventListener("progress", function (evt) {
-												if (evt.lengthComputable) {
-													var percentComplete = evt.loaded / evt.total;
-													console.log(percentComplete);
+													$.ajax({
+														xhr: function () {
+															var xhr = new window.XMLHttpRequest();
+															xhr.upload.addEventListener("progress", function (evt) {
+																if (evt.lengthComputable) {
+																	var percentComplete = evt.loaded / evt.total;
+																	console.log(percentComplete);
+																}
+															}, false);
+															xhr.addEventListener("progress", function (evt) {
+																if (evt.lengthComputable) {
+																	var percentComplete = evt.loaded / evt.total;
+																	console.log(percentComplete);
+																}
+															}, false);
+															return xhr;
+														},
+														type: 'POST',
+														url: 'api/upload/page',
+														contentType: "application/json; charset=utf-8",
+														dataType: "json",
+														data: uploadData,
+													
+														success: function( data, textStatus, jQxhr ){
+															cbs.success(''+data.id+'');
+														},
+														error: function( jqXhr, textStatus, errorThrown ){
+															console.log( errorThrown );
+														}
+
+													});
+
+												};
+
+												reader.readAsDataURL(file);
+											};
+
+											if (type === 'root.upload_fail') cbs.failure('Upload failed');
+											else {
+												var tick = 0;
+
+												var tickFunction = function() {
+													tick += 1;
+													// console.log('progress: ' + tick);
+
+												if (tick < 100) {
+													cbs.updateProgress(tick);
+													window.setTimeout(tickFunction, 50)
+												} else if (tick == 100) {
+													cbs.updateProgress();
+													window.setTimeout(tickFunction, 500)
+												} else {
+													//cbs.success('http:www.//example.com/images/' + file.name);
 												}
-											}, false);
-											xhr.addEventListener("progress", function (evt) {
-												if (evt.lengthComputable) {
-													var percentComplete = evt.loaded / evt.total;
-													console.log(percentComplete);
-												}
-											}, false);
-											return xhr;
+											};
+
+											  window.setTimeout(tickFunction)
+											}
+
 										},
-										type: 'POST',
-										url: 'api/upload/page',
-										contentType: "application/json; charset=utf-8",
-										dataType: "json",
-										data: uploadData,
-									
-										success: function( data, textStatus, jQxhr ){
-											cbs.success(''+data.id+'');
-										},
-										error: function( jqXhr, textStatus, errorThrown ){
-											console.log( errorThrown );
-										}
-
-									});
-
-								};
-
-								reader.readAsDataURL(file);
-							};
-
-							if (type === 'root.upload_fail') cbs.failure('Upload failed');
-							else {
-								var tick = 0;
-
-								var tickFunction = function() {
-									tick += 1;
-									// console.log('progress: ' + tick);
-
-								if (tick < 100) {
-									cbs.updateProgress(tick);
-									window.setTimeout(tickFunction, 50)
-								} else if (tick == 100) {
-									cbs.updateProgress();
-									window.setTimeout(tickFunction, 500)
-								} else {
-									//cbs.success('http:www.//example.com/images/' + file.name);
-								}
-							};
-
-							  window.setTimeout(tickFunction)
-							}
-
-						},
 				}
 			}
 		});

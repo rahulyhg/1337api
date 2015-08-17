@@ -70,21 +70,6 @@
 				'title' 	=> 'Telefone',
 				'format' 	=> 'tel',
 			),
-			'image_rel' => array(
-				'title' 	=> 'Imagem',
-				'type'		=> 'string',
-				'format' 	=> 'url',
-				'maxLength' => 128,
-  				'options'	=> array(
-  					'upload' 	=> true,
-  				),
-				'links' 	=> array(
-					array(
-						'href' 	=> '{{self}}',
-					),
-				),
-			),
-
 		),
 	);
 

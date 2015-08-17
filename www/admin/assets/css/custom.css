@@ -19,9 +19,33 @@ json-editor h3{
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
+/* JSON EDITOR UPLOADER */
+p.help-block {
+	width: 100%;
+    font-size: 0.9em;
+    margin-top: 15px;
+    display: inline-block;
+}
+
+p.help-block br {
+    display: none;
+}
+
+p.help-block img {
+    float: right;
+    padding: 2px;
+}
+
+p.help-block button {
+    float: right;
+    margin-right: 10px;
+}
+/* JSON EDITOR */
+
 @media(min-width:768px) {
 
     .side-nav-sub>li>a {
         width: 225px;
     }
 }
+

@@ -226,11 +226,11 @@ function api_create($request, $config){
 	foreach ($request['content'] as $k => $v) {
 
 		// IF rel uploads many-to-many relationship
-		if(substr($k, -4) == '_rel' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+		if($k == 'uploads_id' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+			
 			$upload = R::dispense( 'uploads' );
 			$upload->id = $v;
 			$item->sharedUploadList[] = $upload;
-			$item[$k] = TRUE;			
 		}
 		else{
 			$item[$k] = $v;			
@@ -297,11 +297,11 @@ function api_update($request, $config){
 
 	foreach ($request['content'] as $k => $v) {
 		// IF rel uploads many-to-many relationship
-		if(substr($k, -4) == '_rel' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+		if($k == 'uploads_id' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+			
 			$upload = R::dispense( 'uploads' );
 			$upload->id = $v;
 			$item->sharedUploadList[] = $upload;
-			$item[$k] = TRUE;			
 		}
 		else{
 			$item[$k] = $v;			
@@ -467,7 +467,6 @@ function api_schema($request, $config){
 		};
 
 		// RAW STRUCTURE
-
 		if(substr($field, -3, 3) == '_id'){
 			$parentBean = substr($field, 0, -3);
 			$parent = R::getAssoc('DESCRIBE '. $parentBean);
@@ -489,6 +488,30 @@ function api_schema($request, $config){
 			);
 		};
 	};
+
+	// MANY-TO-MANY UPLOAD FIELD
+	if(in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+	
+		$result['properties']['uploads_id'] = 
+			
+			array(
+				'title' 	=> 'Imagem',
+				'type'		=> 'string',
+				'format' 	=> 'url',
+				'required'	=> true,
+				'minLength' => 0,
+				'maxLength' => 128,
+  				'options'	=> array(
+  					'upload' 	=> true,
+  				),
+				'links' 	=> array(
+					array(
+			            'rel' 	=> '',
+						'href' 	=> '{{self}}',
+					),
+				),
+			);
+	}
 
 	// OUTPUT
 	api_output($result);
