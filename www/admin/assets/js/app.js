@@ -327,7 +327,7 @@ ANGULAR CONTROLLERS
 ************************************************************ */
 
 // Main Controller
-AdminApp.controller('MainController', function ($scope) {
+AdminApp.controller('MainController', function ($scope, apiService) {
 	
 	$scope.$on("$routeChangeStart", function() {
 		NProgress.start();
@@ -341,6 +341,11 @@ AdminApp.controller('MainController', function ($scope) {
 		NProgress.done();
 	});
 
+	// get service function to be used async
+	apiService.getEdges().then(function(edges) {
+		$scope.edges = edges;
+	});
+
 });
 
 // Dashboard Controller
@@ -350,12 +355,7 @@ AdminApp.controller('DashboardController', function ($scope, hi, edges) {
 });
 
 // Menu Controller
-AdminApp.controller('MenuController', function ($scope, $http, $location, apiService) {
-
-	// get service function to be used async
-	apiService.getEdges().then(function(edges) {
-		$scope.edges = edges;
-	});
+AdminApp.controller('MenuController', function ($scope, $location) {
 
 	$scope.isActive = function(edge) {
 		if ( ($location.path().split('/')[2] === edge) || ($location.path() === '/' && edge === 'dashboard') ) {
