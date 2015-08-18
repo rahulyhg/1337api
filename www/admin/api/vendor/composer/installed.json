@@ -1,0 +1,15 @@
+[
+    {
+        "name": "redbeanphp",
+        "version": "master",
+        "version_normalized": "9999999-dev",
+        "dist": {
+            "type": "tar",
+            "url": "http://www.redbeanphp.com/downloadredbean.php",
+            "reference": null,
+            "shasum": null
+        },
+        "type": "library",
+        "installation-source": "dist"
+    }
+]
