@@ -13,7 +13,8 @@
 	],
 
 	"require": {
-			"redbeanphp": "master@dev"
+			"redbeanphp": "master@dev",
+			"firebase/php-jwt": "~3.0"
     	},
 	
 	"autoload": {

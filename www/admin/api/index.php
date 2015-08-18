@@ -1,9 +1,13 @@
 <?php
+error_reporting(-1);
+ini_set('error_reporting', E_ALL);
+error_reporting(E_ALL & ~E_NOTICE);
 
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
 require __DIR__ . '/vendor/autoload.php';
+use \Firebase\JWT\JWT;
 require 'config.php';
 
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
