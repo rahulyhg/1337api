@@ -44,8 +44,8 @@
 				<tr>
 					<th>#</th>
 					<th>Título</th>
-					<th>Criado</th>
-					<th>Atualizado</th>
+					<th class="hidden-xs">Criado</th>
+					<th class="hidden-sm hidden-xs">Atualizado</th>
 					<th class="text-center">Ações</th>
 				</tr>
 			</thead>
@@ -53,8 +53,8 @@
 				<tr ng-repeat="item in items">
 					<td>{{item.id}}</td>
 					<td><a href="#/read/{{schema.bean}}/{{item.id}}">{{item.name}}</a></td>
-					<td>{{item.created}}</td>
-					<td>{{item.modified}}</td>
+					<td class="hidden-xs">{{item.created}}</td>
+					<td class="hidden-sm hidden-xs">{{item.modified}}</td>
 					<td class="text-right">
 						<a href="#/read/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-eye"></i></a>
 						<a href="#/update/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
@@ -75,7 +75,7 @@
 	<!-- /.panel-footer -->
 	<div class="panel-footer text-right">
 		<!-- TODO: totalItems não exibe o número correto de registro da página. -->
-		Você está visualizando a página {{currentPage}} de {{numPages}}. Exibindo {{itemsThisPage}} registro(s) de {{totalItems}} registro(s).	
+		<small>Você está visualizando a página {{currentPage}} de {{numPages}}. Exibindo {{itemsThisPage}} registro(s) de {{totalItems}} registro(s).</small>
 	</div>
 	<!-- /.panel-footer -->
 
