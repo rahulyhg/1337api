@@ -46,12 +46,13 @@ AdminApp.controller('MenuController', function ($scope, $location) {
 // LIST Controller
 AdminApp.controller('ListController', function ($scope, $location, $http, $routeParams, schema, list, count) {
 	
-	$scope.alert 		= {};
-	$scope.schema 		= schema;
-	$scope.items 		= list;
-	$scope.totalItems 	= count.sum;
-	$scope.itemsPerPage = 5;
-	$scope.maxSize 		= 10;
+	$scope.alert 			= {};
+	$scope.schema 			= schema;
+	$scope.items 			= list;
+	$scope.itemsThisPage 	= Object.keys(list).length; 
+	$scope.totalItems 		= count.sum;
+	$scope.itemsPerPage 	= 5;
+	$scope.maxSize 			= 10;
 
 	$scope.setPage = function (page) {
 		$scope.currentPage = page;
@@ -61,6 +62,16 @@ AdminApp.controller('ListController', function ($scope, $location, $http, $route
 
 	$scope.pageChanged = function() {
 		$location.url('/list/'+ $routeParams.edge +'/p/'+$scope.currentPage);
+	};
+
+	$scope.onReload = function() {
+		window.location.reload();
+	};
+
+	$scope.onExport = function() {
+		//$http.get('api/export'+ $routeParams.edge).then(function(response) {
+			console.log('elijah says: we\'re still in development.');
+		//});
 	};
 
 	$scope.onDestroy = function(id) {
