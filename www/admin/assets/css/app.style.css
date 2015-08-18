@@ -8,51 +8,40 @@
 
 /* CSS CUSTOM */
 /******************************************************** */
-html{
-	background-color: #ffffff;
+
+/* bootstrap */
+html {background-color: #ffffff;}
+
+.table>tbody>tr>td, 
+.table>tbody>tr>th, 
+.table>tfoot>tr>td, 
+.table>tfoot>tr>th, 
+.table>thead>tr>td, 
+.table>thead>tr>th {
+	vertical-align: middle;
 }
 
-.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
-    vertical-align: middle;
+.nav, 
+.pagination, .carousel, .panel-title a { 
+	cursor: pointer; 
 }
+/* ./end */
 
-json-editor h3{
-    display:none;
-}
+/* nprogress */
+#nprogress .bar {height: 0.4em;}
+/* ./end */
 
-#nprogress .spinner {
-    top: 65px !important;
-}
+/* json editor */
+json-editor h3 {display:none;}
 
-.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+p.help-block {width: 100%; font-size: 0.9em; margin-top: 15px; display: inline-block;}
+	p.help-block br {display: none;}
+	p.help-block img {float: right; padding: 2px;}
+	p.help-block button {float: right; margin-right: 10px;}
+/* ./end */
 
-/* JSON EDITOR UPLOADER */
-p.help-block {
-	width: 100%;
-    font-size: 0.9em;
-    margin-top: 15px;
-    display: inline-block;
-}
-
-p.help-block br {
-    display: none;
-}
-
-p.help-block img {
-    float: right;
-    padding: 2px;
-}
-
-p.help-block button {
-    float: right;
-    margin-right: 10px;
-}
-/* JSON EDITOR */
+/* media queries */
 
 @media(min-width:768px) {
-
-    .side-nav-sub>li>a {
-        width: 225px;
-    }
+	.side-nav-sub>li>a {width: 225px;}
 }
-
