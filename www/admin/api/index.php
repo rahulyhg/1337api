@@ -8,6 +8,7 @@ error_reporting(E_ALL & ~E_NOTICE);
 *************************************************************************************************** */ 
 require __DIR__ . '/vendor/autoload.php';
 use \Firebase\JWT\JWT;
+// docs: http://www.sitepoint.com/php-authorization-jwt-json-web-tokens/
 require 'config.php';
 
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);

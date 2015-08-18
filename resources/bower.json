@@ -14,11 +14,12 @@
     "tests"
   ],
   "dependencies": {
+    "jquery": "*",
     "angular-route": "~1.4.4",
     "angular": "~1.4.4",
     "bootstrap": "~3.3.5",
     "bower": "*",
-    "angular-json-editor": "~0.1.8",
+    "angular-json-editor": "git@github.com:rodikh/angular-json-editor.git",
     "install": "~1.0.4",
     "nprogress": "~0.2.0",
     "startbootstrap-sb-admin-2": "~1.0.7"
