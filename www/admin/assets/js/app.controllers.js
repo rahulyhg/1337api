@@ -69,9 +69,7 @@ AdminApp.controller('ListController', function ($scope, $location, $http, $route
 	};
 
 	$scope.onExport = function() {
-		//$http.get('api/export'+ $routeParams.edge).then(function(response) {
-			console.log('elijah says: we\'re still in development.');
-		//});
+		window.open('api/export/'+ $routeParams.edge);
 	};
 
 	$scope.onDestroy = function(id) {

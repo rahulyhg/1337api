@@ -14,7 +14,8 @@
 
 	"require": {
 			"redbeanphp": "master@dev",
-			"firebase/php-jwt": "~3.0"
+			"firebase/php-jwt": "~3.0",
+	        "goodby/csv": "*"
     	},
 	
 	"autoload": {

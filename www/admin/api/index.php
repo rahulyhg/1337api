@@ -8,6 +8,9 @@ error_reporting(E_ALL & ~E_NOTICE);
 *************************************************************************************************** */ 
 require __DIR__ . '/vendor/autoload.php';
 use \Firebase\JWT\JWT;
+use Goodby\CSV\Export\Standard\Exporter;
+use Goodby\CSV\Export\Standard\ExporterConfig;
+
 // docs: http://www.sitepoint.com/php-authorization-jwt-json-web-tokens/
 require 'config.php';
 
@@ -97,6 +100,15 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 			case 'schema':
 				if (in_array($request['edge'], $config['api']['beans'])){
 					api_schema($request, $config);
+				}
+				else{
+					api_forbidden($config);
+				}
+			break;		
+
+			case 'export':
+				if (in_array($request['edge'], $config['api']['beans'])){
+					api_export($request, $config);
 				}
 				else{
 					api_forbidden($config);
@@ -294,6 +306,28 @@ function api_exists($request, $config){
 
 	// OUTPUT
 	api_output($result);
+};
+
+function api_export($request, $config){
+
+	$config = new ExporterConfig();
+	$exporter = new Exporter($config);
+
+    $bean = R::findAll( $request['edge'] );
+    $rawData = R::exportAll($bean, false, array('part'));
+
+	// OUTPUT
+	$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
+	$name = $dateHash.'-export-'.$request['edge'].'.csv';
+    
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename='. $name);
+    header('Pragma: no-cache');
+    header("Expires: 0");
+    $outstream = $exporter->export('php://output', $rawData);
+    fclose($outstream);
+
+    exit();
 };
 
 function api_update($request, $config){
