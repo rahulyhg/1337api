@@ -11,6 +11,7 @@
 
 /* bootstrap */
 html {background-color: #ffffff;}
+#page-wrapper {min-height:100px;}
 
 .table>tbody>tr>td, 
 .table>tbody>tr>th, 

@@ -64,7 +64,7 @@
 			</tbody>
 		</table>
 
-		<div class="text-center">
+		<div ng-show="numPages > 1" class="text-center">
 			<pagination ng-model="currentPage" ng-change="pageChanged()" num-pages="numPages" total-items="totalItems" max-size="maxSize" items-per-page="itemsPerPage" boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;">
 			</pagination>
 		</div>
