@@ -568,12 +568,10 @@ function api_edges($config){
 
 		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
 
-			$beans[$v] = array(
-				'name' 	=> $v,
-				'title' => ucfirst($v),
-				'count' => R::count($v),
-				'icon' 	=> 'th-list',
-			);
+			$beans[$v]['name'] 	= $v;
+			$beans[$v]['title'] = ucfirst($v);
+			$beans[$v]['count'] = R::count($v);
+			$beans[$v]['icon'] 	= 'th-list';
 
 			if(array_key_exists($v, $hierarchy)){
 

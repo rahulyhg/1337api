@@ -58,6 +58,7 @@
 		<!-- END NAVIGATION - TOP MENU -->
 
 		<!-- NAVIGATION - MAIN MENU -->
+
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav">
 				<li ng-class="isActive('dashboard')"><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
@@ -70,7 +71,7 @@
 					<!-- endif -->
 				</li>
 
-				<li ng-if="edge.parent" ng-repeat="edge in edges">
+				<li ng-if="edge.parent && !edge.child" ng-repeat="edge in edges">
 
 					<!-- if one-to-many relationship -->
 					<a href="javascript:;" data-target="#menu-{{edge.name}}" data-toggle="collapse">
