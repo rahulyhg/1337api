@@ -26,6 +26,11 @@ html {background-color: #ffffff;}
 .pagination, .carousel, .panel-title a { 
 	cursor: pointer; 
 }
+
+.panel-heading a {
+	color: #fff;
+}
+
 /* ./end */
 
 /* nprogress */

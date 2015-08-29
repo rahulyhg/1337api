@@ -24,7 +24,7 @@
 <div class="row">
 
 	<!-- if no relationship -->
-	<div ng-repeat="edge in edges" ng-if="!edge.child && !edge.parent" class="col-lg-3 col-md-6">
+	<div class="col-lg-3 col-md-6" ng-if="!edge.has_child && !edge.has_parent" ng-repeat="edge in edges">
 
 		<div class="panel panel-primary">
 			<div class="panel-heading">
@@ -50,24 +50,29 @@
 	<!-- endif -->
 
 	<!-- if one-to-many relationship -->
-	<div ng-repeat="edge in edges" ng-if="edge.parent" class="col-lg-6 col-md-12">
+	<div class="col-lg-3 col-md-6" ng-if="edge.has_parent" ng-repeat="edge in edges">
 
 		<div href="javascript:;" class="panel panel-green">
 			<div class="panel-heading">
+
 				<div class="row">
-					<div class="col-xs-2">
-						<i class="fa fa-{{edge.parent.icon}} fa-5x"></i>
-					</div>
-					<div class="col-xs-4 text-right">
-						<div class="huge">{{edge.parent.count}}</div>
-						<div>{{edge.parent.title}}</div>
-					</div>
-					<div class="col-xs-2">
+
+					<div class="col-xs-3">
 						<i class="fa fa-{{edge.icon}} fa-5x"></i>
 					</div>
-					<div class="col-xs-4 text-right">
+					<div class="col-xs-9 text-right">
 						<div class="huge">{{edge.count}}</div>
 						<div>{{edge.title}}</div>
+					</div>
+
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						Related to:<br />
+						<ul class="list-inline">
+							<li ng-if"edge.has_parent" ng-repeat="submenu in edge.parent">
+								<a href="#/list/{{submenu.name}}"><i class="fa fa-fw fa-{{submenu.icon}}"></i> {{submenu.title}}</a> </li>
+						</ul>
 					</div>
 				</div>
 			</div>
