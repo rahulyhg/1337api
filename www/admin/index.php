@@ -58,33 +58,30 @@
 		<!-- END NAVIGATION - TOP MENU -->
 
 		<!-- NAVIGATION - MAIN MENU -->
-
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav">
 				<li ng-class="isActive('dashboard')"><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-				<li ng-if=" !edge.child && !edge.parent " ng-class="isActive(edge.name)" ng-repeat="edge in edges">
 
-					<!-- if no relationship -->
-					<a href="#/list/{{edge.name}}">
-						<i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}
-					</a>
-					<!-- endif -->
+				<!-- if no relationship -->
+				<li ng-class="isActive(edge.name)" ng-if="!edge.has_child && !edge.has_parent" ng-repeat="edge in edges">
+					<a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a>
 				</li>
+				<!-- endif -->
 
-				<li ng-if="edge.parent && !edge.child" ng-repeat="edge in edges">
+				<!-- if one-to-many relationship -->
+				<li ng-if="edge.has_parent" ng-repeat="edge in edges">
 
-					<!-- if one-to-many relationship -->
 					<a href="javascript:;" data-target="#menu-{{edge.name}}" data-toggle="collapse">
 						<i class="fa fa-fw fa-arrow-circle-o-right"></i> {{edge.title}} <i class="fa fa-fw fa-caret-down"></i>
 					</a>
 
 					<ul id="menu-{{edge.name}}" class="nav navbar-nav side-nav-sub collapse in">
-						<li ng-class="isActive(edge.parent.name)"><a href="#/list/{{edge.parent.name}}"><i class="fa fa-fw fa-{{edge.parent.icon}}"></i> {{edge.parent.title}}</a></li>
+						<li ng-class="isActive(submenu.name)" ng-if"edge.has_parent" ng-repeat="submenu in edge.parent"><a href="#/list/{{submenu.name}}"><i class="fa fa-fw fa-{{submenu.icon}}"></i> {{submenu.title}}</a></li>
 						<li ng-class="isActive(edge.name)"><a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a></li>
 					</ul>	
-					<!-- end if -->
 					
 				</li>
+				<!-- end if -->
 
 			</ul>
 		</div>

@@ -20,9 +20,6 @@ AdminApp.controller('MainController', function ($scope, apiService) {
 	// get service function to be used async
 	apiService.getEdges().then(function(edges) {
 		$scope.edges = edges;
-
-		var items = $.map(edges, function(el) { return el; });
-		console.log(items);
 	});
 
 });

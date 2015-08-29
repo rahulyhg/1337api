@@ -558,41 +558,70 @@ function api_schema($request, $config){
 
 function api_edges($config){
 
-	$hierarchy = R::getAssoc('
-		SELECT TABLE_NAME, REFERENCED_TABLE_NAME
+	$hierarchyArr = R::getAll('
+		SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
 		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
 		WHERE REFERENCED_TABLE_NAME IS NOT NULL
 	');
-	
+
+	foreach ($hierarchyArr as $key => $value) {
+
+		if( empty($hierarchy[$value['child']]) ){
+			$hierarchy[$value['child']] = array();
+		} 
+		array_push($hierarchy[$value['child']], $value['parent']);
+
+	}
+
+	// BUILD BEANS LIST
 	foreach ($config['api']['beans'] as $k => $v) {
 
 		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
 
-			$beans[$v]['name'] 	= $v;
-			$beans[$v]['title'] = ucfirst($v);
-			$beans[$v]['count'] = R::count($v);
-			$beans[$v]['icon'] 	= 'th-list';
+			$beans[$v] = array(
+				'name' 			=> $v,
+				'title' 		=> ucfirst($v),
+				'count' 		=> R::count($v),
+				'icon' 			=> 'th-list',
+				'has_parent' 	=> false,
+				'has_child' 	=> false,
+			);
 
-			if(array_key_exists($v, $hierarchy)){
+		};
 
-				$beans[$v]['parent'] = array(
-					'name' 	=> $hierarchy[$v],
-					'title' => ucfirst($hierarchy[$v]),
-					'count' => R::count($hierarchy[$v]),
-					'icon' 	=> 'th-large',
-				);
+	};
 
-				$beans[$hierarchy[$v]]['child'] = array(
-					'name' 	=> $v,
-					'title' => ucfirst($v),
-					'count' => R::count($v),
-					'icon' 	=> 'th-list',
-				);
+	// BUILD HIERARCHY LIST - DEPTH 1
+	foreach ($beans as $bean => $obj) {
+		if( array_key_exists($bean, $hierarchy) ){
 
+			$beans[$bean]['has_parent'] = true;
+
+			foreach ($hierarchy[$bean] as $y => $z) {
+				$beans[$z]['has_child'] = true;
+				$beans[$bean]['parent'][$z] = $beans[$z];
 			}
 
-		}
+		};
+	};
+	// BUILD HIERARCHY LIST - DEPTH 2
+	foreach ($beans as $bean => $obj) {
+		if($beans[$bean]['has_parent']){
 
+			foreach ($beans[$bean]['parent'] as $parentBean => $parentObj) {
+
+				if( array_key_exists($parentBean, $hierarchy) ){
+
+					$beans[$bean]['parent'][$parentBean]['has_parent'] = true;
+
+					foreach ($hierarchy[$parentBean] as $y => $z) {
+						$beans[$bean]['parent'][$parentBean]['parent'][$z] = $beans[$z];
+					}
+
+				}
+			}
+
+		};
 
 	};
 
