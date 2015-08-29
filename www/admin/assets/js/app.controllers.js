@@ -125,7 +125,7 @@ AdminApp.controller('UpdateController', function ($scope, schema, read) {
 
 });
 
-// Forms Controller
+// Form Controller
 AdminApp.controller('FormController', function ($scope, $http, $location, $routeParams) {
 	
 	var edge 	= $routeParams.edge;

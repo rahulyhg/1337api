@@ -239,6 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 
 function api_create($request, $config){
 	$item = R::dispense( $request['edge'] );
+	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
 
 	foreach ($request['content'] as $k => $v) {
 
@@ -250,6 +251,13 @@ function api_create($request, $config){
 			$item->sharedUploadList[] = $upload;
 		}
 		else{
+
+			// IF one-to-many relationship
+			if(array_key_exists($k.'_id', $schema['raw'])){
+				$k = $k . '_id';
+			}
+
+			// THEN PREPARE TO SAVE 			
 			$item[$k] = $v;			
 		}		
 	};
@@ -333,6 +341,7 @@ function api_export($request, $config){
 function api_update($request, $config){
 
 	$item = R::load( $request['edge'], $request['param'] );
+	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
 
 	foreach ($request['content'] as $k => $v) {
 		// IF rel uploads many-to-many relationship
@@ -343,6 +352,12 @@ function api_update($request, $config){
 			$item->sharedUploadList[] = $upload;
 		}
 		else{
+
+			// IF one-to-many relationship
+			if(array_key_exists($k.'_id', $schema['raw'])){
+				$k = $k . '_id';
+			}
+
 			$item[$k] = $v;			
 		}		
 	};
@@ -439,7 +454,7 @@ function api_schema($request, $config){
 				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
 				$result['properties'][$parentBean] = array(
-					'type' 				=> 'string',
+					'type' 				=> 'integer',
 					'title' 			=> ucfirst($parentBean),
 					'required'	 		=> true,
 					'minLength'	 		=> 1,
