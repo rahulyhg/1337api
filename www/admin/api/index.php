@@ -251,13 +251,6 @@ function api_create($request, $config){
 			$item->sharedUploadList[] = $upload;
 		}
 		else{
-
-			// IF one-to-many relationship
-			if(array_key_exists($k.'_id', $schema['raw'])){
-				$k = $k . '_id';
-			}
-
-			// THEN PREPARE TO SAVE 			
 			$item[$k] = $v;			
 		}		
 	};
@@ -281,6 +274,9 @@ function api_read($request, $config){
 	foreach ($item as $k => $v) {
 		if(!in_array($k, $config['schema']['default']['blacklist'])) {
 
+			$result[$k] = $v;
+
+			// IF ONE-TO-MANY RELATIONSHIP
 			if(substr($k, -3, 3) == '_id'){
 				$parentBean = substr($k, 0, -3);
 				$parent = R::load( $parentBean , $v );
@@ -289,9 +285,7 @@ function api_read($request, $config){
 					$result[$parentBean][$v][$key] = $value;
 				};
 			}
-			else{
-				$result[$k] = $v;
-			};
+		
 		};
 	};
 
@@ -352,12 +346,6 @@ function api_update($request, $config){
 			$item->sharedUploadList[] = $upload;
 		}
 		else{
-
-			// IF one-to-many relationship
-			if(array_key_exists($k.'_id', $schema['raw'])){
-				$k = $k . '_id';
-			}
-
 			$item[$k] = $v;			
 		}		
 	};
@@ -453,7 +441,7 @@ function api_schema($request, $config){
 				$parentBean = substr($field, 0, -3);
 				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
-				$result['properties'][$parentBean] = array(
+				$result['properties'][$field] = array(
 					'type' 				=> 'integer',
 					'title' 			=> ucfirst($parentBean),
 					'required'	 		=> true,
@@ -467,8 +455,8 @@ function api_schema($request, $config){
 				$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parentBean );
 
 				foreach ($parentOptions as $key => $value) {
-					$result['properties'][$parentBean]['enum'][] = $key;
-					$result['properties'][$parentBean]['options']['enum_titles'][] = $value;					
+					$result['properties'][$field]['enum'][] = $key;
+					$result['properties'][$field]['options']['enum_titles'][] = $value;					
 				};
 
 			}
