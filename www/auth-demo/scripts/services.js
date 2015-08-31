@@ -56,10 +56,7 @@
 
             return {
                 getRestrictedData: function (success, error) {
-                    $http.get(urls.BASE + '/restricted').success(success).error(error)
-                },
-                getApiData: function (success, error) {
-                    $http.get(urls.BASE_API + '/restricted').success(success).error(error)
+                    $http.get(urls.BASE + '/hi').success(success).error(error)
                 }
             };
         }

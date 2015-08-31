@@ -7,8 +7,7 @@
         'angular-loading-bar'
     ])
         .constant('urls', {
-            BASE: 'http://redbean.localhost.com/admin/api',
-            BASE_API: 'http://api.jwt.dev:8000/v1'
+            BASE: '/admin/api',
         })
         .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
             $routeProvider.
@@ -18,10 +17,6 @@
                 }).
                 when('/signin', {
                     templateUrl: 'partials/signin.html',
-                    controller: 'HomeController'
-                }).
-                when('/signup', {
-                    templateUrl: 'partials/signup.html',
                     controller: 'HomeController'
                 }).
                 when('/restricted', {
