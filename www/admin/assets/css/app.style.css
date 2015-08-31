@@ -3,7 +3,7 @@
 @import url("libs/bootstrap.min.css");
 @import url("libs/font-awesome.min.css");
 @import url("libs/sb-admin.min.css");
-@import url("libs/nprogress.min.css");
+@import url("libs/angular-loading-bar.min.css");
 @import url("libs/jquery.sceditor.theme.default.min.css");
 
 /* CSS CUSTOM */
@@ -33,8 +33,11 @@ html {background-color: #ffffff;}
 
 /* ./end */
 
-/* nprogress */
-#nprogress .bar {height: 0.4em;}
+/* angular-loading-bar */
+#loading-bar-spinner {    
+	right: 15px;
+    left: inherit;
+    top: 62px;}
 /* ./end */
 
 /* json editor */

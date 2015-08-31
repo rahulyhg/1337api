@@ -102,10 +102,10 @@
 <script type="text/javascript" src="assets/js/libs/jquery.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/jsoneditor.min.js"></script>
-<script type="text/javascript" src="assets/js/libs/nprogress.min.js"></script>
 
 <script type="text/javascript" src="assets/js/libs/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-route.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/angular-loading-bar.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-ui-bootstrap/ui-bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-ui-bootstrap/ui-bootstrap-tpls.min.js"></script>

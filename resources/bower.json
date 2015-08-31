@@ -21,7 +21,6 @@
     "bower": "*",
     "angular-json-editor": "git@github.com:rodikh/angular-json-editor.git",
     "install": "~1.0.4",
-    "nprogress": "~0.2.0",
     "startbootstrap-sb-admin-2": "~1.0.7"
   }
 }

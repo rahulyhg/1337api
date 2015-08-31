@@ -1,7 +1,7 @@
 /* ************************************************************
 ANGULAR INIT
 ************************************************************ */
-var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-json-editor', 'ui.bootstrap']);
+var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-loading-bar', 'angular-json-editor', 'ui.bootstrap']);
 
 /* ************************************************************
 ANGULAR ROUTES
@@ -183,8 +183,3 @@ AdminApp.config( function(JSONEditorProvider) {
 		defaults: { options: jeOptionsConfig }
 	});
 });
-
-/* ************************************************************
-NPROGRESS CONFIG
-************************************************************ */	
-NProgress.configure({ parent: '#page-wrapper' });

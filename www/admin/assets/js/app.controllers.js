@@ -6,7 +6,7 @@ ANGULAR ADMIN APP CONTROLLERS
 AdminApp.controller('MainController', function ($scope, apiService) {
 	
 	$scope.$on("$routeChangeStart", function() {
-		NProgress.start();
+
 	});
 
 	$scope.$on("$routeChangeSuccess", function() {
@@ -14,7 +14,7 @@ AdminApp.controller('MainController', function ($scope, apiService) {
 	});
 
 	$scope.$on('$viewContentLoaded', function(){
-		NProgress.done();
+
 	});
 
 	// get service function to be used async
