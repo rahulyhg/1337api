@@ -105,6 +105,7 @@
 
 <script type="text/javascript" src="assets/js/libs/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-route.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/angular-ngStorage.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-loading-bar.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-ui-bootstrap/ui-bootstrap.min.js"></script>

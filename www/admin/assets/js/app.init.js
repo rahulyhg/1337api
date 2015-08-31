@@ -1,7 +1,18 @@
 /* ************************************************************
 ANGULAR INIT
 ************************************************************ */
-var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-loading-bar', 'angular-json-editor', 'ui.bootstrap']);
+var AdminApp = angular.module('AdminApp', ['ngRoute', 'ngStorage', 'angular-loading-bar', 'angular-json-editor', 'ui.bootstrap']);
+
+/* ************************************************************
+ANGULAR CONSTANTS
+************************************************************ */			
+
+AdminApp.constant(
+	'urls', 
+		{
+			BASE: '/admin/api',
+		}
+)
 
 /* ************************************************************
 ANGULAR ROUTES
@@ -25,6 +36,16 @@ AdminApp.config([
 					edges: 	function(apiService){ return apiService.getEdges(); 	},				
 				}
 			}	
+		);
+
+		// AUTH
+		$routeProvider.when(
+			'/login', 
+			{
+				templateUrl: 	'assets/tpl/login.html',
+				controller: 	'AuthController',
+				controllerAs: 	'login',
+			}
 		);
 
 		// CRUD		
