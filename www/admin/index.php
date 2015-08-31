@@ -51,7 +51,7 @@
 					<li role="menuitem"><a href="#/"><i class="fa fa-fw fa-user"></i> Minha Conta</a></li>
 					<li role="menuitem"><a href="#/"><i class="fa fa-fw fa-gear"></i> Configurações</a></li>
 					<li class="divider"></li>
-					<li role="menuitem"><a href="#/"><i class="fa fa-fw fa-power-off"></i> Log Out</a></li>
+					<li role="menuitem"><a ng-click="logout()"><i class="fa fa-fw fa-power-off"></i> Log Out</a></li>
 				</ul>
 			</li>
 		</ul>
@@ -100,6 +100,7 @@
 
 <!-- JAVASCRIPT -->
 <script type="text/javascript" src="assets/js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/phpjs.js"></script>
 <script type="text/javascript" src="assets/js/libs/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/jsoneditor.min.js"></script>
 

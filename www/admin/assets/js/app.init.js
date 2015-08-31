@@ -8,9 +8,9 @@ ANGULAR CONSTANTS
 ************************************************************ */			
 
 AdminApp.constant(
-	'urls', 
+	'config', 
 		{
-			BASE: '/admin/api',
+			API_BASE_URL: '/admin/api',
 		}
 )
 
@@ -22,7 +22,8 @@ ANGULAR ROUTES
 
 AdminApp.config([
 	'$routeProvider',
-	function($routeProvider) {
+	'$httpProvider', 
+	function($routeProvider, $httpProvider) {
 
 		// DASHBOARD
 		$routeProvider.when(
@@ -32,8 +33,9 @@ AdminApp.config([
 				controller: 	'DashboardController',
 				controllerAs: 	'dashboard',
 				resolve: {
+					auth: 	function(authService){ return authService.isAuth(); 	},	
 					hi: 	function(apiService){ return apiService.getHi(); 		},
-					edges: 	function(apiService){ return apiService.getEdges(); 	},				
+					edges: 	function(apiService){ return apiService.getEdges(); 	},			
 				}
 			}	
 		);
@@ -43,8 +45,8 @@ AdminApp.config([
 			'/login', 
 			{
 				templateUrl: 	'assets/tpl/login.html',
-				controller: 	'AuthController',
-				controllerAs: 	'login',
+				controller: 	'MainController',
+				controllerAs: 	'main',
 			}
 		);
 
@@ -56,6 +58,7 @@ AdminApp.config([
 				controller: 	'ListController',
 				controllerAs: 	'list',
 				resolve: {
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 		},
 					list: 	function(apiService){ return apiService.getList(); 			},
@@ -71,6 +74,7 @@ AdminApp.config([
 				controller: 	'CreateController',
 				controllerAs: 	'create',
 				resolve: {
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},
 					schema: function(apiService){ return apiService.getSchema(); 		},
 				}
@@ -84,6 +88,7 @@ AdminApp.config([
 				controller: 	'ReadController',
 				controllerAs: 	'read',
 				resolve: {	
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 		},
 					read: 	function(apiService){ return apiService.getRead(); 			},
@@ -98,6 +103,7 @@ AdminApp.config([
 				controller: 	'UpdateController',
 				controllerAs: 	'update',
 				resolve: {	
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 		},
 					read: 	function(apiService){ return apiService.getRead(); 			},
@@ -118,8 +124,42 @@ AdminApp.config([
 			{redirectTo: '/'}
 		);
 
+		// INTERCEPTOR
+		$httpProvider.interceptors.push(['$q', '$location', '$localStorage', function ($q, $location, $localStorage) {
+			return {
+				'request': function (config) {
+					config.headers = config.headers || {};
+					if ($localStorage.token) {
+						config.headers.Authorization = 'Bearer ' + $localStorage.token;
+					}
+					return config;
+				},
+				'responseError': function (response) {
+					if (response.status === 401 || response.status === 403) {
+						delete $localStorage.token;
+						$location.path('/login');
+					}
+					return $q.reject(response);
+				}
+			};
+		}]);
+
 	}
 ]);
+
+/* ************************************************************
+ANGULAR RUN
+************************************************************ */		
+
+AdminApp.run(function($rootScope, $location, $localStorage) {
+	$rootScope.$on( "$routeChangeStart", function(event, next) {
+		if ($localStorage.token == null) {
+			if ( next.templateUrl === "partials/restricted.html") {
+				$location.path("/login");
+			}
+		}
+	});
+});
 
 /* ************************************************************
 ANGULAR JSON EDITOR

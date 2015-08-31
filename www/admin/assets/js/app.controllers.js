@@ -3,7 +3,7 @@ ANGULAR ADMIN APP CONTROLLERS
 ************************************************************ */
 
 // Main Controller
-AdminApp.controller('MainController', function ($scope, apiService) {
+AdminApp.controller('MainController', function ($rootScope, $scope, $location, $localStorage, authService, apiService) {
 	
 	$scope.$on("$routeChangeStart", function() {
 
@@ -16,6 +16,33 @@ AdminApp.controller('MainController', function ($scope, apiService) {
 	$scope.$on('$viewContentLoaded', function(){
 
 	});
+
+	function successAuth(res) {
+		$localStorage.token = res.token;
+			console.log('authentication: success');
+			setTimeout(function(){ window.location = "/admin/"; }, 1000);
+	}
+
+	$scope.login = function () {
+		var formData = {
+			email: $scope.email,
+			password: $scope.password
+		};
+
+		authService.login(formData, successAuth, function () {
+			$rootScope.error = 'Invalid credentials.';
+		})
+	};
+
+	$scope.logout = function () {
+		authService.logout(function () {
+			console.log('redirect logout');
+			setTimeout(function(){ window.location = "/admin/"; }, 1000);
+
+		});
+	};
+	$scope.token = $localStorage.token;
+	$scope.tokenClaims = authService.getTokenClaims();
 
 	// get service function to be used async
 	apiService.getEdges().then(function(edges) {
