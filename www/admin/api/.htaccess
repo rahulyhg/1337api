@@ -11,6 +11,7 @@ RewriteEngine On
 # API ENDPOINTS by elijah
 # ----------------------------------------------------------------------------------------
 RewriteCond 	%{REQUEST_FILENAME} !-f
-RewriteRule 	^([^/]+)$ index.php?action=$1 [L]
-RewriteRule 	^([^/]+)/([^/]+)$ index.php?action=$1&edge=$2 [L]
-RewriteRule 	^([^/]+)/([^/]+)/([^/]+)$ index.php?action=$1&edge=$2&param=$3 [L]
+RewriteRule 	^([^/]+)$ index.php?mode=$1 [L]
+RewriteRule 	^([^/]+)/([^/]+)$ index.php?mode=$1&action=$2 [L]
+RewriteRule 	^([^/]+)/([^/]+)/([^/]+)$ index.php?mode=$1&action=$2&edge=$3 [L]
+RewriteRule 	^([^/]+)/([^/]+)/([^/]+)/([^/]+)$ index.php?mode=$1&action=$2&edge=$3&param=$4 [L]

@@ -24,8 +24,99 @@ if($config['api']['debug']){
 	R::debug( TRUE, 0 );
 }
 
+if ($_GET['mode'] == 'private'){
+	// add require private API.
+}
+
 /* ***************************************************************************************************
-** GET ROUTES ****************************************************************************************
+** API SIGNIN FUNCTIONS ******************************************************************************
+*************************************************************************************************** */ 
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_SERVER['QUERY_STRING'] == 'mode=signin') {
+		$request['action'] = 'signin';
+		$request['content']	 = json_decode(file_get_contents("php://input"),true);
+		api_signin($request, $config);
+		exit();
+};
+
+function api_signin($request, $config){
+
+	// validate credentials
+	$userCredentials = array(
+		'email' => $request['content']['email'],
+		'password' => md5($request['content']['password']),
+	);
+
+	$user = R::findOne('user', 'email = :email and password = :password and active = true', $userCredentials );
+
+	if(!empty($user)){
+
+		$tokenId    = base64_encode(mcrypt_create_iv(32));
+		$issuedAt   = R::isoDateTime();
+		$notBefore  = $issuedAt + 10;             //Adding 10 seconds
+		$expire     = $notBefore + 60;            // Adding 60 seconds
+		$serverName = 'serverName'; // Retrieve the server name from config file
+    
+    /*
+     * Create the token as an array
+     */
+    $data = [
+        'iat'  => $issuedAt,         // Issued at: time when the token was generated
+        'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
+        'iss'  => $serverName,       // Issuer
+        'nbf'  => $notBefore,        // Not before
+        'exp'  => $expire,           // Expire
+        'data' => [                  // Data related to the signer user
+            'id'   => $user['id'], // userid from the users table
+            'name'   => $user['name'], // userid from the users table
+            'email' => $userCredentials['email'], // User name
+        ]
+    ];
+
+/*
+     * Extract the key, which is coming from the config file. 
+     * 
+     * Best suggestion is the key to be a binary string and 
+     * store it in encoded in a config file. 
+     *
+     * Can be generated with base64_encode(openssl_random_pseudo_bytes(64));
+     *
+     * keep it secure! You'll need the exact key to verify the 
+     * token later.
+     */
+    $secretKey = base64_decode($config['auth']['jwtKey']);
+    
+    /*
+     * Encode the array to a JWT string.
+     * Second parameter is the key to encode the token.
+     * 
+     * The output string can be validated at http://jwt.io/
+     */
+    $jwt = JWT::encode(
+        $data,      //Data to be encoded in the JWT
+        $secretKey, // The signing key
+        'HS512'     // Algorithm used to sign the token, see https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40#section-3
+        );
+        
+    $unencodedArray = ['jwt' => $jwt];
+ 
+    $result['token'] = $jwt;
+
+
+	}
+	else{
+		$result['msg'] = 'Usuário inválido!';
+		$result['HttpResponse'] = 'HTTP_UNAUTHORIZED';
+
+	}	
+
+	// OUTPUT
+	api_output($result);
+
+};
+
+/* ***************************************************************************************************
+** PRIVATE GET ROUTES ********************************************************************************
 *************************************************************************************************** */ 
 
 if($_SERVER['REQUEST_METHOD'] == 'GET') {
@@ -129,7 +220,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 };
 
 /* ***************************************************************************************************
-** POST ROUTES ***************************************************************************************
+** PRIVATE POST ROUTES *******************************************************************************
 *************************************************************************************************** */ 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -150,10 +241,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 
 	switch($request['action']) {
-
-		case 'signin':
-				api_signin($request, $config);
-		break;
 
 		case 'create':
 			if (in_array($request['edge'], $config['api']['beans'])){
@@ -181,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 };
 
 /* ***************************************************************************************************
-** PUT ROUTES ****************************************************************************************
+** PRIVATE PUT ROUTES ********************************************************************************
 *************************************************************************************************** */ 
 
 if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
@@ -214,7 +301,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 };
 
 /* ***************************************************************************************************
-** DELETE ROUTES ****************************************************************************************
+** PRIVATE DELETE ROUTES *****************************************************************************
 *************************************************************************************************** */ 
 
 if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
@@ -246,143 +333,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 };
 
 /* ***************************************************************************************************
-** RETURN FUNCTIONS **********************************************************************************
+** PRIVATE RETURN FUNCTIONS **************************************************************************
 *************************************************************************************************** */ 
-
-function api_signin($request, $config){
-
-	// validate credentials
-	$userCredentials = array(
-		'email' => $request['content']['email'],
-		'password' => md5($request['content']['password']),
-	);
-
-	$user = R::findOne('user', 'email = :email and password = :password and active = true', $userCredentials );
-
-	if(!empty($user)){
-
-		$tokenId    = base64_encode(mcrypt_create_iv(32));
-		$issuedAt   = R::isoDateTime();
-		$notBefore  = $issuedAt + 10;             //Adding 10 seconds
-		$expire     = $notBefore + 60;            // Adding 60 seconds
-		$serverName = 'serverName'; // Retrieve the server name from config file
-    
-    /*
-     * Create the token as an array
-     */
-    $data = [
-        'iat'  => $issuedAt,         // Issued at: time when the token was generated
-        'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
-        'iss'  => $serverName,       // Issuer
-        'nbf'  => $notBefore,        // Not before
-        'exp'  => $expire,           // Expire
-        'data' => [                  // Data related to the signer user
-            'id'   => $user['id'], // userid from the users table
-            'name'   => $user['name'], // userid from the users table
-            'email' => $userCredentials['email'], // User name
-        ]
-    ];
-
-/*
-     * Extract the key, which is coming from the config file. 
-     * 
-     * Best suggestion is the key to be a binary string and 
-     * store it in encoded in a config file. 
-     *
-     * Can be generated with base64_encode(openssl_random_pseudo_bytes(64));
-     *
-     * keep it secure! You'll need the exact key to verify the 
-     * token later.
-     */
-    $secretKey = base64_decode($config['auth']['jwtKey']);
-    
-    /*
-     * Encode the array to a JWT string.
-     * Second parameter is the key to encode the token.
-     * 
-     * The output string can be validated at http://jwt.io/
-     */
-    $jwt = JWT::encode(
-        $data,      //Data to be encoded in the JWT
-        $secretKey, // The signing key
-        'HS512'     // Algorithm used to sign the token, see https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40#section-3
-        );
-        
-    $unencodedArray = ['jwt' => $jwt];
- 
-    $result['token'] = $jwt;
-
-
-	}
-	else{
-		$result['msg'] = 'Usuário inválido!';
-		$result['HttpResponse'] = 'HTTP_UNAUTHORIZED';
-
-	}	
-
-
-
-
-
-	
-//	$userExists = R::find( 'user', $userCredentials);
-//	$result['userExists'] = $userExists;
-
-//	if(!empty($userExists){
-//		$result['msg'] = 'Usuário válido!';
-//	}
-//	else{
-//		$result['msg'] = 'Usuário inválido!';
-//	}	
-
-
-//	$result['user'] = $user;
-
-
-//	$result['userExists'] = R::find('user',' email = '.$request['content']['email']);
-
-
-
-//	if ( ! $token = JWTAuth::attempt($credentials)) {
-//		return Response::json(false, HttpResponse::HTTP_UNAUTHORIZED);
-//	}
-//
-//	return Response::json(compact('token'));
-
-
-	// OUTPUT
-	api_output($result);
-
-};
-
-function api_create($request, $config){
-	$item = R::dispense( $request['edge'] );
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
-
-	foreach ($request['content'] as $k => $v) {
-
-		// IF rel uploads many-to-many relationship
-		if($k == 'uploads_id' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
-			
-			$upload = R::dispense( 'uploads' );
-			$upload->id = $v;
-			$item->sharedUploadList[] = $upload;
-		}
-		else{
-			$item[$k] = $v;			
-		}		
-	};
-
-	$item['created'] 	= R::isoDateTime();
-	$item['modified'] 	= R::isoDateTime();
-
-	$id = R::store($item);
-	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
-
-	// OUTPUT
-	api_output($result);
-
-};
 
 function api_read($request, $config){
 
