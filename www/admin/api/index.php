@@ -54,7 +54,15 @@ function api_output($result){
 };
 
 function api_forbidden($config){
-	$result['message'] = $config['api']['messages']['forbidden'];
+
+	$result = array(
+		'result' 	=> 1,
+		'error' 	=> true,
+		'success' 	=> false,
+		'message' 	=> $config['api']['messages']['forbidden'],
+		'data' 		=> array()
+	);
+
 	echo json_encode($result);
 };
 

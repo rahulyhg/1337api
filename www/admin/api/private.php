@@ -9,94 +9,87 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-	if ( in_array($request['action'], $config['api']['actions']['get']) ){
+	switch($request['action']) {
 
-		switch($request['action']) {
+		case 'hi':
+			$result['message'] = $config['api']['messages']['hi'];
+			api_output($result);
+		break;
 
-			case 'hi':
-				$result['message'] = $config['api']['messages']['hi'];
-				api_output($result);
-			break;
-
-			case 'edges':
-				if (empty($request['edge'])){
-					api_edges($config);
-				} else {
-					api_forbidden($config);
-				}
-			break;
-
-			case 'search':
-				if (in_array($request['edge'], $config['api']['beans'])){
-					api_search($request);
-				}
-				else{
-					api_forbidden($config);
-				}
-			break;
-
-			case 'read':
-				if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
-					api_read($request, $config);
-				}
-				else{
-					api_forbidden($config);
-				}
-			break;
-
-			case 'exists':
-				if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
-					api_exists($request, $config);
-				}
-				else{
-					api_forbidden($config);
-				}
-			break;
-
-			case 'list':
-				if (in_array($request['edge'], $config['api']['beans'])){
-					api_list($request, $config);
-				}
-				else{
-					api_forbidden($config);
-				}
-			break;
-
-			case 'count':
-				if (in_array($request['edge'], $config['api']['beans']) && empty($request['param'])){
-					api_count($request, $config);
-				}
-				else{
-					api_forbidden($config);
-				}
-			break;
-
-			case 'schema':
-				if (in_array($request['edge'], $config['api']['beans'])){
-					api_schema($request, $config);
-				}
-				else{
-					api_forbidden($config);
-				}
-			break;		
-
-			case 'export':
-				if (in_array($request['edge'], $config['api']['beans'])){
-					api_export($request, $config);
-				}
-				else{
-					api_forbidden($config);
-				}
-			break;		
-
-			default:
+		case 'edges':
+			if (empty($request['edge'])){
+				api_edges($config);
+			} else {
 				api_forbidden($config);
-			break;
-		};
+			}
+		break;
 
-	} 
-	else {
-		api_forbidden($config);
+		case 'search':
+			if (in_array($request['edge'], $config['api']['beans'])){
+				api_search($request);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;
+
+		case 'read':
+			if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
+				api_read($request, $config);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;
+
+		case 'exists':
+			if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
+				api_exists($request, $config);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;
+
+		case 'list':
+			if (in_array($request['edge'], $config['api']['beans'])){
+				api_list($request, $config);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;
+
+		case 'count':
+			if (in_array($request['edge'], $config['api']['beans']) && empty($request['param'])){
+				api_count($request, $config);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;
+
+		case 'schema':
+			if (in_array($request['edge'], $config['api']['beans'])){
+				api_schema($request, $config);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;		
+
+		case 'export':
+			if (in_array($request['edge'], $config['api']['beans'])){
+				api_export($request, $config);
+			}
+			else{
+				api_forbidden($config);
+			}
+		break;		
+
+		default:
+			api_forbidden($config);
+		break;
 	};
 
 };
