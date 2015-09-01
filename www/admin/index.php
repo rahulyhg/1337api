@@ -45,7 +45,7 @@
 		<ul class="nav navbar-right top-nav">
 			<li dropdown keyboard-nav>
 				<a class="dropdown-toggle" dropdown-toggle>
-					<i class="fa fa-user"></i> Elijah Hatem <b class="caret"></b>
+					<i class="fa fa-user"></i> {{user.name}} <b class="caret"></b>
 				</a>
 				<ul class="dropdown-menu" role="menu" aria-labelledby="simple-btn-keyboard-nav">
 					<li role="menuitem"><a href="#/"><i class="fa fa-fw fa-user"></i> Minha Conta</a></li>

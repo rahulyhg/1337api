@@ -277,8 +277,9 @@ function api_signin($request, $config){
         'nbf'  => $notBefore,        // Not before
         'exp'  => $expire,           // Expire
         'data' => [                  // Data related to the signer user
-            'userId'   => $user['id'], // userid from the users table
-            'userName' => $userCredentials['email'], // User name
+            'id'   => $user['id'], // userid from the users table
+            'name'   => $user['name'], // userid from the users table
+            'email' => $userCredentials['email'], // User name
         ]
     ];
 
