@@ -31,7 +31,7 @@ $request = array(
 *************************************************************************************************** */ 
 
 switch ($request['mode']) {
-	case 'signin':
+	case 'auth':
 		require 'auth.php';
 		break;
 	case 'private':

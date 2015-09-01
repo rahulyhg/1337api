@@ -11,7 +11,7 @@ AdminApp.constant(
 	'config', 
 		{
 			API_BASE_URL: 	'/admin/api/private',
-			API_SIGNIN_URL: '/admin/api/signin',
+			API_SIGNIN_URL: '/admin/api/auth',
 		}
 )
 
