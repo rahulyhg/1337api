@@ -1,7 +1,4 @@
 <?php
-error_reporting(-1);
-ini_set('error_reporting', E_ALL);
-error_reporting(E_ALL & ~E_NOTICE);
 
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
@@ -23,6 +20,21 @@ $config['api']['beans'] = R::inspect();
 if($config['api']['debug']){
 	R::debug( TRUE, 0 );
 }
+
+/* ***************************************************************************************************
+** API REQUEST ***************************************************************************************
+*************************************************************************************************** */ 
+
+$request = array(
+	'mode' 		=> $_REQUEST['mode'],
+	'action' 	=> $_REQUEST['action'],
+	'edge' 		=> $_REQUEST['edge'],
+	'param'	 	=> $_REQUEST['param']
+);
+
+/* ***************************************************************************************************
+** PRIVATE *******************************************************************************************
+*************************************************************************************************** */ 
 
 if ($_GET['mode'] == 'private'){
 	// add require private API.
@@ -119,15 +131,9 @@ function api_signin($request, $config){
 ** PRIVATE GET ROUTES ********************************************************************************
 *************************************************************************************************** */ 
 
-if($_SERVER['REQUEST_METHOD'] == 'GET') {
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-	if( !empty($_GET) && in_array($_GET['action'], $config['api']['actions']['get'])){
-
-		$request = array(
-			'action' 	=> $_GET['action'],
-			'edge' 		=> $_GET['edge'],
-			'param'	 	=> $_GET['param']
-		);
+	if ( in_array($request['action'], $config['api']['actions']['get']) ){
 
 		switch($request['action']) {
 
@@ -225,20 +231,7 @@ if($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-	if($_SERVER['QUERY_STRING'] == 'action=signin'){
-		$request['action'] = 'signin';
-		$request['content']	 = json_decode(file_get_contents("php://input"),true);
-
-	}
-	else{
-		$arrayReqUri = explode('/', $_SERVER['REQUEST_URI']);
-
-		$request = array(
-			'action'	 => $arrayReqUri[sizeof($arrayReqUri) - 2],
-			'edge'		 => $arrayReqUri[sizeof($arrayReqUri) - 1],
-			'content'	 => json_decode(file_get_contents("php://input"),true)
-		);
-	}
+	$request['content'] = json_decode(file_get_contents("php://input"),true);
 
 	switch($request['action']) {
 
@@ -273,14 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 
-	$arrayReqUri = explode('/', $_SERVER['REQUEST_URI']);
-
-	$request = array(
-		'action'	 => $arrayReqUri[sizeof($arrayReqUri) - 3],
-		'edge'		 => $arrayReqUri[sizeof($arrayReqUri) - 2],
-		'param'		 => $arrayReqUri[sizeof($arrayReqUri) - 1],
-		'content'	 => json_decode(file_get_contents("php://input"),true)
-	);
+	$request['content'] = json_decode(file_get_contents("php://input"),true);
 
 	switch($request['action']) {
 
@@ -306,14 +292,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 
 if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 
-	$arrayReqUri = explode('/', $_SERVER['REQUEST_URI']);
-
-	$request = array(
-		'action'	 => $arrayReqUri[sizeof($arrayReqUri) - 3],
-		'edge'		 => $arrayReqUri[sizeof($arrayReqUri) - 2],
-		'param'		 => $arrayReqUri[sizeof($arrayReqUri) - 1],
-	);
-
 	switch($request['action']) {
 
 		case 'destroy':
@@ -335,6 +313,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 /* ***************************************************************************************************
 ** PRIVATE RETURN FUNCTIONS **************************************************************************
 *************************************************************************************************** */ 
+
+function api_create($request, $config){
+	$item = R::dispense( $request['edge'] );
+	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
+
+	foreach ($request['content'] as $k => $v) {
+
+		// IF rel uploads many-to-many relationship
+		if($k == 'uploads_id' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+			
+			$upload = R::dispense( 'uploads' );
+			$upload->id = $v;
+			$item->sharedUploadList[] = $upload;
+		}
+		else{
+			$item[$k] = $v;			
+		}		
+	};
+
+	$item['created'] 	= R::isoDateTime();
+	$item['modified'] 	= R::isoDateTime();
+
+	$id = R::store($item);
+	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
+
+	// OUTPUT
+	api_output($result);
+
+};
 
 function api_read($request, $config){
 
