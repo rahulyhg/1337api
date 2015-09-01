@@ -4,9 +4,9 @@ ANGULAR ADMIN APP CONTROLLERS
 
 // Main Controller
 AdminApp.controller('MainController', function ($rootScope, $scope, $location, $localStorage, authService, apiService) {
-	
-	$scope.$on("$routeChangeStart", function() {
 
+	$scope.$on("$routeChangeStart", function() {
+		// fired on success of viewContent load.
 	});
 
 	$scope.$on("$routeChangeSuccess", function() {
@@ -14,7 +14,7 @@ AdminApp.controller('MainController', function ($rootScope, $scope, $location, $
 	});
 
 	$scope.$on('$viewContentLoaded', function(){
-
+		// fired on success of viewContent load.
 	});
 
 	function successAuth(res) {
@@ -25,8 +25,8 @@ AdminApp.controller('MainController', function ($rootScope, $scope, $location, $
 
 	$scope.login = function () {
 		var formData = {
-			email: $scope.email,
-			password: $scope.password
+			email: $scope.user.email,
+			password: $scope.user.password
 		};
 
 		authService.login(formData, successAuth, function () {
@@ -41,8 +41,18 @@ AdminApp.controller('MainController', function ($rootScope, $scope, $location, $
 
 		});
 	};
+
 	$scope.token = $localStorage.token;
 	$scope.tokenClaims = authService.getTokenClaims();
+	$scope.user = $scope.tokenClaims.data;
+
+	$scope.isAuth = function() {
+		if ( !empty($scope.tokenClaims.data) ) {
+			return true;
+		} else {
+			return false;
+		}
+	};
 
 	// get service function to be used async
 	apiService.getEdges().then(function(edges) {

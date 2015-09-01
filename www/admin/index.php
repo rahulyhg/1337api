@@ -26,10 +26,10 @@
 
 <body ng-app="AdminApp">
 
-<div id="wrapper" ng-controller="MainController">
+<div id="wrapper" ng-class="{login : isAuth() == false}" ng-controller="MainController">
 
 	<!-- NAVIGATION -->
-	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="MenuController">
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="MenuController" ng-if="isAuth()">
 
 		<!-- NAVIGATION - HEADER MENU -->
 		<div class="navbar-header">

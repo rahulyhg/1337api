@@ -124,7 +124,7 @@ AdminApp.config([
 			{redirectTo: '/'}
 		);
 
-		// INTERCEPTOR
+/*		// INTERCEPTOR
 		$httpProvider.interceptors.push(['$q', '$location', '$localStorage', function ($q, $location, $localStorage) {
 			return {
 				'request': function (config) {
@@ -142,7 +142,7 @@ AdminApp.config([
 					return $q.reject(response);
 				}
 			};
-		}]);
+		}]);*/
 
 	}
 ]);
@@ -151,7 +151,7 @@ AdminApp.config([
 ANGULAR RUN
 ************************************************************ */		
 
-AdminApp.run(function($rootScope, $location, $localStorage) {
+/*AdminApp.run(function($rootScope, $location, $localStorage) {
 	$rootScope.$on( "$routeChangeStart", function(event, next) {
 		if ($localStorage.token == null) {
 			if ( next.templateUrl === "partials/restricted.html") {
@@ -159,7 +159,7 @@ AdminApp.run(function($rootScope, $location, $localStorage) {
 			}
 		}
 	});
-});
+});*/
 
 /* ************************************************************
 ANGULAR JSON EDITOR
