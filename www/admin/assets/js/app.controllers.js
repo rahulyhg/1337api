@@ -56,9 +56,11 @@ AdminApp.controller('MainController', function ($rootScope, $scope, $location, $
 	};
 
 	// get service function to be used async
-	apiService.getEdges().then(function(edges) {
-		$scope.edges = edges;
-	});
+	if ( !empty($scope.tokenClaims.data) ) {
+		apiService.getEdges().then(function(edges) {
+			$scope.edges = edges;
+		});		
+	}
 
 });
 
