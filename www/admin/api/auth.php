@@ -1,7 +1,5 @@
 <?php
 use \Firebase\JWT\JWT;
-// docs: http://www.sitepoint.com/php-authorization-jwt-json-web-tokens/
-//       http://www.toptal.com/web/cookie-free-authentication-with-json-web-tokens-an-example-in-laravel-and-angularjs
 
 /* ***************************************************************************************************
 ** AUTH INIT *****************************************************************************************

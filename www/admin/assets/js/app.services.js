@@ -174,3 +174,30 @@ AdminApp.factory("apiService", function ($q, $http, $location, $route, config) {
 
 	return apiService;
 });
+
+/* ************************************************************
+ANGULAR ADMIN APP INTERCEPTORS
+************************************************************ */		
+
+// apiInterceptor Factory
+AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', function($q, $location, $localStorage) {  
+
+	var apiInterceptor = {
+		'request': function (config) {
+			config.headers = config.headers || {};
+			if ($localStorage.token) {
+				config.headers.Authorization = 'Bearer ' + $localStorage.token;
+			}
+			return config;
+		},
+		'responseError': function (response) {
+			if (response.status === 401 || response.status === 403) {
+				delete $localStorage.token;
+				$location.path('/login');
+			}
+			return $q.reject(response);
+		}
+	};
+
+    return apiInterceptor;
+}]);
