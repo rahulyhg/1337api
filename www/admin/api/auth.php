@@ -30,9 +30,9 @@ function api_signin($request, $config){
 	if(!empty($user)){
 
 		$tokenId    = base64_encode(mcrypt_create_iv(32));
-		$issuedAt   = R::isoDateTime();
-		$notBefore  = $issuedAt + 10; 				// Adding 10 seconds
-		$expire     = $notBefore + 60; 				// Adding 60 seconds
+		$issuedAt   = strtotime(R::isoDateTime());
+		$notBefore  = $issuedAt; 					// Instant
+		$expire     = $notBefore + 3600; 			// Adding 3600 seconds
 		$serverName = $config['auth']['jwtIssuer']; // Retrieve the server name from config file
 	
 		// create the token as an array

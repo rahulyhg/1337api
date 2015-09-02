@@ -19,12 +19,9 @@ if($config['api']['debug']){
 ** API REQUEST ***************************************************************************************
 *************************************************************************************************** */ 
 
-$request = array(
-	'mode' 		=> $_REQUEST['mode'],
-	'action' 	=> $_REQUEST['action'],
-	'edge' 		=> $_REQUEST['edge'],
-	'param'	 	=> $_REQUEST['param']
-);
+foreach ($_REQUEST as $k => $v) {
+	$request[$k] = $v;
+}
 
 /* ***************************************************************************************************
 ** API REQUEST MODE **********************************************************************************
@@ -56,11 +53,11 @@ function api_output($result){
 function api_forbidden($config){
 
 	$result = array(
-		'result' 	=> 1,
-		'error' 	=> true,
-		'success' 	=> false,
-		'message' 	=> $config['api']['messages']['forbidden'],
-		'data' 		=> array()
+		'res' 		=> 1,											// response flag
+		'error' 	=> true,										// error boolean
+		'success' 	=> false,										// success boolean
+		'msg' 		=> $config['api']['messages']['forbidden'],		// msg string
+		'data' 		=> array()										// data returned
 	);
 
 	echo json_encode($result);
