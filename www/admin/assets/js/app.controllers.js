@@ -3,10 +3,10 @@ ANGULAR ADMIN APP CONTROLLERS
 ************************************************************ */
 
 // Main Controller
-AdminApp.controller('MainController', function ($scope, apiService) {
-	
-	$scope.$on("$routeChangeStart", function() {
+AdminApp.controller('MainController', function ($rootScope, $scope, $location, $localStorage, authService, apiService) {
 
+	$scope.$on("$routeChangeStart", function() {
+		// fired on success of viewContent load.
 	});
 
 	$scope.$on("$routeChangeSuccess", function() {
@@ -14,13 +14,53 @@ AdminApp.controller('MainController', function ($scope, apiService) {
 	});
 
 	$scope.$on('$viewContentLoaded', function(){
-
+		// fired on success of viewContent load.
 	});
+
+	function successAuth(res) {
+		$localStorage.token = res.token;
+			console.log('authentication: success');
+			setTimeout(function(){ window.location = "/admin/"; }, 1000);
+	}
+
+	$scope.login = function () {
+		var formData = {
+			email: $scope.user.email,
+			password: $scope.user.password
+		};
+
+		authService.login(formData, successAuth, function () {
+			var message = {'data': {'message': 'Login/Senha incorreta, tente novamente.'}};
+			$scope.$broadcast('sendAlert', message);
+		})
+	};
+
+	$scope.logout = function () {
+		authService.logout(function () {
+			console.log('redirect logout');
+			setTimeout(function(){ window.location = "/admin/"; }, 1000);
+
+		});
+	};
+
+	$scope.token = $localStorage.token;
+	$scope.tokenClaims = authService.getTokenClaims();
+	$scope.user = $scope.tokenClaims.data;
+
+	$scope.isAuth = function() {
+		if ( !empty($scope.tokenClaims.data) ) {
+			return true;
+		} else {
+			return false;
+		}
+	};
 
 	// get service function to be used async
-	apiService.getEdges().then(function(edges) {
-		$scope.edges = edges;
-	});
+	if ( !empty($scope.tokenClaims.data) ) {
+		apiService.getEdges().then(function(edges) {
+			$scope.edges = edges;
+		});		
+	}
 
 });
 
@@ -44,7 +84,7 @@ AdminApp.controller('MenuController', function ($scope, $location) {
 });
 
 // LIST Controller
-AdminApp.controller('ListController', function ($scope, $location, $http, $routeParams, schema, list, count) {
+AdminApp.controller('ListController', function ($scope, $location, $http, $routeParams, schema, list, count, config) {
 	
 	$scope.alert 			= {};
 	$scope.schema 			= schema;
@@ -69,14 +109,14 @@ AdminApp.controller('ListController', function ($scope, $location, $http, $route
 	};
 
 	$scope.onExport = function() {
-		window.open('api/export/'+ $routeParams.edge);
+		window.open(config.API_BASE_URL + '/export/'+ $routeParams.edge);
 	};
 
 	$scope.onDestroy = function(id) {
 		var destroyItem = confirm('Tem certeza que deseja excluir?');
 
 		if (destroyItem) {
-			$http.delete('api/destroy/'+ $routeParams.edge +'/'+id).then(function(response) {
+			$http.delete(config.API_BASE_URL + '/destroy/'+ $routeParams.edge +'/'+id).then(function(response) {
 				$scope.$broadcast('sendAlert', response);
 				delete $scope.items[id];
 			});
@@ -126,7 +166,7 @@ AdminApp.controller('UpdateController', function ($scope, schema, read) {
 });
 
 // Form Controller
-AdminApp.controller('FormController', function ($scope, $http, $location, $routeParams) {
+AdminApp.controller('FormController', function ($scope, $http, $location, $routeParams, config) {
 	
 	var edge 	= $routeParams.edge;
 	var id 		= $routeParams.id;
@@ -150,7 +190,7 @@ AdminApp.controller('FormController', function ($scope, $http, $location, $route
 	$scope.onCreate = function() {
 
 		var item = $scope.editor.getValue();
-		$http.post('api/create/'+edge, item).success(function(){
+		$http.post(config.API_BASE_URL + '/create/'+edge, item).success(function(){
 			$location.path('/list/'+edge);
 		});
 
@@ -159,7 +199,7 @@ AdminApp.controller('FormController', function ($scope, $http, $location, $route
 	$scope.onUpdate = function(){
 	
 		var item = $scope.editor.getValue();
-		$http.put('api/update/'+edge+'/'+id, item).success(function() {
+		$http.put(config.API_BASE_URL + '/update/'+edge+'/'+id, item).success(function() {
 			$location.path('/list/'+edge);
 		});
 	};
@@ -168,7 +208,7 @@ AdminApp.controller('FormController', function ($scope, $http, $location, $route
 		var destroyItem = confirm('Tem certeza que deseja excluir?');
 
 		if (destroyItem) {
-			$http.delete('api/destroy/'+edge+'/'+id).then(function(response) {
+			$http.delete(config.API_BASE_URL + '/destroy/'+edge+'/'+id).then(function(response) {
 				$location.path('/list/'+edge);
 			});
 		}

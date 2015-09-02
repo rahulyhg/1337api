@@ -11,6 +11,8 @@
 
 /* bootstrap */
 html {background-color: #ffffff;}
+
+#wrapper.login {padding: 0;}
 #page-wrapper {min-height:100px;}
 
 .table>tbody>tr>td, 

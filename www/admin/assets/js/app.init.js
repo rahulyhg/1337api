@@ -1,13 +1,23 @@
 /* ************************************************************
 ANGULAR INIT
 ************************************************************ */
-var AdminApp = angular.module('AdminApp', ['ngRoute', 'angular-loading-bar', 'angular-json-editor', 'ui.bootstrap']);
+var AdminApp = angular.module('AdminApp', ['ngRoute', 'ngStorage', 'angular-loading-bar', 'angular-json-editor', 'ui.bootstrap']);
 
 /* ************************************************************
-ANGULAR ROUTES
+ANGULAR CONSTANTS
 ************************************************************ */			
 
-// NG Routes Provider
+AdminApp.constant(
+	'config', 
+		{
+			API_BASE_URL: 	'/admin/api/private',
+			API_SIGNIN_URL: '/admin/api/auth',
+		}
+)
+
+/* ************************************************************
+ANGULAR CONFIG - NG ROUTES PROVIDER
+************************************************************ */			
 
 AdminApp.config([
 	'$routeProvider',
@@ -21,10 +31,21 @@ AdminApp.config([
 				controller: 	'DashboardController',
 				controllerAs: 	'dashboard',
 				resolve: {
+					auth: 	function(authService){ return authService.isAuth(); 	},	
 					hi: 	function(apiService){ return apiService.getHi(); 		},
-					edges: 	function(apiService){ return apiService.getEdges(); 	},				
+					edges: 	function(apiService){ return apiService.getEdges(); 	},			
 				}
 			}	
+		);
+
+		// AUTH
+		$routeProvider.when(
+			'/login', 
+			{
+				templateUrl: 	'assets/tpl/login.html',
+				controller: 	'MainController',
+				controllerAs: 	'main',
+			}
 		);
 
 		// CRUD		
@@ -35,6 +56,7 @@ AdminApp.config([
 				controller: 	'ListController',
 				controllerAs: 	'list',
 				resolve: {
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 		},
 					list: 	function(apiService){ return apiService.getList(); 			},
@@ -50,6 +72,7 @@ AdminApp.config([
 				controller: 	'CreateController',
 				controllerAs: 	'create',
 				resolve: {
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},
 					schema: function(apiService){ return apiService.getSchema(); 		},
 				}
@@ -63,6 +86,7 @@ AdminApp.config([
 				controller: 	'ReadController',
 				controllerAs: 	'read',
 				resolve: {	
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 		},
 					read: 	function(apiService){ return apiService.getRead(); 			},
@@ -77,6 +101,7 @@ AdminApp.config([
 				controller: 	'UpdateController',
 				controllerAs: 	'update',
 				resolve: {	
+					auth: 	function(authService){ return authService.isAuth(); 		},	
 					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 		},
 					read: 	function(apiService){ return apiService.getRead(); 			},
@@ -96,9 +121,19 @@ AdminApp.config([
 		$routeProvider.otherwise(
 			{redirectTo: '/'}
 		);
-
 	}
 ]);
+
+
+/* ************************************************************
+ANGULAR CONFIG - HTTP PROVIDER
+************************************************************ */			
+
+AdminApp.config([
+	'$httpProvider', 
+	function($httpProvider) {
+    	$httpProvider.interceptors.push('apiInterceptor');
+}]);
 
 /* ************************************************************
 ANGULAR JSON EDITOR
@@ -132,7 +167,7 @@ var jeUploadFunction = function(type, file, cbs) {
 										},
 										type: 'POST',
 										// TODO: need to pass "edge" at upload url.
-										url: 'api/upload/page',
+										url: 'api/private/upload/page',
 										contentType: "application/json; charset=utf-8",
 										dataType: "json",
 										data: uploadData,

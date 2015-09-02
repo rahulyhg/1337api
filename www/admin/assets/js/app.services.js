@@ -2,14 +2,67 @@
 ANGULAR ADMIN APP SERVICES
 ************************************************************ */		
 
-AdminApp.factory("apiService", function($q, $http, $location, $route){
+// authService Factory
+AdminApp.factory('authService', function ($http, $localStorage, $location, config) {
+
+	function urlBase64Decode(str) {
+		var output = str.replace('-', '+').replace('_', '/');
+		switch (output.length % 4) {
+			case 0:
+				break;
+			case 2:
+				output += '==';
+				break;
+			case 3:
+				output += '=';
+				break;
+			default:
+				throw 'Illegal base64url string!';
+		}
+		return window.atob(output);
+	}
+
+	function getClaimsFromToken() {
+		var token = $localStorage.token;
+		var user = {};
+		if (typeof token !== 'undefined') {
+			var encoded = token.split('.')[1];
+			user = JSON.parse(urlBase64Decode(encoded));
+		}
+		return user;
+	}
+
+	var tokenClaims = getClaimsFromToken();
+
+	return {
+		isAuth: function() {
+			if(empty(tokenClaims)){
+				$location.url('/login');
+			};
+		},
+		login: function (data, success, error) {
+			$http.post(config.API_SIGNIN_URL, data).success(success).error(error)
+		},
+		logout: function (success) {
+			tokenClaims = {};
+			delete $localStorage.token;
+			success();
+		},
+		getTokenClaims: function () {
+			return tokenClaims;
+		}
+	};
+});
+
+// apiService Factory
+AdminApp.factory("apiService", function ($q, $http, $location, $route, config) {
 
 	var apiService = {
 
 		getHi: function() {
 			var deferred = $q.defer();
 			
-			hi = $http.get('api/hi').then(function(response) {
+			hi = $http.get(config.API_BASE_URL + '/hi').then(function(response) {
 				deferred.resolve(response.data);
 			});
 
@@ -32,7 +85,7 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 					// validate if id param is required
 					if(id !== undefined){
 						
-						idCheck = $http.get('api/exists/'+edge+'/'+id).then(function(response) {
+						idCheck = $http.get(config.API_BASE_URL + '/exists/'+edge+'/'+id).then(function(response) {
 
 							// validate if ID exist in database					
 							if(response.data.exists === true){
@@ -64,7 +117,7 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 		getEdges: function() {
 			var deferred = $q.defer();
 
-			edges = $http.get('api/edges').then(function(response) {
+			edges = $http.get(config.API_BASE_URL + '/edges').then(function(response) {
 				deferred.resolve(response.data.beans);
 			});
 			
@@ -75,7 +128,7 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 			var deferred = $q.defer();
 			var edge = $route.current.params.edge;
 
-			schema = $http.get('api/schema/'+edge).then(function(response) {
+			schema = $http.get(config.API_BASE_URL + '/schema/'+edge).then(function(response) {
 				deferred.resolve(response.data);
 			});
 			
@@ -87,7 +140,7 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 			var edge = $route.current.params.edge;
 			var page = $route.current.params.page;
 
-			list = $http.get('api/list/'+edge+'/'+page).then(function(response) {
+			list = $http.get(config.API_BASE_URL + '/list/'+edge+'/'+page).then(function(response) {
 				deferred.resolve(response.data);
 			});
 			
@@ -98,7 +151,7 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 			var deferred = $q.defer();
 			var edge = $route.current.params.edge;
 
-			count = $http.get('api/count/'+edge).then(function(response) {
+			count = $http.get(config.API_BASE_URL + '/count/'+edge).then(function(response) {
 				deferred.resolve(response.data);
 			});
 			
@@ -110,7 +163,7 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 			var edge 	= $route.current.params.edge;
 			var id 		= $route.current.params.id;
 
-			read = $http.get('api/read/'+edge+'/'+id).then(function(response) {
+			read = $http.get(config.API_BASE_URL + '/read/'+edge+'/'+id).then(function(response) {
 				deferred.resolve(response.data);
 			});
 			
@@ -121,3 +174,35 @@ AdminApp.factory("apiService", function($q, $http, $location, $route){
 
 	return apiService;
 });
+
+/* ************************************************************
+ANGULAR ADMIN APP INTERCEPTORS
+************************************************************ */		
+
+// apiInterceptor Factory
+AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', function($q, $location, $localStorage) {  
+
+	var apiInterceptor = {
+		'request': function (config) {
+			config.headers = config.headers || {};
+			if ($localStorage.token) {
+				config.headers.Authorization = 'Bearer ' + $localStorage.token;
+			}
+			return config;
+		},
+		'responseError': function (response) {
+			if (response.status === 400 || response.status === 401 || response.status === 403) {
+
+				if(typeof reloadLock === 'undefined'){
+					reloadLock = true;
+					delete $localStorage.token;
+					tokenClaims = {};
+					window.location.reload();
+				}
+			}
+			return $q.reject(response);
+		}
+	};
+
+    return apiInterceptor;
+}]);

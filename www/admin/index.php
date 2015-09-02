@@ -26,10 +26,10 @@
 
 <body ng-app="AdminApp">
 
-<div id="wrapper" ng-controller="MainController">
+<div id="wrapper" ng-class="{login : isAuth() == false}" ng-controller="MainController">
 
 	<!-- NAVIGATION -->
-	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="MenuController">
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="MenuController" ng-if="isAuth()">
 
 		<!-- NAVIGATION - HEADER MENU -->
 		<div class="navbar-header">
@@ -45,13 +45,13 @@
 		<ul class="nav navbar-right top-nav">
 			<li dropdown keyboard-nav>
 				<a class="dropdown-toggle" dropdown-toggle>
-					<i class="fa fa-user"></i> Elijah Hatem <b class="caret"></b>
+					<i class="fa fa-user"></i> {{user.name}} <b class="caret"></b>
 				</a>
 				<ul class="dropdown-menu" role="menu" aria-labelledby="simple-btn-keyboard-nav">
 					<li role="menuitem"><a href="#/"><i class="fa fa-fw fa-user"></i> Minha Conta</a></li>
 					<li role="menuitem"><a href="#/"><i class="fa fa-fw fa-gear"></i> Configurações</a></li>
 					<li class="divider"></li>
-					<li role="menuitem"><a href="#/"><i class="fa fa-fw fa-power-off"></i> Log Out</a></li>
+					<li role="menuitem"><a ng-click="logout()"><i class="fa fa-fw fa-power-off"></i> Log Out</a></li>
 				</ul>
 			</li>
 		</ul>
@@ -100,11 +100,13 @@
 
 <!-- JAVASCRIPT -->
 <script type="text/javascript" src="assets/js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/phpjs.js"></script>
 <script type="text/javascript" src="assets/js/libs/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/jsoneditor.min.js"></script>
 
 <script type="text/javascript" src="assets/js/libs/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-route.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/angular-ngStorage.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-loading-bar.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-json-editor.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-ui-bootstrap/ui-bootstrap.min.js"></script>
