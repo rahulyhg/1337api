@@ -8,7 +8,8 @@
 	);
 
 	$config['auth'] = array(
-		'jwtKey' => 'VYFBH3XEduP724aIhZESyk3Ru+h3sxI5w0nbRwnYrrbymjvnf3ZCWkqJO26V4AhYQAtQk02dHO1wbi4Xjs9QUA==',
+		'jwtKey' 	=> 'VYFBH3XEduP724aIhZESyk3Ru+h3sxI5w0nbRwnYrrbymjvnf3ZCWkqJO26V4AhYQAtQk02dHO1wbi4Xjs9QUA==',
+		'jwtIssuer' => 'localhost.issuer'
 	);
 
 	/* CONFIG API - GLOBALS */
