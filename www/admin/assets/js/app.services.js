@@ -196,13 +196,12 @@ AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', function
 		'responseError': function (response) {
 			if (response.status === 400 || response.status === 401 || response.status === 403) {
 
-				if(typeof reloadLock === 'undefined'){
+				if( $location.path() !== '/login' && typeof reloadLock === 'undefined' ){
 					reloadLock = true;
 					delete $localStorage.token;
 					tokenClaims = {};
 					window.location.href = window.location.pathname;
-				}
-
+				};
 			}
 			return $q.reject(response);
 		}
