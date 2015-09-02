@@ -32,7 +32,7 @@ function api_validateToken($authHeader, $config){
 		} 
 		else {
 			// No token was able to be extracted from the authorization header
-			header('HTTP/1.0 400 Bad Request');
+			header('HTTP/1.0 401 Unauthorized');
 			return false;
 		}
 
@@ -54,7 +54,7 @@ if(array_key_exists('Authorization', $headers) && api_validateToken($headers['Au
 }
 else{
 	$auth = false;
-	header('HTTP/1.0 400 Bad Request');
+	header('HTTP/1.0 401 Unauthorized');
 	die();
 };
 
