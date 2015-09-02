@@ -6,10 +6,9 @@
 	<meta charset='utf-8'>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" type="image/gif" href="assets/images/favicon.gif"/>
+	<link rel="icon" type="image/gif" href="assets/favicon.ico"/>
 
 	<title>Admin Dashboard</title>
-	<meta name="description" content="">
 	<meta name="author" content="de elijah">
 
 	<!-- CSS -->
@@ -60,7 +59,7 @@
 		<!-- NAVIGATION - MAIN MENU -->
 		<div class="collapse navbar-collapse navbar-ex1-collapse">
 			<ul class="nav navbar-nav side-nav">
-				<li ng-class="isActive('dashboard')"><a href="#/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
+				<li ng-class="isActive('dashboard')"><a href="#/dashboard"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
 
 				<!-- if no relationship -->
 				<li ng-class="isActive(edge.name)" ng-if="!edge.has_child && !edge.has_parent" ng-repeat="edge in edges">
