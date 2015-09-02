@@ -149,20 +149,6 @@ AdminApp.config([
 ]);
 
 /* ************************************************************
-ANGULAR RUN
-************************************************************ */		
-
-/*AdminApp.run(function($rootScope, $location, $localStorage) {
-	$rootScope.$on( "$routeChangeStart", function(event, next) {
-		if ($localStorage.token == null) {
-			if ( next.templateUrl === "partials/restricted.html") {
-				$location.path("/login");
-			}
-		}
-	});
-});*/
-
-/* ************************************************************
 ANGULAR JSON EDITOR
 ************************************************************ */			
 
