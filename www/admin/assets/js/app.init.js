@@ -5,7 +5,7 @@ var AdminApp = angular.module('AdminApp', ['ngRoute', 'ngStorage', 'angular-load
 
 /* ************************************************************
 ANGULAR CONSTANTS
-************************************************************ */			
+************************************************************ */
 
 AdminApp.constant(
 	'config', 
@@ -17,7 +17,7 @@ AdminApp.constant(
 
 /* ************************************************************
 ANGULAR CONFIG - NG ROUTES PROVIDER
-************************************************************ */			
+************************************************************ */
 
 AdminApp.config([
 	'$routeProvider',
@@ -26,6 +26,18 @@ AdminApp.config([
 		// DASHBOARD
 		$routeProvider.when(
 			'/', 
+			{
+				controller: 	'MainController',
+				controllerAs: 	'main',
+				resolve: {
+					auth: 	function(authService){ return authService.isAuth(); 	},	
+				}
+			}	
+		);
+
+		// DASHBOARD
+		$routeProvider.when(
+			'/dashboard', 
 			{
 				templateUrl: 	'assets/tpl/dashboard.html', 
 				controller: 	'DashboardController',
@@ -38,7 +50,7 @@ AdminApp.config([
 			}	
 		);
 
-		// AUTH
+		// LOGIN
 		$routeProvider.when(
 			'/login', 
 			{

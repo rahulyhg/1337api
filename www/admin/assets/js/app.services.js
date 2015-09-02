@@ -38,6 +38,9 @@ AdminApp.factory('authService', function ($http, $localStorage, $location, confi
 		isAuth: function() {
 			if(empty(tokenClaims)){
 				$location.url('/login');
+			}
+			else{
+				$location.url('/dashboard');				
 			};
 		},
 		login: function (data, success, error) {
