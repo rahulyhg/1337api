@@ -69,13 +69,12 @@ function api_signin($request, $config){
 
 	// IF USER DOES NOT EXISTS
 	else {
-		$result['msg'] = 'Usuário inválido!';
-		$result['HttpResponse'] = 'HTTP_UNAUTHORIZED';
+		header('HTTP/1.0 401 Unauthorized');
 	}	
 
 	// OUTPUT
 	api_output($result);
-	
+
 };
 
 ?>
