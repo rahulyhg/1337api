@@ -200,8 +200,9 @@ AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', function
 					reloadLock = true;
 					delete $localStorage.token;
 					tokenClaims = {};
-					window.location.reload();
+					window.location.href = window.location.pathname;
 				}
+
 			}
 			return $q.reject(response);
 		}
