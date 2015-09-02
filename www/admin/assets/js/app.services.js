@@ -36,12 +36,15 @@ AdminApp.factory('authService', function ($http, $localStorage, $location, confi
 
 	return {
 		isAuth: function() {
+
 			if(empty(tokenClaims)){
 				$location.url('/login');
-			}
-			else{
+			};
+
+			if(!empty(tokenClaims) && $location.path() == '/'){
 				$location.url('/dashboard');				
 			};
+
 		},
 		login: function (data, success, error) {
 			$http.post(config.API_SIGNIN_URL, data).success(success).error(error)
