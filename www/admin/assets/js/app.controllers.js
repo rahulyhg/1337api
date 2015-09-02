@@ -32,7 +32,8 @@ AdminApp.controller('MainController', function ($rootScope, $scope, $location, $
 		authService.login(formData, successAuth, function () {
 			var message = {'data': {'message': 'Login/Senha incorreta, tente novamente.'}};
 			$scope.$broadcast('sendAlert', message);
-		})
+		});
+
 	};
 
 	$scope.logout = function () {
