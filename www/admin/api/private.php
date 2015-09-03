@@ -250,9 +250,13 @@ function api_create($request, $config){
 			$upload->id = $v;
 			$item->sharedUploadList[] = $upload;
 		}
+		// IF field is a password, hash it up
+		else if ($k == 'password'){
+			$item[$k] = md5($v);
+		}
 		else{
 			$item[$k] = $v;			
-		}		
+		};		
 	};
 
 	$item['created'] 	= R::isoDateTime();
@@ -346,9 +350,14 @@ function api_update($request, $config){
 			$upload->id = $v;
 			$item->sharedUploadList[] = $upload;
 		}
+		// IF field is a password, hash it up
+		else if ($k == 'password'){
+			$item[$k] = md5($v);
+		}
 		else{
 			$item[$k] = $v;			
-		}		
+		};
+		
 	};
 		$item['modified'] = R::isoDateTime();
 
