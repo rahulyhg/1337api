@@ -110,7 +110,14 @@ AdminApp.controller('ListController', function ($scope, $location, $http, $route
 	};
 
 	$scope.onExport = function() {
-		window.open(config.API_BASE_URL + '/export/'+ $routeParams.edge);
+
+		$http.get(config.API_BASE_URL + '/export/'+ $routeParams.edge, { responseType: 'arraybuffer' })
+			.success(function(data) {
+				var file = new Blob([data], { type: 'application/csv' });
+				var expTimestamp = Date.now();
+				saveAs(file, 'export-' + $routeParams.edge +'-' + expTimestamp + '.csv');
+		});
+
 	};
 
 	$scope.onDestroy = function(id) {

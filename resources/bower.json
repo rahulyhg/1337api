@@ -1,6 +1,6 @@
 {
   "name": "AdminApp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "Elijah Hatem <elias.hatem@gmail.com>"
   ],
@@ -14,13 +14,14 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "*",
-    "angular-route": "~1.4.4",
     "angular": "~1.4.4",
+    "angular-json-editor": "git@github.com:rodikh/angular-json-editor.git",
+    "angular-route": "~1.4.4",
     "bootstrap": "~3.3.5",
     "bower": "*",
-    "angular-json-editor": "git@github.com:rodikh/angular-json-editor.git",
     "install": "~1.0.4",
+    "file-saver.js": "*",
+    "jquery": "*",
     "startbootstrap-sb-admin-2": "~1.0.7"
   }
 }

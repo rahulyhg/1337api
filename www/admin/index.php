@@ -99,9 +99,10 @@
 
 <!-- JAVASCRIPT -->
 <script type="text/javascript" src="assets/js/libs/jquery.min.js"></script>
-<script type="text/javascript" src="assets/js/libs/phpjs.js"></script>
 <script type="text/javascript" src="assets/js/libs/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/jsoneditor.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/FileSaver.min.js"></script>
+<script type="text/javascript" src="assets/js/libs/phpjs.js"></script>
 
 <script type="text/javascript" src="assets/js/libs/angular.min.js"></script>
 <script type="text/javascript" src="assets/js/libs/angular-route.min.js"></script>

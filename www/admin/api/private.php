@@ -320,8 +320,9 @@ function api_export($request, $config){
 
 	// OUTPUT
 	$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
-	$name = $dateHash.'-export-'.$request['edge'].'.csv';
+	$name = 'export-'.$request['edge'].'-'.$dateHash.'.csv';
     
+	header('Cache-Control: max-age=60, must-revalidate');
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename='. $name);
     header('Pragma: no-cache');
