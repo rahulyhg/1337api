@@ -13,7 +13,7 @@ $config['api']['beans'] = R::inspect();
 
 if($config['api']['debug']){
 	R::debug( TRUE, 0 );
-}
+};
 
 /* ***************************************************************************************************
 ** API REQUEST ***************************************************************************************
@@ -21,7 +21,7 @@ if($config['api']['debug']){
 
 foreach ($_REQUEST as $k => $v) {
 	$request[$k] = $v;
-}
+};
 
 /* ***************************************************************************************************
 ** API REQUEST MODE **********************************************************************************
@@ -38,29 +38,42 @@ switch ($request['mode']) {
 		require 'public.php';
 		break;
 	default:
-		api_forbidden($config);
+		api_forbidden();
 		break;
-}
+};
 
 /* ***************************************************************************************************
 ** API OUTPUT FUNCTIONS ******************************************************************************
 *************************************************************************************************** */ 
 
 function api_output($result){
+
+/* TODO: idea for default response
+	$output = array(
+		'res' 		=> 1,										// response flag
+		'error' 	=> false,									// error boolean
+		'success' 	=> true,									// success boolean
+		'msg' 		=> '',										// msg string
+		'data' 		=> $result									// data returned
+	);
+*/
+
 	echo json_encode($result);
+
 };
 
-function api_forbidden($config){
+function api_forbidden(){
+   global $config;
 
-	$result = array(
-		'res' 		=> 1,											// response flag
-		'error' 	=> true,										// error boolean
-		'success' 	=> false,										// success boolean
-		'msg' 		=> $config['api']['messages']['forbidden'],		// msg string
-		'data' 		=> array()										// data returned
+	$output = array(
+		'res' 		=> 1,										// response flag
+		'error' 	=> true,									// error boolean
+		'success' 	=> false,									// success boolean
+		'msg' 		=> $config['api']['messages']['forbidden'],	// msg string
+		'data' 		=> array()									// data returned
 	);
 
-	echo json_encode($result);
+	echo json_encode($output);
 };
 
 ?>

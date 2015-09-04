@@ -7,7 +7,8 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 ** API AUTH FUNCTIONS ********************************************************************************
 *************************************************************************************************** */ 
 
-function api_validateToken($authHeader, $config){
+function api_validateToken($authHeader){
+   global $config;
 
 	// Look for the 'authorization' header
 	if($authHeader){
@@ -49,7 +50,7 @@ function api_validateToken($authHeader, $config){
 // check authorization headers
 $headers = apache_request_headers();
 	
-if(array_key_exists('Authorization', $headers) && api_validateToken($headers['Authorization'], $config) ){
+if(array_key_exists('Authorization', $headers) && api_validateToken($headers['Authorization']) ){
 	$auth = true;
 }
 else{
@@ -66,15 +67,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 	switch($request['action']) {
 
 		case 'hi':
-			$result['message'] = $config['api']['messages']['hi'];
-			api_output($result);
+			api_hi();
 		break;
 
 		case 'edges':
 			if (empty($request['edge'])){
-				api_edges($config);
+				api_edges();
 			} else {
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
@@ -83,66 +83,66 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 				api_search($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		case 'read':
 			if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
-				api_read($request, $config);
+				api_read($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		case 'exists':
 			if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
-				api_exists($request, $config);
+				api_exists($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		case 'list':
 			if (in_array($request['edge'], $config['api']['beans'])){
-				api_list($request, $config);
+				api_list($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		case 'count':
 			if (in_array($request['edge'], $config['api']['beans']) && empty($request['param'])){
-				api_count($request, $config);
+				api_count($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		case 'schema':
 			if (in_array($request['edge'], $config['api']['beans'])){
-				api_schema($request, $config);
+				api_schema($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;		
 
 		case 'export':
 			if (in_array($request['edge'], $config['api']['beans'])){
-				api_export($request, $config);
+				api_export($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;		
 
 		default:
-			api_forbidden($config);
+			api_forbidden();
 		break;
 	};
 
@@ -160,10 +160,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		case 'create':
 			if (in_array($request['edge'], $config['api']['beans'])){
-				api_create($request, $config);
+				api_create($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
@@ -172,12 +172,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				api_upload($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		default:
-				api_forbidden($config);
+				api_forbidden();
 		break;
 	};
 
@@ -195,15 +195,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 
 		case 'update':
 			if (in_array($request['edge'], $config['api']['beans'])){
-				api_update($request, $config);
-			}
+				api_update($request);
+			}   global $config;
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		default:
-				api_forbidden($config);
+				api_forbidden();
 		break;
 	};
 
@@ -222,12 +222,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 				api_destroy($request);
 			}
 			else{
-				api_forbidden($config);
+				api_forbidden();
 			}
 		break;
 
 		default:
-				api_forbidden($config);
+				api_forbidden();
 		break;
 	};
 
@@ -237,7 +237,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 ** PRIVATE RETURN FUNCTIONS **************************************************************************
 *************************************************************************************************** */ 
 
-function api_create($request, $config){
+function api_hi(){
+	global $config;
+	
+	$result['message'] = $config['api']['messages']['hi'];
+
+	// OUTPUT
+	api_output($result);
+};
+
+function api_create($request){
+	global $config;
+
 	$item = R::dispense( $request['edge'] );
 	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
 
@@ -270,7 +281,8 @@ function api_create($request, $config){
 
 };
 
-function api_read($request, $config){
+function api_read($request){
+   global $config;
 
 	// READ - view one
 	$item = R::load( $request['edge'], $request['param'] );
@@ -297,7 +309,8 @@ function api_read($request, $config){
 	api_output($result);
 };
 
-function api_exists($request, $config){
+function api_exists($request){
+   global $config;
 
 	// EXISTS?
 	$exists = R::find($request['edge'],' id = '.$request['param'].' ' );
@@ -314,7 +327,8 @@ function api_exists($request, $config){
 	api_output($result);
 };
 
-function api_export($request, $config){
+function api_export($request){
+   global $config;
 
 	$config = new ExporterConfig();
 	$exporter = new Exporter($config);
@@ -337,7 +351,8 @@ function api_export($request, $config){
     exit();
 };
 
-function api_update($request, $config){
+function api_update($request){
+   global $config;
 
 	$item = R::load( $request['edge'], $request['param'] );
 	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
@@ -379,7 +394,8 @@ function api_destroy($request){
 	api_output($result);
 };
 
-function api_list($request, $config){
+function api_list($request){
+   global $config;
 
 	// LIST - list all
 	if(empty($request['param'])){
@@ -417,8 +433,9 @@ function api_search($request){
 	api_output($result);
 };
 
-function api_count($request, $config){
-	
+function api_count($request){
+	global $config;
+
 	// COUNT - count all
 	$count = R::count( $request['edge'] );
 	$limit = $config['api']['params']['pagination'];
@@ -430,7 +447,8 @@ function api_count($request, $config){
 	api_output($result);
 };
 
-function api_schema($request, $config){
+function api_schema($request){
+   global $config;
 
 	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
 
@@ -569,7 +587,8 @@ function api_schema($request, $config){
 	api_output($result);
 }
 
-function api_edges($config){
+function api_edges(){
+   global $config;
 
 	$hierarchyArr = R::getAll('
 		SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
