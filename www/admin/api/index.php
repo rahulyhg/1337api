@@ -12,6 +12,8 @@ R::setAutoResolve( TRUE );
 $config['api']['beans'] = R::inspect();
 
 if($config['api']['debug']){
+	error_reporting(E_ALL);
+	ini_set('display_errors', 1);
 	R::debug( TRUE, 0 );
 };
 

@@ -75,6 +75,10 @@
 				'title' 	=> 'Telefone',
 				'format' 	=> 'tel',
 			),
+			'password' => array(
+				'type' 		=> 'string',
+				'format' 	=> 'password',
+			),
 		),
 	);
 

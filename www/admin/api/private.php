@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 		case 'update':
 			if (in_array($request['edge'], $config['api']['beans'])){
 				api_update($request);
-			}   global $config;
+			}
 			else{
 				api_forbidden();
 			}
