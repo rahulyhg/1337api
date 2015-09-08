@@ -1,7 +1,7 @@
 <!-- HEADING ROW -->
 <div class="row">
 	<div class="col-lg-12">
-		<h1 class="page-header">Dashboard <small>Admin Overview</small></h1>
+		<h1 class="page-header">Dashboard <small>Visão Geral</small></h1>
 		<ol class="breadcrumb">
 			<li class="active"><i class="fa fa-dashboard"></i> Dashboard</li>
 		</ol>
@@ -23,10 +23,9 @@
 <!-- DASHBOARD ROW -->	
 <div class="row">
 
-	<!-- if no relationship -->
-	<div class="col-lg-3 col-md-6" ng-if="!edge.has_child && !edge.has_parent" ng-repeat="edge in edges">
+	<div class="col-lg-3 col-md-6" ng-if="!edge.has_child" ng-repeat="edge in edges">
+		<div class="panel" ng-class="{'panel-primary': !edge.has_parent , 'panel-green': edge.has_parent}">
 
-		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<div class="row">
 					<div class="col-xs-3">
@@ -38,54 +37,28 @@
 					</div>
 				</div>
 			</div>
-			<a href="#/list/{{edge.name}}">
-				<div class="panel-footer">
-					<span class="pull-left">Ver Todos</span>
-					<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-					<div class="clearfix"></div>
-				</div>
-			</a>
-		</div>
-	</div>
-	<!-- endif -->
 
-	<!-- if one-to-many relationship -->
-	<div class="col-lg-3 col-md-6" ng-if="edge.has_parent" ng-repeat="edge in edges">
-
-		<div href="javascript:;" class="panel panel-green">
-			<div class="panel-heading">
-
-				<div class="row">
-
-					<div class="col-xs-3">
-						<i class="fa fa-{{edge.icon}} fa-5x"></i>
-					</div>
-					<div class="col-xs-9 text-right">
-						<div class="huge">{{edge.count}}</div>
-						<div>{{edge.title}}</div>
-					</div>
-
-				</div>
-				<div class="row">
-					<div class="col-xs-12">
-						Related to:<br />
-						<ul class="list-inline">
+			<div class="panel-footer">
+				<span class="pull-left" ng-if="edge.has_parent">
+					<div class="btn-group">
+						<button class="btn btn-success btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<i class="fa fa-link"></i> Relações <span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu">
 							<li ng-if"edge.has_parent" ng-repeat="submenu in edge.parent">
-								<a href="#/list/{{submenu.name}}"><i class="fa fa-fw fa-{{submenu.icon}}"></i> {{submenu.title}}</a> </li>
+								<a href="#/list/{{submenu.name}}"><i class="fa fa-fw fa-{{submenu.icon}}"></i> {{submenu.title}}</a> 
+							</li>
 						</ul>
-					</div>
-				</div>
+					</div>	
+				</span>
+				<span class="pull-right">
+					<a href="#/list/{{edge.name}}">Ver Todos <i class="fa fa-arrow-circle-right"></i></a>
+				</span>
+				<div class="clearfix"></div>
 			</div>
-			<a href="#/list/{{edge.name}}">
-				<div class="panel-footer">
-					<span class="pull-left">Ver Todos</span>
-					<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-					<div class="clearfix"></div>
-				</div>
-			</a>
+
 		</div>
 	</div>
-	<!-- end if -->
 
 </div>
 <!-- END ROW -->

@@ -29,10 +29,10 @@ html {background-color: #ffffff;}
 	cursor: pointer; 
 }
 
-.panel-heading a {
-	color: #fff;
-}
-
+.panel-heading a {color: #fff; }
+.panel-footer a {line-height:22px;}
+.panel-green a {color:#5cb85c}
+.panel-green a:hover {color:#3d8b3d}
 /* ./end */
 
 /* angular-loading-bar */
