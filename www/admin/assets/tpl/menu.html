@@ -36,12 +36,6 @@
 	<ul class="nav navbar-nav side-nav">
 		<li ng-class="isActive('dashboard')"><a href="#/dashboard"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
 
-		<!-- if no relationship -->
-		<li ng-class="isActive(edge.name)" ng-if="!edge.has_child && !edge.has_parent" ng-repeat="edge in edges">
-			<a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a>
-		</li>
-		<!-- endif -->
-
 		<!-- if one-to-many relationship -->
 		<li ng-if="edge.has_parent" ng-repeat="edge in edges">
 
@@ -56,6 +50,12 @@
 			
 		</li>
 		<!-- end if -->
+
+		<!-- if no relationship -->
+		<li ng-class="isActive(edge.name)" ng-if="!edge.has_child && !edge.has_parent" ng-repeat="edge in edges">
+			<a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a>
+		</li>
+		<!-- endif -->
 
 	</ul>
 </div>
