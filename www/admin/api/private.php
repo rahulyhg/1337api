@@ -459,8 +459,7 @@ function api_count($request){
 
 function api_schema($request){
    global $config;
-
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
+	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$request['edge']);
 
 	// SCHEMA - inspect all
 	$result = array(
