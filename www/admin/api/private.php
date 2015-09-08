@@ -401,11 +401,16 @@ function api_list($request){
 	if(empty($request['param'])){
 		$items = R::findAll( $request['edge'] );
 
-		foreach ($items as $item => $content) {
-			foreach ($content as $k => $v) {
-				$result[$item][$k] = $v;
+		if(!empty($items)){
+			foreach ($items as $item => $content) {
+				foreach ($content as $k => $v) {
+					$result[$item][$k] = $v;
+				};
 			};
-		};
+		} else{
+			$result = array();
+		}
+
 	}
 
 	// LIST - paginated
@@ -415,11 +420,16 @@ function api_list($request){
 		$limit 	= $config['api']['params']['pagination'];
 		$items 	= R::findAll( $request['edge'], 'ORDER BY id LIMIT '.(($page-1)*$limit).', '.$limit);
 
-		foreach ($items as $item => $content) {
-			foreach ($content as $k => $v) {
-				$result[$item][$k] = $v;
-			};
-		};
+		if(!empty($items)){
+			foreach ($items as $item => $content) {
+				foreach ($content as $k => $v) {
+					$result[$item][$k] = $v;
+				};
+			};			
+		} else{
+			$result = array();
+		}
+
 	};
 
 	// OUTPUT
