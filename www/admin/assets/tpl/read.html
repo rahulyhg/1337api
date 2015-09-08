@@ -14,17 +14,12 @@
 <!-- READ FORM ROW -->
 <div class="row">
 	<div class="col-lg-12">
-
-			<json-editor schema="schema" startval="schemaData" on-change="onLoad($editorValue)" buttons-controller="FormController">
-
-				<div class="pull-right">
-					<a href="#/list/{{schema.bean}}" class="btn">Voltar</a>
-			        <a href="#/update/{{schema.bean}}/{{itemId}}" class="btn btn-primary">Editar <span class="fa fa-pencil"></span></a>
-		        </div>
-
-			</json-editor>
-
+		<json-editor schema="schema" startval="schemaData" on-change="onLoad($editorValue)" buttons-controller="FormController">
+			<div class="pull-right">
+				<a href="#/list/{{schema.bean}}" class="btn">Voltar</a>
+				<a href="#/update/{{schema.bean}}/{{itemId}}" class="btn btn-primary">Editar <span class="fa fa-pencil"></span></a>
+			</div>
+		</json-editor>
 	</div>
 </div>
-<br />
 <!-- END READ FORM ROW -->
