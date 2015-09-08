@@ -18,7 +18,7 @@
 		'actions' 	=> array(
 			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists', 'export'),
 			'post' 	=> array('create', 'upload'),
-			'put' 	=> array('update'),
+			'put' 	=> array('update','updatePassword'),
 			'del' 	=> array('destroy'),
 		),
 		'edges'		=> array(

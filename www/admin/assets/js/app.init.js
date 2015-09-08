@@ -60,6 +60,19 @@ AdminApp.config([
 			}
 		);
 
+		// UPDATE PASSWORD
+		$routeProvider.when(
+			'/userAccount/updatePassword', 
+			{
+				templateUrl: 	'assets/tpl/updatePassword.html',
+				controller: 	'UpdatePasswordController',
+				controllerAs: 	'updatePassword',
+				resolve: {	
+					auth: 	function(authService){ return authService.isAuth(); 		},	
+				},
+			}
+		);
+
 		// CRUD		
 		$routeProvider.when( 
 			'/list/:edge/p/:page', 
@@ -117,7 +130,7 @@ AdminApp.config([
 					valid: 	function(apiService){ return apiService.validateParams(); 	},					
 					schema: function(apiService){ return apiService.getSchema(); 		},
 					read: 	function(apiService){ return apiService.getRead(); 			},
-				},				
+				},
 			}	
 		);
 

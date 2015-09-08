@@ -202,6 +202,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
 			}
 		break;
 
+		case 'updatePassword':
+			if ($request['edge'] == "user" && !empty($request['param'])){
+				api_updatePassword($request);
+			}
+			else{
+				api_forbidden();
+			}
+		break;
+
 		default:
 				api_forbidden();
 		break;
@@ -378,6 +387,34 @@ function api_update($request){
 
 	R::store( $item );
 	$result['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+
+	// OUTPUT
+	api_output($result);
+};
+
+function api_updatePassword($request){
+   global $config;
+
+	$item = R::load( $request['edge'], $request['param'] );
+
+	if( $item['password'] == md5($request['content']['password']) ){
+		
+		if ($request['content']['new_password'] == $request['content']['confirm_new_password']) {
+
+			$item['password'] = md5($request['content']['new_password']);
+			$item['modified'] = R::isoDateTime();
+			R::store( $item );
+			$result['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+
+		} else{
+			$result['message'] = 'deu ruim. confirmação não bate';
+
+		}
+
+	} else{
+		$result['message'] = 'deu ruim. password errado';
+
+	}
 
 	// OUTPUT
 	api_output($result);

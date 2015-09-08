@@ -173,6 +173,30 @@ AdminApp.controller('UpdateController', function ($scope, schema, read) {
 
 });
 
+// Update Password Controller
+AdminApp.controller('UpdatePasswordController', function ($scope) {
+
+	// TODO: would be nice to validate if new_password and confirm_new_password are equal values thru JSON Schema frontend.	
+	var schema = 
+		{	"type": "object",
+			"required": true,
+			"properties": {
+				"password": {"type": "string", "format": "password", "title": "Senha Atual", "required": true, "minLength": 1, "maxLength": 191 },
+				"new_password": {"type": "string", "format": "password", "title": "Nova Senha", "required": true, "minLength": 1, "maxLength": 191 },
+				"confirm_new_password": {"type": "string", "format": "password", "title": "Confirme Nova Senha", "required": true, "minLength": 1, "maxLength": 191 },
+			},
+		};
+
+	$scope.schema = schema;
+	$scope.schemaData = {};
+
+	$scope.onChange = function(data) {
+		// fired onChange of form data. 
+		console.dir(data);
+	};
+
+});
+
 // Form Controller
 AdminApp.controller('FormController', function ($scope, $http, $location, $routeParams, config) {
 	
@@ -209,6 +233,16 @@ AdminApp.controller('FormController', function ($scope, $http, $location, $route
 		var item = $scope.editor.getValue();
 		$http.put(config.API_BASE_URL + '/update/'+edge+'/'+id, item).success(function() {
 			$location.path('/list/'+edge);
+		});
+	};
+
+	$scope.onUpdatePassword = function(){
+		var item = $scope.editor.getValue();
+		var id = $scope.$parent.user.id;
+		
+		$http.put(config.API_BASE_URL + '/updatePassword/user/'+id, item).success(function() {
+			console.log('PUT!');
+			//$location.path('/list/'+edge);
 		});
 	};
 
