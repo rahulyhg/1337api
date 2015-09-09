@@ -39,11 +39,11 @@ AdminApp.factory('authService',
         isAuth: function() {
 
             if (empty(tokenClaims)) {
-                $location.url('/login');
+                $location.url('login');
             }
 
             if (!empty(tokenClaims) && $location.path() == '/') {
-                $location.url('/dashboard');
+                $location.url('dashboard');
             }
 
         },

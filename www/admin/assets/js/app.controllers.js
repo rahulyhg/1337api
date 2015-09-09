@@ -20,7 +20,7 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
     function successAuth(res) {
         $localStorage.token = res.token;
             console.log('authentication: success');
-            setTimeout(function() { window.location = '/admin/'; }, 1000);
+            window.location.href = window.location.pathname;
     }
 
     $scope.login = function() {
@@ -39,7 +39,7 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
     $scope.logout = function() {
         authService.logout(function() {
             console.log('redirect logout');
-            setTimeout(function() { window.location = '/admin/'; }, 1000);
+            window.location.href = window.location.pathname;
 
         });
     };

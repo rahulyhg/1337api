@@ -10,8 +10,8 @@ ANGULAR CONSTANTS
 AdminApp.constant(
     'config',
         {
-            API_BASE_URL: '/admin/api/private',
-            API_SIGNIN_URL: '/admin/api/auth',
+            API_BASE_URL: 'api/private',
+            API_SIGNIN_URL: 'api/auth',
         }
 );
 
