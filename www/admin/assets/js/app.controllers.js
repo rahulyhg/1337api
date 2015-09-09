@@ -124,7 +124,7 @@ AdminApp.controller('ListController', function($scope, $location, $http, $routeP
         var destroyItem = confirm('Tem certeza que deseja excluir?');
 
         if (destroyItem) {
-            $http.delete(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
+            $http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
                 $scope.$broadcast('sendAlert', response);
                 delete $scope.items[id];
             });
@@ -230,7 +230,7 @@ AdminApp.controller('FormController', function($scope, $http, $location, $routeP
 
     $scope.onUpdate = function() {
         var item = $scope.editor.getValue();
-        $http.put(config.API_BASE_URL + '/update/' + edge + '/' + id, item).success(function() {
+        $http.post(config.API_BASE_URL + '/update/' + edge + '/' + id, item).success(function() {
             $location.path('/list/' + edge);
         });
     };
@@ -239,7 +239,7 @@ AdminApp.controller('FormController', function($scope, $http, $location, $routeP
         var item = $scope.editor.getValue();
         var id = $scope.$parent.user.id;
 
-        $http.put(config.API_BASE_URL + '/updatePassword/user/' + id, item).success(function() {
+        $http.post(config.API_BASE_URL + '/updatePassword/user/' + id, item).success(function() {
             console.log('PUT!');
             //$location.path('/list/'+edge);
         });
@@ -249,7 +249,7 @@ AdminApp.controller('FormController', function($scope, $http, $location, $routeP
         var destroyItem = confirm('Tem certeza que deseja excluir?');
 
         if (destroyItem) {
-            $http.delete(config.API_BASE_URL + '/destroy/' + edge + '/' + id).then(function(response) {
+            $http.post(config.API_BASE_URL + '/destroy/' + edge + '/' + id).then(function(response) {
                 $location.path('/list/' + edge);
             });
         }

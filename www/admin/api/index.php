@@ -22,14 +22,14 @@ if($config['api']['debug']){
 *************************************************************************************************** */ 
 
 foreach ($_REQUEST as $k => $v) {
-	$request[$k] = $v;
+	$req[$k] = $v;
 };
 
 /* ***************************************************************************************************
 ** API REQUEST MODE **********************************************************************************
 *************************************************************************************************** */ 
 
-switch ($request['mode']) {
+switch ($req['mode']) {
 	case 'auth':
 		require 'auth.php';
 		break;
@@ -40,7 +40,7 @@ switch ($request['mode']) {
 		require 'public.php';
 		break;
 	default:
-		api_forbidden();
+		api_forbid();
 		break;
 };
 
@@ -48,33 +48,21 @@ switch ($request['mode']) {
 ** API OUTPUT FUNCTIONS ******************************************************************************
 *************************************************************************************************** */ 
 
-function api_output($res){
-
-/* TODO: idea for default response
-	$output = array(
-		'success' 	=> true,									// success boolean
-		'error' 	=> false,									// error boolean
-		'msg' 		=> '',										// msg string
-		'res' 		=> $res										// data returned
-	);
-*/
-
-	echo json_encode($res);
-
-};
-
-function api_forbidden(){
+function api_forbid(){
    global $config;
 
-	$output = array(
-		'res' 		=> 1,										// response flag
+	$res = array(
 		'error' 	=> true,									// error boolean
 		'success' 	=> false,									// success boolean
-		'msg' 		=> $config['api']['messages']['forbidden'],	// msg string
-		'data' 		=> array()									// data returned
+		'message' 	=> $config['api']['messages']['forbidden'],	// msg string
 	);
 
-	echo json_encode($output);
+	api_output($res);
+};
+
+// OUTPUT
+function api_output($res){
+	echo json_encode($res);
 };
 
 ?>

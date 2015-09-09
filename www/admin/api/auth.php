@@ -6,22 +6,22 @@ use \Firebase\JWT\JWT;
 *************************************************************************************************** */ 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	$request['content'] = json_decode(file_get_contents("php://input"),true);
-	api_signin($request, $config);
+	$req['content'] = json_decode(file_get_contents("php://input"),true);
+	api_signin($req, $config);
 } else{
-	api_forbidden($config);
+	api_forbid();
 };
 
 /* ***************************************************************************************************
 ** AUTH SIGNIN FUNCTIONS *****************************************************************************
 *************************************************************************************************** */ 
 
-function api_signin($request, $config){
+function api_signin($req, $config){
 
 	// VALIDATE CREDENTIALS
 	$userCredentials = array(
-		'email' => $request['content']['email'],
-		'password' => md5($request['content']['password']),
+		'email' => $req['content']['email'],
+		'password' => md5($req['content']['password']),
 	);
 
 	$user = R::findOne('user', 'email = :email and password = :password and active = true', $userCredentials );

@@ -17,9 +17,7 @@
 		'debug' 	=> FALSE,
 		'actions' 	=> array(
 			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists', 'export'),
-			'post' 	=> array('create', 'upload'),
-			'put' 	=> array('update','updatePassword'),
-			'del' 	=> array('destroy'),
+			'post' 	=> array('create', 'update','updatePassword', 'upload', 'destroy'),
 		),
 		'edges'		=> array(
 			'blacklist' 	=> array('uploads','page_uploads'),

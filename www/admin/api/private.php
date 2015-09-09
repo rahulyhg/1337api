@@ -64,85 +64,85 @@ else{
 *************************************************************************************************** */ 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-	switch($request['action']) {
+	switch($req['action']) {
 
 		case 'hi':
 			api_hi();
 		break;
 
 		case 'edges':
-			if (empty($request['edge'])){
+			if (empty($req['edge'])){
 				api_edges();
 			} else {
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		case 'search':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_search($request);
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_search($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		case 'read':
-			if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
-				api_read($request);
+			if (in_array($req['edge'], $config['api']['beans']) && !empty($req['param'])){
+				api_read($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		case 'exists':
-			if (in_array($request['edge'], $config['api']['beans']) && !empty($request['param'])){
-				api_exists($request);
+			if (in_array($req['edge'], $config['api']['beans']) && !empty($req['param'])){
+				api_exists($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		case 'list':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_list($request);
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_list($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		case 'count':
-			if (in_array($request['edge'], $config['api']['beans']) && empty($request['param'])){
-				api_count($request);
+			if (in_array($req['edge'], $config['api']['beans']) && empty($req['param'])){
+				api_count($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		case 'schema':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_schema($request);
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_schema($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;		
 
 		case 'export':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_export($request);
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_export($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;		
 
 		default:
-			api_forbidden();
+			api_forbid();
 		break;
 	};
 
@@ -154,89 +154,57 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-	$request['content'] = json_decode(file_get_contents("php://input"),true);
+	$req['content'] = json_decode(file_get_contents("php://input"),true);
 
-	switch($request['action']) {
+	switch($req['action']) {
 
 		case 'create':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_create($request);
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_create($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
-
-		case 'upload':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_upload($request);
-			}
-			else{
-				api_forbidden();
-			}
-		break;
-
-		default:
-				api_forbidden();
-		break;
-	};
-
-};
-
-/* ***************************************************************************************************
-** PRIVATE PUT ROUTES ********************************************************************************
-*************************************************************************************************** */ 
-
-if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
-
-	$request['content'] = json_decode(file_get_contents("php://input"),true);
-
-	switch($request['action']) {
 
 		case 'update':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_update($request);
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_update($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		case 'updatePassword':
-			if ($request['edge'] == "user" && !empty($request['param'])){
-				api_updatePassword($request);
+			if ($req['edge'] == "user" && !empty($req['param'])){
+				api_updatePassword($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
-		default:
-				api_forbidden();
+		case 'upload':
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_upload($req);
+			}
+			else{
+				api_forbid();
+			}
 		break;
-	};
-
-};
-
-/* ***************************************************************************************************
-** PRIVATE DELETE ROUTES *****************************************************************************
-*************************************************************************************************** */ 
-
-if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
-
-	switch($request['action']) {
 
 		case 'destroy':
-			if (in_array($request['edge'], $config['api']['beans'])){
-				api_destroy($request);
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_destroy($req);
 			}
 			else{
-				api_forbidden();
+				api_forbid();
 			}
 		break;
 
 		default:
-				api_forbidden();
+				api_forbid();
 		break;
 	};
 
@@ -255,16 +223,16 @@ function api_hi(){
 	api_output($res);
 };
 
-function api_create($request){
+function api_create($req){
 	global $config;
 
-	$item = R::dispense( $request['edge'] );
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
+	$item = R::dispense( $req['edge'] );
+	$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
 
-	foreach ($request['content'] as $k => $v) {
+	foreach ($req['content'] as $k => $v) {
 
 		// IF rel uploads many-to-many relationship
-		if($k == 'uploads_id' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+		if($k == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
 			
 			$upload = R::dispense( 'uploads' );
 			$upload->id = $v;
@@ -290,11 +258,11 @@ function api_create($request){
 
 };
 
-function api_read($request){
+function api_read($req){
    global $config;
 
 	// READ - view one
-	$item = R::load( $request['edge'], $request['param'] );
+	$item = R::load( $req['edge'], $req['param'] );
 
 	foreach ($item as $k => $v) {
 		if(!in_array($k, $config['schema']['default']['blacklist'])) {
@@ -318,11 +286,11 @@ function api_read($request){
 	api_output($res);
 };
 
-function api_exists($request){
+function api_exists($req){
    global $config;
 
 	// EXISTS?
-	$exists = R::find($request['edge'],' id = '.$request['param'].' ' );
+	$exists = R::find($req['edge'],' id = '.$req['param'].' ' );
 
 	if( empty( $exists ) )
 	{
@@ -336,18 +304,18 @@ function api_exists($request){
 	api_output($res);
 };
 
-function api_export($request){
+function api_export($req){
    global $config;
 
 	$config = new ExporterConfig();
 	$exporter = new Exporter($config);
 
-    $bean = R::findAll( $request['edge'] );
+    $bean = R::findAll( $req['edge'] );
     $rawData = R::exportAll($bean, false, array('part'));
 
 	// OUTPUT
 	$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
-	$name = 'export-'.$request['edge'].'-'.$dateHash.'.csv';
+	$name = 'export-'.$req['edge'].'-'.$dateHash.'.csv';
     
 	header('Cache-Control: max-age=60, must-revalidate');
     header('Content-Type: text/csv');
@@ -360,15 +328,15 @@ function api_export($request){
     exit();
 };
 
-function api_update($request){
+function api_update($req){
    global $config;
 
-	$item = R::load( $request['edge'], $request['param'] );
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$request['edge']);
+	$item = R::load( $req['edge'], $req['param'] );
+	$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
 
-	foreach ($request['content'] as $k => $v) {
+	foreach ($req['content'] as $k => $v) {
 		// IF rel uploads many-to-many relationship
-		if($k == 'uploads_id' && in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+		if($k == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
 			
 			$upload = R::dispense( 'uploads' );
 			$upload->id = $v;
@@ -386,25 +354,25 @@ function api_update($request){
 		$item['modified'] = R::isoDateTime();
 
 	R::store( $item );
-	$res['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+	$res['message'] = 'Atualizado com Sucesso. (id: '.$req['param'].')';
 
 	// OUTPUT
 	api_output($res);
 };
 
-function api_updatePassword($request){
+function api_updatePassword($req){
    global $config;
 
-	$item = R::load( $request['edge'], $request['param'] );
+	$item = R::load( $req['edge'], $req['param'] );
 
-	if( $item['password'] == md5($request['content']['password']) ){
+	if( $item['password'] == md5($req['content']['password']) ){
 		
-		if ($request['content']['new_password'] == $request['content']['confirm_new_password']) {
+		if ($req['content']['new_password'] == $req['content']['confirm_new_password']) {
 
-			$item['password'] = md5($request['content']['new_password']);
+			$item['password'] = md5($req['content']['new_password']);
 			$item['modified'] = R::isoDateTime();
 			R::store( $item );
-			$res['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+			$res['message'] = 'Atualizado com Sucesso. (id: '.$req['param'].')';
 
 		} else{
 			$res['message'] = 'deu ruim. confirmação não bate';
@@ -420,23 +388,23 @@ function api_updatePassword($request){
 	api_output($res);
 };
 
-function api_destroy($request){
+function api_destroy($req){
 
-	$item = R::load( $request['edge'], $request['param'] );
+	$item = R::load( $req['edge'], $req['param'] );
     R::trash( $item );
 
-	$res['message'] = 'Excluído com Sucesso. (id: '.$request['param'].')';
+	$res['message'] = 'Excluído com Sucesso. (id: '.$req['param'].')';
 
 	// OUTPUT
 	api_output($res);
 };
 
-function api_list($request){
+function api_list($req){
    global $config;
 
 	// LIST - list all
-	if(empty($request['param'])){
-		$items = R::findAll( $request['edge'] );
+	if(empty($req['param'])){
+		$items = R::findAll( $req['edge'] );
 
 		if(!empty($items)){
 			foreach ($items as $item => $content) {
@@ -453,9 +421,9 @@ function api_list($request){
 	// LIST - paginated
 	else{
 		
-		$page 	= $request['param'];
+		$page 	= $req['param'];
 		$limit 	= $config['api']['params']['pagination'];
-		$items 	= R::findAll( $request['edge'], 'ORDER BY id LIMIT '.(($page-1)*$limit).', '.$limit);
+		$items 	= R::findAll( $req['edge'], 'ORDER BY id LIMIT '.(($page-1)*$limit).', '.$limit);
 
 		if(!empty($items)){
 			foreach ($items as $item => $content) {
@@ -473,18 +441,18 @@ function api_list($request){
 	api_output($res);
 };
 
-function api_search($request){
+function api_search($req){
 	$res['message'] = 'in development: action "search"';
 
 	// OUTPUT
 	api_output($res);
 };
 
-function api_count($request){
+function api_count($req){
 	global $config;
 
 	// COUNT - count all
-	$count = R::count( $request['edge'] );
+	$count = R::count( $req['edge'] );
 	$limit = $config['api']['params']['pagination'];
 
 	$res['sum'] 		= $count;
@@ -494,14 +462,14 @@ function api_count($request){
 	api_output($res);
 };
 
-function api_schema($request){
+function api_schema($req){
    global $config;
-	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$request['edge']);
+	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$req['edge']);
 
 	// SCHEMA - inspect all
 	$res = array(
-		'bean' 					=> $request['edge'],
-		'title' 				=> ucfirst($request['edge']),
+		'bean' 					=> $req['edge'],
+		'title' 				=> ucfirst($req['edge']),
 		'type' 					=> 'object',
 		'required' 				=> true,
 		'additionalProperties' 	=> false,
@@ -606,7 +574,7 @@ function api_schema($request){
 	};
 
 	// MANY-TO-MANY UPLOAD FIELD
-	if(in_array($request['edge'] .'_uploads', $config['api']['beans'])){
+	if(in_array($req['edge'] .'_uploads', $config['api']['beans'])){
 	
 		$res['properties']['uploads_id'] = 
 			
@@ -709,10 +677,10 @@ function api_edges(){
 	api_output($res);
 };
 
-function api_upload($request){
+function api_upload($req){
 
 	// var definition
-	$data = $request['content']['blob'];
+	$data = $req['content']['blob'];
 
 	list($type, $data) 	= explode(';', $data);
 	list(, $data)      	= explode(',', $data);
@@ -723,7 +691,7 @@ function api_upload($request){
 	$basePath 		= '../uploads/';
 	$chronoPath 	= str_replace('-', '/', R::isoDate()) . '/';
 	$fullPath 		= $basePath . $chronoPath;
-	$filename 			= $request['content']['filename'];
+	$filename 			= $req['content']['filename'];
 	$md5Filename 		= md5($filename) . '.' . end(explode('.', $filename));
 
 	// build insert array
@@ -731,8 +699,8 @@ function api_upload($request){
 		'path' 		=> $chronoPath . $md5Filename,
 		'filename' 	=> $md5Filename,
 		'type' 		=> $type,
-		'size' 		=> $request['content']['filesize'],
-		'edge' 		=> $request['edge'],
+		'size' 		=> $req['content']['filesize'],
+		'edge' 		=> $req['edge'],
 		'created' 	=> R::isoDateTime(),
 		'modified' 	=> R::isoDateTime(),
 	);
