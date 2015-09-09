@@ -249,10 +249,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 function api_hi(){
 	global $config;
 	
-	$result['message'] = $config['api']['messages']['hi'];
+	$res['message'] = $config['api']['messages']['hi'];
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_create($request){
@@ -283,10 +283,10 @@ function api_create($request){
 	$item['modified'] 	= R::isoDateTime();
 
 	$id = R::store($item);
-	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
+	$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 
 };
 
@@ -299,7 +299,7 @@ function api_read($request){
 	foreach ($item as $k => $v) {
 		if(!in_array($k, $config['schema']['default']['blacklist'])) {
 
-			$result[$k] = $v;
+			$res[$k] = $v;
 
 			// IF ONE-TO-MANY RELATIONSHIP
 			if(substr($k, -3, 3) == '_id'){
@@ -307,7 +307,7 @@ function api_read($request){
 				$parent = R::load( $parentBean , $v );
 				
 				foreach ($parent as $key => $value) {
-					$result[$parentBean][$v][$key] = $value;
+					$res[$parentBean][$v][$key] = $value;
 				};
 			}
 		
@@ -315,7 +315,7 @@ function api_read($request){
 	};
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_exists($request){
@@ -326,14 +326,14 @@ function api_exists($request){
 
 	if( empty( $exists ) )
 	{
-		$result['exists'] = false;
+		$res['exists'] = false;
 	}
 	else{
-		$result['exists'] = true;
+		$res['exists'] = true;
 	}
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_export($request){
@@ -386,10 +386,10 @@ function api_update($request){
 		$item['modified'] = R::isoDateTime();
 
 	R::store( $item );
-	$result['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+	$res['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_updatePassword($request){
@@ -404,20 +404,20 @@ function api_updatePassword($request){
 			$item['password'] = md5($request['content']['new_password']);
 			$item['modified'] = R::isoDateTime();
 			R::store( $item );
-			$result['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
+			$res['message'] = 'Atualizado com Sucesso. (id: '.$request['param'].')';
 
 		} else{
-			$result['message'] = 'deu ruim. confirmação não bate';
+			$res['message'] = 'deu ruim. confirmação não bate';
 
 		}
 
 	} else{
-		$result['message'] = 'deu ruim. password errado';
+		$res['message'] = 'deu ruim. password errado';
 
 	}
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_destroy($request){
@@ -425,10 +425,10 @@ function api_destroy($request){
 	$item = R::load( $request['edge'], $request['param'] );
     R::trash( $item );
 
-	$result['message'] = 'Excluído com Sucesso. (id: '.$request['param'].')';
+	$res['message'] = 'Excluído com Sucesso. (id: '.$request['param'].')';
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_list($request){
@@ -441,11 +441,11 @@ function api_list($request){
 		if(!empty($items)){
 			foreach ($items as $item => $content) {
 				foreach ($content as $k => $v) {
-					$result[$item][$k] = $v;
+					$res[$item][$k] = $v;
 				};
 			};
 		} else{
-			$result = array();
+			$res = array();
 		}
 
 	}
@@ -460,24 +460,24 @@ function api_list($request){
 		if(!empty($items)){
 			foreach ($items as $item => $content) {
 				foreach ($content as $k => $v) {
-					$result[$item][$k] = $v;
+					$res[$item][$k] = $v;
 				};
 			};			
 		} else{
-			$result = array();
+			$res = array();
 		}
 
 	};
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_search($request){
-	$result['message'] = 'in development: action "search"';
+	$res['message'] = 'in development: action "search"';
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_count($request){
@@ -487,11 +487,11 @@ function api_count($request){
 	$count = R::count( $request['edge'] );
 	$limit = $config['api']['params']['pagination'];
 
-	$result['sum'] 		= $count;
-	$result['pages'] 	= round($count/$limit);
+	$res['sum'] 		= $count;
+	$res['pages'] 	= round($count/$limit);
 	
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 };
 
 function api_schema($request){
@@ -499,7 +499,7 @@ function api_schema($request){
 	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$request['edge']);
 
 	// SCHEMA - inspect all
-	$result = array(
+	$res = array(
 		'bean' 					=> $request['edge'],
 		'title' 				=> ucfirst($request['edge']),
 		'type' 					=> 'object',
@@ -515,7 +515,7 @@ function api_schema($request){
 				$parentBean = substr($field, 0, -3);
 				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
-				$result['properties'][$field] = array(
+				$res['properties'][$field] = array(
 					'type' 				=> 'integer',
 					'title' 			=> ucfirst($parentBean),
 					'required'	 		=> true,
@@ -529,8 +529,8 @@ function api_schema($request){
 				$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parentBean );
 
 				foreach ($parentOptions as $key => $value) {
-					$result['properties'][$field]['enum'][] = $key;
-					$result['properties'][$field]['options']['enum_titles'][] = $value;					
+					$res['properties'][$field]['enum'][] = $key;
+					$res['properties'][$field]['options']['enum_titles'][] = $value;					
 				};
 
 			}
@@ -560,7 +560,7 @@ function api_schema($request){
 				};
 
 				// builds default properties array to json-editor
-				$result['properties'][$field] = array(
+				$res['properties'][$field] = array(
 					'type'			=> $type,
 					'format' 		=> $format,
 					'title' 		=> ucfirst($field),
@@ -570,12 +570,12 @@ function api_schema($request){
 				);
 
 				if(isset($config['schema']['custom']['fields'][$field])){
-					$result['properties'][$field] = array_merge($result['properties'][$field], $config['schema']['custom']['fields'][$field]);
+					$res['properties'][$field] = array_merge($res['properties'][$field], $config['schema']['custom']['fields'][$field]);
 				};
 
 				// add '*' to field title if required.
-				if($result['properties'][$field]['minLength'] > 0){
-					$result['properties'][$field]['title'] = $result['properties'][$field]['title'] . '*';
+				if($res['properties'][$field]['minLength'] > 0){
+					$res['properties'][$field]['title'] = $res['properties'][$field]['title'] . '*';
 				}
 
 			};
@@ -589,7 +589,7 @@ function api_schema($request){
 
 			foreach ($parent as $key => $value) {
 
-				$result['structure'][$parentBean] = array(
+				$res['structure'][$parentBean] = array(
 					'field' 		=> $key,
 					'properties' 	=> $value,
 				);
@@ -598,7 +598,7 @@ function api_schema($request){
 
 		}
 		else{
-			$result['structure'][$field] = array(
+			$res['structure'][$field] = array(
 				'field' 		=> $field,
 				'properties' 	=> $properties,
 			);
@@ -608,7 +608,7 @@ function api_schema($request){
 	// MANY-TO-MANY UPLOAD FIELD
 	if(in_array($request['edge'] .'_uploads', $config['api']['beans'])){
 	
-		$result['properties']['uploads_id'] = 
+		$res['properties']['uploads_id'] = 
 			
 			array(
 				'title' 	=> 'Imagem',
@@ -630,7 +630,7 @@ function api_schema($request){
 	}
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 }
 
 function api_edges(){
@@ -703,10 +703,10 @@ function api_edges(){
 
 	};
 
-	$result['beans'] 	= $beans;
-	$result['actions'] 	= $config['api']['actions'];
+	$res['beans'] 	= $beans;
+	$res['actions'] 	= $config['api']['actions'];
 
-	api_output($result);
+	api_output($res);
 };
 
 function api_upload($request){
@@ -752,11 +752,11 @@ function api_upload($request){
 	};
 
 	$id = R::store($upload);
-	$result['id'] = $id;
-	$result['message'] = 'Criado com Sucesso. (id: '.$id.')';
+	$res['id'] = $id;
+	$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 
 };
 

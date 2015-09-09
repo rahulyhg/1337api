@@ -48,19 +48,18 @@ switch ($request['mode']) {
 ** API OUTPUT FUNCTIONS ******************************************************************************
 *************************************************************************************************** */ 
 
-function api_output($result){
+function api_output($res){
 
 /* TODO: idea for default response
 	$output = array(
-		'res' 		=> 1,										// response flag
-		'error' 	=> false,									// error boolean
 		'success' 	=> true,									// success boolean
+		'error' 	=> false,									// error boolean
 		'msg' 		=> '',										// msg string
-		'data' 		=> $result									// data returned
+		'res' 		=> $res										// data returned
 	);
 */
 
-	echo json_encode($result);
+	echo json_encode($res);
 
 };
 

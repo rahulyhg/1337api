@@ -62,7 +62,7 @@ function api_signin($request, $config){
 		);
 
 		$unencodedArray = ['jwt' => $jwt];
- 		$result['token'] = $jwt;
+ 		$res['token'] = $jwt;
 	}
 
 	// IF USER DOES NOT EXISTS
@@ -71,7 +71,7 @@ function api_signin($request, $config){
 	}	
 
 	// OUTPUT
-	api_output($result);
+	api_output($res);
 
 };
 
