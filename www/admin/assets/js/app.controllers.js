@@ -40,7 +40,6 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
         authService.logout(function() {
             console.log('redirect logout');
             window.location.href = window.location.pathname;
-
         });
     };
 
