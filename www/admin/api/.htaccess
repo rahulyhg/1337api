@@ -8,6 +8,11 @@ RewriteEngine On
 #
 # RewriteBase /
 
+# API AUTHORIZATION REWRITE RULES
+# ----------------------------------------------------------------------------------------
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
 # API ENDPOINTS by elijah
 # ----------------------------------------------------------------------------------------
 RewriteCond 	%{REQUEST_FILENAME} !-f
