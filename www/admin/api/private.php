@@ -468,10 +468,25 @@ function api_schema($req){
 
 	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$req['edge']);
 
+	// checks if title caption exists in dictionary
+	if (!empty($caption['edges']['title'][$req['edge']])) {
+		$title = $caption['edges']['title'][$req['edge']];
+	} else {
+		$title = ucfirst($req['edge']);
+	}
+
+	// checks if icon caption exists in dictionary
+	if (!empty($caption['edges']['icon'][$req['edge']])) {
+		$icon = $caption['edges']['icon'][$req['edge']];
+	} else {
+		$icon = 'th-list';
+	}
+
 	// SCHEMA - inspect all
 	$res = array(
 		'bean' 					=> $req['edge'],
-		'title' 				=> ucfirst($req['edge']),
+		'title' 				=> $title,
+		'icon' 					=> $icon,
 		'type' 					=> 'object',
 		'required' 				=> true,
 		'additionalProperties' 	=> false,
