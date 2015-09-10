@@ -463,7 +463,9 @@ function api_count($req){
 };
 
 function api_schema($req){
-   global $config;
+	global $config;
+	global $caption;
+
 	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$req['edge']);
 
 	// SCHEMA - inspect all
@@ -527,11 +529,14 @@ function api_schema($req){
 					};
 				};
 
+				// checks if title caption exists in dictionary
+				$title = (!empty($caption['fields'][$field]) ? $caption['fields'][$field] : ucfirst($field));
+					
 				// builds default properties array to json-editor
 				$res['properties'][$field] = array(
 					'type'			=> $type,
 					'format' 		=> $format,
-					'title' 		=> ucfirst($field),
+					'title' 		=> $title,
 					'required'	 	=> true,
 					'minLength' 	=> $minLength,
 					'maxLength'		=> $maxLength

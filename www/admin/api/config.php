@@ -1,5 +1,14 @@
 <?php
-date_default_timezone_set('America/Sao_Paulo');
+
+	/* CONFIG LOCALE - MySQL */
+	date_default_timezone_set('America/Sao_Paulo');
+
+	use Sinergi\Dictionary\Dictionary;
+	$config['language'] = array(
+		'locale' 	 => 'pt_BR',
+		'base_dir' 	 => __DIR__ . '/locale',
+	);
+	$caption = new Dictionary($config['language']['locale'], $config['language']['base_dir'] );
 
 	/* CONFIG DB - MySQL */
 	$config['db'] = array(
@@ -55,11 +64,7 @@ date_default_timezone_set('America/Sao_Paulo');
 
 	$config['schema']['custom'] = array(
 		'fields' => array(
-			'name' => array(
-				'title' 	=> 'Nome',
-			),
 			'description' => array(
-				'title' 	=> 'Descrição',
 				'type'		=> 'string',
 				'format'	=> 'html',
 				'options' 	=> array(
