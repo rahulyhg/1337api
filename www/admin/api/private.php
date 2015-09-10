@@ -485,9 +485,18 @@ function api_schema($req){
 				$parentBean = substr($field, 0, -3);
 				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
+				// checks if title caption exists in dictionary
+				if (!empty($caption['fields'][$req['edge']][$parentBean])) {
+					$title = $caption['fields'][$req['edge']][$parentBean];
+				} elseif (!empty($caption['fields']['default'][$parentBean])) {
+					$title = $caption['fields']['default'][$parentBean];
+				} else {
+					$title = ucfirst($parentBean);
+				}
+
 				$res['properties'][$field] = array(
 					'type' 				=> 'integer',
-					'title' 			=> ucfirst($parentBean),
+					'title' 			=> $title,
 					'required'	 		=> true,
 					'minLength'	 		=> 1,
 					'enum' 				=> array(),
@@ -530,8 +539,14 @@ function api_schema($req){
 				};
 
 				// checks if title caption exists in dictionary
-				$title = (!empty($caption['fields'][$field]) ? $caption['fields'][$field] : ucfirst($field));
-					
+				if (!empty($caption['fields'][$req['edge']][$field])) {
+					$title = $caption['fields'][$req['edge']][$field];
+				} elseif (!empty($caption['fields']['default'][$field])) {
+					$title = $caption['fields']['default'][$field];
+				} else {
+					$title = ucfirst($field);
+				}
+
 				// builds default properties array to json-editor
 				$res['properties'][$field] = array(
 					'type'			=> $type,
@@ -608,6 +623,7 @@ function api_schema($req){
 
 function api_edges(){
    global $config;
+   global $caption;
 
 	$hierarchyArr = R::getAll('
 		SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
@@ -629,11 +645,25 @@ function api_edges(){
 
 		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
 
+			// checks if title caption exists in dictionary
+			if (!empty($caption['edges']['title'][$v])) {
+				$title = $caption['edges']['title'][$v];
+			} else {
+				$title = ucfirst($v);
+			}
+
+			// checks if icon caption exists in dictionary
+			if (!empty($caption['edges']['icon'][$v])) {
+				$icon = $caption['edges']['icon'][$v];
+			} else {
+				$icon = 'th-list';
+			}
+
 			$beans[$v] = array(
 				'name' 			=> $v,
-				'title' 		=> ucfirst($v),
+				'title' 		=> $title,
 				'count' 		=> R::count($v),
-				'icon' 			=> 'th-list',
+				'icon' 			=> $icon,
 				'has_parent' 	=> false,
 				'has_child' 	=> false,
 			);

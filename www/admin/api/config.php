@@ -72,11 +72,9 @@
 					),
 			),
 			'email' => array(
-				'title' 	=> 'E-Mail',
 				'format' 	=> 'email',
 			),
 			'phone' => array(
-				'title' 	=> 'Telefone',
 				'format' 	=> 'tel',
 			),
 			'password' => array(
