@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "83d3507778d002524959cfb0f8079b69",
+    "hash": "125d8d423976a31ff2d0bddea67e6ad4",
     "packages": [
         {
             "name": "firebase/php-jwt",
@@ -116,13 +116,59 @@
                 "shasum": null
             },
             "type": "library"
+        },
+        {
+            "name": "sinergi/dictionary",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sinergi/dictionary.git",
+                "reference": "2361e4bfdd360763a8544d730a1e337bafcbaa10"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sinergi/dictionary/zipball/2361e4bfdd360763a8544d730a1e337bafcbaa10",
+                "reference": "2361e4bfdd360763a8544d730a1e337bafcbaa10",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Sinergi\\Dictionary\\": "src/Dictionary"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gabriel Bull",
+                    "email": "me@gabrielbull.com"
+                }
+            ],
+            "description": "PHP Dictionary library",
+            "homepage": "https://github.com/sinergi/dictionary",
+            "keywords": [
+                "dictionary",
+                "sinergi",
+                "text"
+            ],
+            "time": "2015-05-11 20:00:26"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "redbeanphp": 20
+        "redbeanphp": 20,
+        "sinergi/dictionary": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

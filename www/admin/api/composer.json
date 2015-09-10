@@ -15,6 +15,7 @@
 	"require": {
 			"redbeanphp": "master@dev",
 			"firebase/php-jwt": "~3.0",
+			"sinergi/dictionary": "dev-master",
 	        "goodby/csv": "*"
     	},
 	

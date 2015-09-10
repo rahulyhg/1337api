@@ -115,5 +115,52 @@
             "export",
             "import"
         ]
+    },
+    {
+        "name": "sinergi/dictionary",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/sinergi/dictionary.git",
+            "reference": "2361e4bfdd360763a8544d730a1e337bafcbaa10"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/sinergi/dictionary/zipball/2361e4bfdd360763a8544d730a1e337bafcbaa10",
+            "reference": "2361e4bfdd360763a8544d730a1e337bafcbaa10",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4.0"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4"
+        },
+        "time": "2015-05-11 20:00:26",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "Sinergi\\Dictionary\\": "src/Dictionary"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Gabriel Bull",
+                "email": "me@gabrielbull.com"
+            }
+        ],
+        "description": "PHP Dictionary library",
+        "homepage": "https://github.com/sinergi/dictionary",
+        "keywords": [
+            "dictionary",
+            "sinergi",
+            "text"
+        ]
     }
 ]
