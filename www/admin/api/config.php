@@ -1,14 +1,7 @@
 <?php
 
-	/* CONFIG LOCALE - MySQL */
+	/* CONFIG PHP - GLOBALS */
 	date_default_timezone_set('America/Sao_Paulo');
-
-	use Sinergi\Dictionary\Dictionary;
-	$config['language'] = array(
-		'locale' 	 => 'pt_BR',
-		'base_dir' 	 => __DIR__ . '/locale',
-	);
-	$caption = new Dictionary($config['language']['locale'], $config['language']['base_dir'] );
 
 	/* CONFIG DB - MySQL */
 	$config['db'] = array(
@@ -25,6 +18,7 @@
 	/* CONFIG API - GLOBALS */
 	$config['api'] = array(
 		'debug' 	=> FALSE,
+		'locale' 	 => 'pt_BR',
 		'actions' 	=> array(
 			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists', 'export'),
 			'post' 	=> array('create', 'update','updatePassword', 'upload', 'destroy'),
@@ -61,7 +55,6 @@
 	);
 
 	/* CONFIG API - FORMAT */
-
 	$config['schema']['custom'] = array(
 		'fields' => array(
 			'description' => array(
@@ -83,5 +76,10 @@
 			),
 		),
 	);
+
+	/* CONFIG LOCALE */
+	use Sinergi\Dictionary\Dictionary;
+	$locale_dir = __DIR__ . '/locale';
+	$caption = new Dictionary($config['api']['locale'], $locale_dir );
 
 ?>

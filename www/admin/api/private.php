@@ -660,19 +660,14 @@ function api_edges(){
 
 		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
 
-			// checks if title caption exists in dictionary
-			if (!empty($caption['edges']['title'][$v])) {
-				$title = $caption['edges']['title'][$v];
-			} else {
-				$title = ucfirst($v);
-			}
-
 			// checks if icon caption exists in dictionary
 			if (!empty($caption['edges']['icon'][$v])) {
 				$icon = $caption['edges']['icon'][$v];
 			} else {
 				$icon = 'th-list';
 			}
+
+			$title = getCaption('edges', $v);
 
 			$beans[$v] = array(
 				'name' 			=> $v,
