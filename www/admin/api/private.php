@@ -468,25 +468,11 @@ function api_schema($req){
 
 	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$req['edge']);
 
-	// checks if title caption exists in dictionary
-	if (!empty($caption['edges']['title'][$req['edge']])) {
-		$title = $caption['edges']['title'][$req['edge']];
-	} else {
-		$title = ucfirst($req['edge']);
-	}
-
-	// checks if icon caption exists in dictionary
-	if (!empty($caption['edges']['icon'][$req['edge']])) {
-		$icon = $caption['edges']['icon'][$req['edge']];
-	} else {
-		$icon = 'th-list';
-	}
-
 	// SCHEMA - inspect all
 	$res = array(
 		'bean' 					=> $req['edge'],
-		'title' 				=> $title,
-		'icon' 					=> $icon,
+		'title' 				=> getCaption('edges', $req['edge'], $req['edge']),
+		'icon' 					=> getCaption('icon', $req['edge'], $req['edge']),
 		'type' 					=> 'object',
 		'required' 				=> true,
 		'additionalProperties' 	=> false,
@@ -500,18 +486,9 @@ function api_schema($req){
 				$parentBean = substr($field, 0, -3);
 				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
-				// checks if title caption exists in dictionary
-				if (!empty($caption['fields'][$req['edge']][$parentBean])) {
-					$title = $caption['fields'][$req['edge']][$parentBean];
-				} elseif (!empty($caption['fields']['default'][$parentBean])) {
-					$title = $caption['fields']['default'][$parentBean];
-				} else {
-					$title = ucfirst($parentBean);
-				}
-
 				$res['properties'][$field] = array(
 					'type' 				=> 'integer',
-					'title' 			=> $title,
+					'title' 			=> getCaption('fields', $req['edge'], substr($field, 0, -3)),
 					'required'	 		=> true,
 					'minLength'	 		=> 1,
 					'enum' 				=> array(),
@@ -553,20 +530,11 @@ function api_schema($req){
 					};
 				};
 
-				// checks if title caption exists in dictionary
-				if (!empty($caption['fields'][$req['edge']][$field])) {
-					$title = $caption['fields'][$req['edge']][$field];
-				} elseif (!empty($caption['fields']['default'][$field])) {
-					$title = $caption['fields']['default'][$field];
-				} else {
-					$title = ucfirst($field);
-				}
-
 				// builds default properties array to json-editor
 				$res['properties'][$field] = array(
 					'type'			=> $type,
 					'format' 		=> $format,
-					'title' 		=> $title,
+					'title' 		=> getCaption('fields', $req['edge'], $field),
 					'required'	 	=> true,
 					'minLength' 	=> $minLength,
 					'maxLength'		=> $maxLength
@@ -660,20 +628,11 @@ function api_edges(){
 
 		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
 
-			// checks if icon caption exists in dictionary
-			if (!empty($caption['edges']['icon'][$v])) {
-				$icon = $caption['edges']['icon'][$v];
-			} else {
-				$icon = 'th-list';
-			}
-
-			$title = getCaption('edges', $v);
-
 			$beans[$v] = array(
 				'name' 			=> $v,
-				'title' 		=> $title,
+				'title' 		=> getCaption('edges', $v, $v),
 				'count' 		=> R::count($v),
-				'icon' 			=> $icon,
+				'icon' 			=> getCaption('icon', $v, $v),
 				'has_parent' 	=> false,
 				'has_child' 	=> false,
 			);
