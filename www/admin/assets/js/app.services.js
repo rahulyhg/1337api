@@ -83,10 +83,9 @@ AdminApp.factory('apiService', function($q, $http, $location, $route, config) {
 		getHi: function() {
 			var deferred = $q.defer();
 
-			hi = $http.get(config.API_BASE_URL + '/hi').then(function(response) {
-				deferred.resolve(response.data);
+			hi = $http.get(config.API_BASE_URL + '/hi', {cache: true}).then(function(res) {
+				deferred.resolve(res.data);
 			});
-
 			return deferred.promise;
 		},
 

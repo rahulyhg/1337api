@@ -215,9 +215,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 *************************************************************************************************** */ 
 
 function api_hi(){
-	global $config;
-	
-	$res['message'] = $config['api']['messages']['hi'];
+	global $caption;
+
+	$res = array(
+		'success' => true,
+		'message' => $caption['messages']['HI']
+	);
 
 	// OUTPUT
 	api_output($res);
