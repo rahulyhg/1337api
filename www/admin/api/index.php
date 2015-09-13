@@ -10,11 +10,16 @@ require __DIR__ . '/helpers.php';
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 R::setAutoResolve( TRUE );
 
+// TEST DB CONNECTION
+$conn = R::testConnection();
+
+if(!$conn){
+	api_forbid($caption['messages']['DB_CONN_FAIL']);
+}
+
 $config['api']['beans'] = R::inspect();
 
 if($config['api']['debug']){
-	error_reporting(E_ALL);
-	ini_set('display_errors', 1);
 	R::debug( TRUE, 0 );
 };
 
@@ -49,13 +54,12 @@ switch ($req['mode']) {
 ** API OUTPUT FUNCTIONS ******************************************************************************
 *************************************************************************************************** */ 
 
-function api_forbid(){
-   global $config;
+function api_forbid($msg){
+   global $caption;
 
 	$res = array(
-		'error' 	=> true,									// error boolean
-		'success' 	=> false,									// success boolean
-		'message' 	=> $config['api']['messages']['forbidden'],	// msg string
+		'error' 	=> true,	// error boolean
+		'message' 	=> $msg		// msg string
 	);
 
 	api_output($res);

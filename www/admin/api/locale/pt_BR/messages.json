@@ -1,0 +1,4 @@
+{
+	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
+	"AUTH_USERPASS_FAIL": "Login ou senha incorreta, tente novamente."
+}

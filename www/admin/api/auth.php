@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 *************************************************************************************************** */ 
 
 function api_signin($req, $config){
+	global $caption;
 
 	// VALIDATE CREDENTIALS
 	$userCredentials = array(
@@ -67,7 +68,8 @@ function api_signin($req, $config){
 
 	// IF USER DOES NOT EXISTS
 	else {
-		header('HTTP/1.0 401 Unauthorized');
+		api_forbid($caption['messages']['AUTH_USERPASS_FAIL']);
+		exit();
 	}	
 
 	// OUTPUT

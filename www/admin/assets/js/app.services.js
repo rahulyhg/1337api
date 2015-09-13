@@ -4,7 +4,7 @@ ANGULAR ADMIN APP SERVICES
 
 // authService Factory
 AdminApp.factory('authService',
-    function($http, $localStorage, $location, config) {
+    function($q, $http, $localStorage, $location, config) {
 
     function urlBase64Decode(str) {
         var output = str.replace('-', '+').replace('_', '/');
@@ -47,8 +47,22 @@ AdminApp.factory('authService',
             }
 
         },
-        login: function(data, success, error) {
-            $http.post(config.API_SIGNIN_URL, data).success(success).error(error);
+        login: function(data, successAuth, errorAuth) {
+
+            // define variables
+            var deferred = $q.defer();
+
+            loginSubmit = $http.post(config.API_SIGNIN_URL, data).then(function(res) {
+                console.log(res);
+                if (res.data.error) {
+                    errorAuth(res);
+                } else {
+                    successAuth(res);
+                }
+            });
+            
+            return deferred.promise;
+
         },
         logout: function(success) {
             tokenClaims = {};

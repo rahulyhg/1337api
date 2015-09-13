@@ -18,9 +18,14 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
     });
 
     function successAuth(res) {
-        $localStorage.token = res.token;
+        $localStorage.token = res.data.token;
             console.log('authentication: success');
             window.location.href = window.location.pathname;
+    }
+
+    function errorAuth(res) {
+        console.log('authentication: error');
+        $scope.$broadcast('sendAlert', res);
     }
 
     $scope.login = function() {
@@ -28,12 +33,7 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
             email: $scope.user.email,
             password: $scope.user.password
         };
-
-        authService.login(formData, successAuth, function() {
-            var message = {'data': {'message': 'Login/Senha incorreta, tente novamente.'}};
-            $scope.$broadcast('sendAlert', message);
-        });
-
+        authService.login(formData, successAuth, errorAuth);
     };
 
     $scope.logout = function() {
