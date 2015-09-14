@@ -1,6 +1,6 @@
 {
 	"AUTH_USERPASS_FAIL": "Login ou senha incorreta, tente novamente.",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
-	"HI": "Olá, bem-vindo à área administrativa."
+	"HI": "Olá, bem-vindo à área administrativa.",
 	"HI_FAIL": "Não foi encontrado uma mensagem de Olá."
 }
