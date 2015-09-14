@@ -65,6 +65,17 @@ function api_forbid($msg){
 	api_output($res);
 };
 
+function api_error($msg){
+   global $caption;
+
+	$res = array(
+		'error' 	=> true,	// error boolean
+		'message' 	=> $msg		// msg string
+	);
+
+	api_output($res);
+};
+
 // OUTPUT
 function api_output($res){
 	echo json_encode($res);

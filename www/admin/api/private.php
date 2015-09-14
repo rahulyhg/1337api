@@ -217,13 +217,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 function api_hi(){
 	global $caption;
 
-	$res = array(
-		'success' => true,
-		'message' => $caption['messages']['HI']
-	);
+	if(!empty($caption['messages']['HI'])) {
+		$res = array(
+			'message' => $caption['messages']['HI']
+		);
 
-	// OUTPUT
-	api_output($res);
+		// OUTPUT
+		api_output($res);
+	} 
+	else{
+		api_error($caption['messages']['HI_FAIL']);
+	}
+
 };
 
 function api_create($req){
