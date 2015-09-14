@@ -616,6 +616,7 @@ function api_edges(){
 		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
 		WHERE REFERENCED_TABLE_NAME IS NOT NULL
 	');
+	$hierarchy = array();
 
 	foreach ($hierarchyArr as $key => $value) {
 
