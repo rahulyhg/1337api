@@ -25,7 +25,7 @@
 
 <body ng-app="AdminApp">
 
-<div id="wrapper" ng-class="{login : isAuth() == false}" ng-controller="MainController">
+<div id="wrapper" ng-class="{isAuth : isAuth() == true}" ng-controller="MainController">
 
 	<!-- NAVIGATION -->
 	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="MenuController" ng-if="isAuth()" ng-include src="'assets/tpl/menu.html'"></nav>

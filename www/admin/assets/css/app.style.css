@@ -11,8 +11,6 @@
 
 /* bootstrap */
 html {background-color: #ffffff;}
-
-#wrapper.login {padding: 0;}
 #page-wrapper {min-height:100px;}
 
 .table>tbody>tr>td, 
@@ -57,5 +55,7 @@ p.help-block {width: 100%; font-size: 0.9em; margin-top: 15px; display: inline-b
 /* media queries */
 
 @media(min-width:768px) {
+	#wrapper {padding-left: 0;}
+	#wrapper.isAuth {padding-left: 225px;}
 	.side-nav-sub>li>a {width: 225px;}
 }
