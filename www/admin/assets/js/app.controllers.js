@@ -120,14 +120,22 @@ AdminApp.controller('ListController', function($scope, $location, $http, $routeP
 	};
 
 	$scope.onDestroy = function(id) {
-		var destroyItem = confirm('Tem certeza que deseja excluir?');
 
-		if (destroyItem) {
-			$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
-				$scope.$broadcast('sendAlert', response);
+		swal(
+			{title: "Tem certeza que deseja excluir?", 
+			 text: "Esse registro será permanentemente excluído do banco de dados.",
+			 type: "warning",
+			 showCancelButton: true,
+			 confirmButtonColor: "#DD6B55",
+			 confirmButtonText: "Sim, excluir",
+			 closeOnConfirm: false 
+			}, 
+			function(){
+				$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
+					swal("Sucesso", response.data.message, "success"); 
+				});
 				delete $scope.items[id];
 			});
-		}
 	};
 
 });
@@ -245,13 +253,23 @@ AdminApp.controller('FormController', function($scope, $http, $location, $routeP
 	};
 
 	$scope.onDestroy = function() {
-		var destroyItem = confirm('Tem certeza que deseja excluir?');
 
-		if (destroyItem) {
-			$http.post(config.API_BASE_URL + '/destroy/' + edge + '/' + id).then(function(response) {
-				$location.path('/list/' + edge);
+		swal(
+			{title: "Tem certeza que deseja excluir?", 
+			 text: "Esse registro será permanentemente excluído do banco de dados.",
+			 type: "warning",
+			 showCancelButton: true,
+			 confirmButtonColor: "#DD6B55",
+			 confirmButtonText: "Sim, excluir",
+			 closeOnConfirm: false 
+			}, 
+			function(){
+				$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
+					$location.path('/list/' + edge);
+					swal("Sucesso", response.data.message, "success"); 
+				});
+				delete $scope.items[id];
 			});
-		}
 	};
 
 });
