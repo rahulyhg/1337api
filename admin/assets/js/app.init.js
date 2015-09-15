@@ -16,6 +16,15 @@ AdminApp.constant(
 );
 
 /* ************************************************************
+ANGULAR CONFIG - LOG PROVIDER
+************************************************************ */
+AdminApp.config([
+	'$logProvider',
+	function($logProvider) {
+		$logProvider.debugEnabled(false);
+}]);
+
+/* ************************************************************
 ANGULAR CONFIG - NG ROUTES PROVIDER
 ************************************************************ */
 

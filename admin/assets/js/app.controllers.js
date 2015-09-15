@@ -19,12 +19,12 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
 
 	function successAuth(res) {
 		$localStorage.token = res.data.token;
-			$log.info('login: success');
+			$log.debug('login: success');
 			window.location.href = window.location.pathname;
 	}
 
 	function errorAuth(res) {
-		$log.warn('login: failed.');
+		$log.debug('login: failed.');
 		$scope.$broadcast('sendAlert', res);
 	}
 
@@ -38,7 +38,7 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
 
 	$scope.logout = function() {
 		authService.logout(function() {
-			$log.info('logout: success');
+			$log.debug('logout: success');
 			window.location.href = window.location.pathname;
 		});
 	};
@@ -141,14 +141,14 @@ AdminApp.controller('ListController', function($scope, $location, $http, $routeP
 });
 
 // CREATE Controller
-AdminApp.controller('CreateController', function($scope, schema) {
+AdminApp.controller('CreateController', function($scope, $log, schema) {
 
 	$scope.schema = schema;
 	$scope.schemaData = {};
 
 	$scope.onChange = function(data) {
 		// fired onChange of form data.
-		console.dir(data);
+		$log.debug(data);
 	};
 
 });
