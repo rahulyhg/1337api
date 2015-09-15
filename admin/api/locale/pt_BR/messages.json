@@ -1,6 +1,8 @@
 {
 	"AUTH_USERPASS_FAIL": "Login ou senha incorreta, tente novamente.",
+	"CREATE_FAIL": "Erro na gravação do registro.",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
 	"HI": "Olá, bem-vindo à área administrativa.",
-	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)"
+	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
+	"INVALID_SCHEMA": "Não foi possível processar sua requisição. (schema inválido)"
 }

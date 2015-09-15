@@ -6,7 +6,6 @@ var AdminApp = angular.module('AdminApp', ['ngRoute', 'ngStorage', 'angular-load
 /* ************************************************************
 ANGULAR CONSTANTS
 ************************************************************ */
-
 AdminApp.constant(
 	'config',
 		{

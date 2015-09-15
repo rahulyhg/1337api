@@ -140,18 +140,18 @@ AdminApp.controller('ListController', function($scope, $location, $http, $routeP
 
 });
 
-// CREATE Controller
-AdminApp.controller('CreateController', function($scope, $log, schema) {
+// CREATE NG Controller
+AdminApp.controller('CreateController', ['$scope', '$log', 'schema', function($scope, $log, schema) {
 
 	$scope.schema = schema;
 	$scope.schemaData = {};
 
 	$scope.onChange = function(data) {
-		// fired onChange of form data.
+		// fired onChange of form json data.
 		$log.debug(data);
 	};
 
-});
+}]);
 
 // READ Controller
 AdminApp.controller('ReadController', function($scope, schema, read) {
@@ -205,8 +205,7 @@ AdminApp.controller('UpdatePasswordController', function($scope) {
 });
 
 // Form Controller
-AdminApp.controller('FormController', function($scope, $http, $location, $routeParams, config) {
-
+AdminApp.controller('FormController', ['$scope', '$http', '$location', '$routeParams', '$q', 'config', function($scope, $http, $location, $routeParams, $q, config) {
 	var edge = $routeParams.edge;
 	var id = $routeParams.id;
 
@@ -227,12 +226,14 @@ AdminApp.controller('FormController', function($scope, $http, $location, $routeP
 	}
 
 	$scope.onCreate = function() {
-
 		var item = $scope.editor.getValue();
-		$http.post(config.API_BASE_URL + '/create/' + edge, item).success(function() {
-			$location.path('/list/' + edge);
-		});
+		var deferred = $q.defer();
 
+		create = $http.post(config.API_BASE_URL + '/create/' + edge, item).then(function(res) {
+			$location.path('/list/' + edge);
+			deferred.resolve(res.data);
+		});
+		return deferred.promise;
 	};
 
 	$scope.onUpdate = function() {
@@ -272,7 +273,7 @@ AdminApp.controller('FormController', function($scope, $http, $location, $routeP
 			});
 	};
 
-});
+}]);
 
 AdminApp.controller('AlertController', function($scope) {
 	$scope.alerts = [];
