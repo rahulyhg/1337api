@@ -47,4 +47,15 @@ function getCaption($context, $edge, $term){
 
 };
 
+function getMessage($term) {
+	global $caption;
+
+	if (!empty($caption['messages'][$term])) {
+		return $caption['messages'][$term];
+	}
+	else {
+		return $term . ' MESSAGE NOT FOUND.';
+	}
+};
+
 ?>

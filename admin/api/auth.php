@@ -68,7 +68,7 @@ function api_signin($req, $config){
 
 	// IF USER DOES NOT EXISTS
 	else {
-		api_forbid($caption['messages']['AUTH_USERPASS_FAIL']);
+		api_error('AUTH_USERPASS_FAIL');
 		exit();
 	}	
 

@@ -217,17 +217,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 function api_hi(){
 	global $caption;
 
-	if(!empty($caption['messages']['HI'])) {
+	if(!empty($caption['messages'])) {
 		$res = array(
-			'message' => $caption['messages']['HI']
+			'message' => getMessage('HI'),
 		);
-
-		// OUTPUT
-		api_output($res);
 	} 
 	else{
-		api_error($caption['messages']['HI_FAIL']);
+		$res = array(
+			'error' => true,
+			'message' => 'Arquivo de mensagens não encontrado.'
+		);
 	}
+
+	// OUTPUT
+	api_output($res);
 
 };
 
@@ -616,20 +619,19 @@ function api_edges(){
    global $config;
    global $caption;
 
+	// BUILD HIERARCHY, IF EXISTS
+	$hierarchy = array();
 	$hierarchyArr = R::getAll('
 		SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
 		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
 		WHERE REFERENCED_TABLE_NAME IS NOT NULL
 	');
-	$hierarchy = array();
 
 	foreach ($hierarchyArr as $key => $value) {
-
 		if( empty($hierarchy[$value['child']]) ){
 			$hierarchy[$value['child']] = array();
 		} 
 		array_push($hierarchy[$value['child']], $value['parent']);
-
 	}
 
 	// BUILD BEANS LIST
@@ -684,7 +686,7 @@ function api_edges(){
 
 	};
 
-	$res['beans'] 	= $beans;
+	$res['beans'] 		= $beans;
 	$res['actions'] 	= $config['api']['actions'];
 
 	api_output($res);
