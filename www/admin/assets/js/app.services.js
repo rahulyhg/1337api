@@ -84,18 +84,9 @@ AdminApp.factory('apiService', function($q, $http, $location, $route, config) {
 			var deferred = $q.defer();
 
 			hi = $http.get(config.API_BASE_URL + '/hi').then(function(res) {
-				if(res.data.error){
-					apiService.displayError(res.data.message);
-					deferred.reject(res.data.message);
-				} else{
-					deferred.resolve(res.data);
-				}
+				deferred.resolve(res.data);
 			});
 			return deferred.promise;
-		},
-
-		displayError: function(message) {
-			swal("Oops...", message, "error");
 		},
 
 		validateParams: function() {
@@ -208,7 +199,7 @@ ANGULAR ADMIN APP INTERCEPTORS
 ************************************************************ */
 
 // apiInterceptor Factory
-AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', function($q, $location, $localStorage) {
+AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', '$log', function($q, $location, $localStorage, $log) {
 
 	var apiInterceptor = {
 		'request': function(config) {
@@ -218,8 +209,18 @@ AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', function
 			}
 			return config;
 		},
-		'responseError': function(response) {
-			if (response.status === 400 || response.status === 401 || response.status === 403) {
+		'response': function(res){
+
+			if (res.data.error) {
+				$log.error(res.data.message);
+				swal("API Error", res.data.message, "error");
+				return $q.reject(res);
+			}
+
+			return res;
+		},
+		'responseError': function(res) {
+			if (res.status === 400 || res.status === 401 || res.status === 403) {
 
 				if ($location.path() !== '/login' && typeof reloadLock === 'undefined') {
 					reloadLock = true;
@@ -228,7 +229,7 @@ AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', function
 					window.location.href = window.location.pathname;
 				}
 			}
-			return $q.reject(response);
+			return $q.reject(res);
 		}
 	};
 
