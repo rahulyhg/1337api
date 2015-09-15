@@ -221,14 +221,16 @@ function api_hi(){
 		$res = array(
 			'message' => getMessage('HI'),
 		);
-
-		// OUTPUT
-		api_output($res);
 	} 
 	else{
-		// ERROR
-		api_error('Arquivo de mensagens não encontrado.');
+		$res = array(
+			'error' => true,
+			'message' => 'Arquivo de mensagens não encontrado.'
+		);
 	}
+
+	// OUTPUT
+	api_output($res);
 
 };
 

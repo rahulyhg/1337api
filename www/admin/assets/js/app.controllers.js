@@ -3,7 +3,7 @@ ANGULAR ADMIN APP CONTROLLERS
 ************************************************************ */
 
 // Main Controller
-AdminApp.controller('MainController', function($rootScope, $scope, $location, $localStorage, authService, apiService) {
+AdminApp.controller('MainController', function($rootScope, $scope, $location, $localStorage, $log, authService, apiService) {
 
 	$scope.$on('$routeChangeStart', function() {
 		// fired on success of viewContent load.
@@ -19,12 +19,12 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
 
 	function successAuth(res) {
 		$localStorage.token = res.data.token;
-			console.log('authentication: success');
+			$log.info('login: success');
 			window.location.href = window.location.pathname;
 	}
 
 	function errorAuth(res) {
-		console.log('authentication: error');
+		$log.warn('login: failed.');
 		$scope.$broadcast('sendAlert', res);
 	}
 
@@ -38,7 +38,7 @@ AdminApp.controller('MainController', function($rootScope, $scope, $location, $l
 
 	$scope.logout = function() {
 		authService.logout(function() {
-			console.log('redirect logout');
+			$log.info('logout: success');
 			window.location.href = window.location.pathname;
 		});
 	};

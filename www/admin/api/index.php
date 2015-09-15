@@ -14,7 +14,7 @@ R::setAutoResolve( TRUE );
 $conn = R::testConnection();
 
 if(!$conn){
-	api_forbid($caption['messages']['DB_CONN_FAIL']);
+	api_error('DB_CONN_FAIL');
 }
 
 $config['api']['beans'] = R::inspect();
@@ -54,23 +54,21 @@ switch ($req['mode']) {
 ** API OUTPUT FUNCTIONS ******************************************************************************
 *************************************************************************************************** */ 
 
-function api_forbid($msg){
-   global $caption;
-
+function api_forbid(){
+	header('HTTP/1.0 400 Bad Request');
+	
 	$res = array(
-		'error' 	=> true,	// error boolean
-		'message' 	=> $msg		// msg string
+		'error' => true, 
+		'message' => getMessage('INVALID_REQUEST')
 	);
-
 	api_output($res);
 };
 
 function api_error($msg){
-   global $caption;
 
 	$res = array(
-		'error' 	=> true,	// error boolean
-		'message' 	=> $msg		// msg string
+		'error' 	=> true,
+		'message' 	=> getMessage($msg)
 	);
 
 	api_output($res);

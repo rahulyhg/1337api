@@ -53,7 +53,6 @@ AdminApp.factory('authService',
 			var deferred = $q.defer();
 
 			loginSubmit = $http.post(config.API_SIGNIN_URL, data).then(function(res) {
-				console.log(res);
 				if (res.data.error) {
 					errorAuth(res);
 				} else {
@@ -213,7 +212,7 @@ AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', '$log', 
 
 			if (res.data.error) {
 				$log.error(res.data.message);
-				swal("API Error", res.data.message, "error");
+				swal("ERRO", res.data.message, "error");
 				return $q.reject(res);
 			}
 
@@ -221,7 +220,8 @@ AdminApp.factory('apiInterceptor', ['$q', '$location', '$localStorage', '$log', 
 		},
 		'responseError': function(res) {
 			if (res.status === 400 || res.status === 401 || res.status === 403) {
-
+				$log.error(res.data.message);
+				
 				if ($location.path() !== '/login' && typeof reloadLock === 'undefined') {
 					reloadLock = true;
 					delete $localStorage.token;
