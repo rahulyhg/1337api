@@ -262,10 +262,16 @@ function api_create($req){
 	$item['modified'] 	= R::isoDateTime();
 
 	$id = R::store($item);
-	$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
 
-	// OUTPUT
-	api_output($res);
+	if($id){
+		$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
+
+		// OUTPUT
+		api_output($res);
+	}
+	else{
+		api_error('CREATE_FAIL');
+	}
 
 };
 
@@ -479,140 +485,153 @@ function api_schema($req){
 
 	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$req['edge']);
 
-	// SCHEMA - inspect all
-	$res = array(
-		'bean' 					=> $req['edge'],
-		'title' 				=> getCaption('edges', $req['edge'], $req['edge']),
-		'icon' 					=> getCaption('icon', $req['edge'], $req['edge']),
-		'type' 					=> 'object',
-		'required' 				=> true,
-		'additionalProperties' 	=> false,
-	);
+	if($schema['raw']){
 
-	foreach ($schema['raw'] as $field => $properties) {
+		// DEFINE SCHEMA 
+		$res = array(
+			'bean' 					=> $req['edge'],
+			'title' 				=> getCaption('edges', $req['edge'], $req['edge']),
+			'icon' 					=> getCaption('icon', $req['edge'], $req['edge']),
+			'type' 					=> 'object',
+			'required' 				=> true,
+			'additionalProperties' 	=> false,
+		);
 
-		if(!in_array($field, $config['schema']['default']['blacklist'])){
+		// ADD PROPERTIES NODE TO SCHEMA
+		foreach ($schema['raw'] as $field => $properties) {
 
+			// CHECK IF FIELD IS NOT AT CONFIG BLACKLIST
+			if(!in_array($field, $config['schema']['default']['blacklist'])){
+
+				// IF FIELD DEFINES ONE-TO-MANY RELATIONSHIP
+				if(substr($field, -3, 3) == '_id'){
+					$parentBean = substr($field, 0, -3);
+					$parent = R::getAssoc('DESCRIBE '. $parentBean);
+
+					$res['properties'][$field] = array(
+						'type' 				=> 'integer',
+						'title' 			=> getCaption('fields', $req['edge'], substr($field, 0, -3)),
+						'required'	 		=> true,
+						'minLength'	 		=> 1,
+						'enum' 				=> array(),
+						'options' 			=> array(
+							'enum_titles' 	=> array(),
+						),
+					);
+
+					$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parentBean );
+
+					foreach ($parentOptions as $key => $value) {
+						$res['properties'][$field]['enum'][] = $key;
+						$res['properties'][$field]['options']['enum_titles'][] = $value;					
+					};
+
+				}
+
+				// ELSE, FIELD DEFINES
+				else{
+
+					// prepare data
+					$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
+					$type 		= $dbType[0];
+					$format 	= $dbType[0];
+					$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
+					$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+
+					// converts db type to json-editor expected type
+					if(array_key_exists($type, $config['schema']['default']['type'])){
+						$type = $config['schema']['default']['type'][$type];
+					};
+
+					// converts db type to json-editor expected format
+					if(array_key_exists($format, $config['schema']['default']['format'])){
+
+						if($format == 'varchar' && $maxLength > 256){
+							$format = 'textarea';
+						}
+						else{
+							$format = $config['schema']['default']['format'][$format];
+						};
+					};
+
+					// builds default properties array to json-editor
+					$res['properties'][$field] = array(
+						'type'			=> $type,
+						'format' 		=> $format,
+						'title' 		=> getCaption('fields', $req['edge'], $field),
+						'required'	 	=> true,
+						'minLength' 	=> $minLength,
+						'maxLength'		=> $maxLength
+					);
+
+					// array merge to custom properties defined at config
+					if(isset($config['schema']['custom']['fields'][$field])){
+						$res['properties'][$field] = array_merge($res['properties'][$field], $config['schema']['custom']['fields'][$field]);
+					};
+
+					// add '*' to field title if required.
+					if($res['properties'][$field]['minLength'] > 0){
+						$res['properties'][$field]['title'] = $res['properties'][$field]['title'] . '*';
+					}
+
+				};
+
+			};
+
+			// ADD RAW STRUCTURE NODE TO SCHEMA
+			// IF FIELD DEFINES ONE-TO-MANY RELATIONSHIP
 			if(substr($field, -3, 3) == '_id'){
 				$parentBean = substr($field, 0, -3);
 				$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
-				$res['properties'][$field] = array(
-					'type' 				=> 'integer',
-					'title' 			=> getCaption('fields', $req['edge'], substr($field, 0, -3)),
-					'required'	 		=> true,
-					'minLength'	 		=> 1,
-					'enum' 				=> array(),
-					'options' 			=> array(
-						'enum_titles' 	=> array(),
-					),
-				);
-
-				$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parentBean );
-
-				foreach ($parentOptions as $key => $value) {
-					$res['properties'][$field]['enum'][] = $key;
-					$res['properties'][$field]['options']['enum_titles'][] = $value;					
-				};
-
-			}
-			else{
-
-				// PREPARE DATA;
-				$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
-				$type 		= $dbType[0];
-				$format 	= $dbType[0];
-				$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-				$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
-
-				// converts db type to json-editor expected type
-				if(array_key_exists($type, $config['schema']['default']['type'])){
-					$type = $config['schema']['default']['type'][$type];
-				};
-
-				// converts db type to json-editor expected format
-				if(array_key_exists($format, $config['schema']['default']['format'])){
-
-					if($format == 'varchar' && $maxLength > 256){
-						$format = 'textarea';
-					}
-					else{
-						$format = $config['schema']['default']['format'][$format];
-					};
-				};
-
-				// builds default properties array to json-editor
-				$res['properties'][$field] = array(
-					'type'			=> $type,
-					'format' 		=> $format,
-					'title' 		=> getCaption('fields', $req['edge'], $field),
-					'required'	 	=> true,
-					'minLength' 	=> $minLength,
-					'maxLength'		=> $maxLength
-				);
-
-				if(isset($config['schema']['custom']['fields'][$field])){
-					$res['properties'][$field] = array_merge($res['properties'][$field], $config['schema']['custom']['fields'][$field]);
-				};
-
-				// add '*' to field title if required.
-				if($res['properties'][$field]['minLength'] > 0){
-					$res['properties'][$field]['title'] = $res['properties'][$field]['title'] . '*';
+				foreach ($parent as $field => $properties) {
+					$res['structure'][$parentBean] = array(
+						'field' 		=> $field,
+						'properties' 	=> $properties,
+					);
 				}
-
-			};
-
-		};
-
-		// RAW STRUCTURE
-		if(substr($field, -3, 3) == '_id'){
-			$parentBean = substr($field, 0, -3);
-			$parent = R::getAssoc('DESCRIBE '. $parentBean);
-
-			foreach ($parent as $key => $value) {
-
-				$res['structure'][$parentBean] = array(
-					'field' 		=> $key,
-					'properties' 	=> $value,
-				);
-			
 			}
-
-		}
-		else{
-			$res['structure'][$field] = array(
-				'field' 		=> $field,
-				'properties' 	=> $properties,
-			);
+			// ELSE, FIELD DEFINES
+			else{
+				$res['structure'][$field] = array(
+					'field' 		=> $field,
+					'properties' 	=> $properties,
+				);
+			};
 		};
-	};
 
-	// MANY-TO-MANY UPLOAD FIELD
-	if(in_array($req['edge'] .'_uploads', $config['api']['beans'])){
-	
-		$res['properties']['uploads_id'] = 
-			
-			array(
-				'title' 	=> 'Imagem',
-				'type'		=> 'string',
-				'format' 	=> 'url',
-				'required'	=> true,
-				'minLength' => 0,
-				'maxLength' => 128,
-  				'options'	=> array(
-  					'upload' 	=> true,
-  				),
-				'links' 	=> array(
-					array(
-			            'rel' 	=> '',
-						'href' 	=> '{{self}}',
+		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
+		if(in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+		
+			$res['properties']['uploads_id'] = 
+				
+				array(
+					'title' 	=> 'Imagem',
+					'type'		=> 'string',
+					'format' 	=> 'url',
+					'required'	=> true,
+					'minLength' => 0,
+					'maxLength' => 128,
+	  				'options'	=> array(
+	  					'upload' 	=> true,
+	  				),
+					'links' 	=> array(
+						array(
+				            'rel' 	=> '',
+							'href' 	=> '{{self}}',
+						),
 					),
-				),
-			);
+				);
+		}
+
+		// OUTPUT
+		api_output($res);
 	}
 
-	// OUTPUT
-	api_output($res);
+	else{
+		api_error('INVALID_SCHEMA');
+	}
+
 }
 
 function api_edges(){

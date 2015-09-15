@@ -6,7 +6,6 @@ var AdminApp = angular.module('AdminApp', ['ngRoute', 'ngStorage', 'angular-load
 /* ************************************************************
 ANGULAR CONSTANTS
 ************************************************************ */
-
 AdminApp.constant(
 	'config',
 		{
@@ -14,6 +13,15 @@ AdminApp.constant(
 			API_SIGNIN_URL: 'api/auth',
 		}
 );
+
+/* ************************************************************
+ANGULAR CONFIG - LOG PROVIDER
+************************************************************ */
+AdminApp.config([
+	'$logProvider',
+	function($logProvider) {
+		$logProvider.debugEnabled(false);
+}]);
 
 /* ************************************************************
 ANGULAR CONFIG - NG ROUTES PROVIDER
