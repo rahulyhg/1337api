@@ -228,7 +228,13 @@ AdminApp.factory('apiInterceptor',
 				return res;
 			},
 			'responseError': function(res) {
-				if (res.status === 400 || res.status === 401 || res.status === 403) {
+
+				if (res.status === 400) {
+					$log.error(res.data.message);
+					swal("ERRO", res.data.message, "error");
+				}
+
+				if (res.status === 401 || res.status === 403) {
 					$log.error(res.data.message);
 					
 					if ($location.path() !== '/login' && typeof reloadLock === 'undefined') {
