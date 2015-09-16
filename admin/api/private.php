@@ -59,6 +59,14 @@ else{
 	die();
 };
 
+// check method headers
+if ( empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GET','POST']) ) {
+	header('HTTP/1.0 405 Method Not Allowed');
+	$res = array('error' => true, 'message' => 'HTTP/1.0 405 Method Not Allowed');
+	echo json_encode($res);
+	die();
+}
+
 /* ***************************************************************************************************
 ** PRIVATE GET ROUTES ********************************************************************************
 *************************************************************************************************** */ 

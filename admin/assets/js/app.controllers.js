@@ -117,6 +117,7 @@ AdminApp.controller('ListController',
 		};
 
 		$scope.onExport = function() {
+			// TODO: Export is not working with $q async deferred function. Need to investigate.
 			var deferred = $q.defer();
 
 			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge, { responseType: 'arraybuffer' })

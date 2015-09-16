@@ -224,7 +224,7 @@ AdminApp.factory('apiInterceptor',
 			},
 			'responseError': function(res) {
 
-				if (res.status === 400) {
+				if (res.status === 400 || res.status === 405) {
 					$log.error(res.data.message);
 					swal("ERRO", res.data.message, "error");
 				}
