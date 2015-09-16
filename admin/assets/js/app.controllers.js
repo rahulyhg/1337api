@@ -28,16 +28,12 @@ AdminApp.controller('MainController',
 			window.location.href = window.location.pathname;
 		}
 
-		function errorAuth(res) {
-			$log.debug('login: failed.');
-		}
-
 		$scope.login = function() {
 			var formData = {
 				email: $scope.user.email,
 				password: $scope.user.password
 			};
-			authService.login(formData, successAuth, errorAuth);
+			authService.login(formData, successAuth);
 		};
 
 		$scope.logout = function() {
@@ -103,7 +99,7 @@ AdminApp.controller('ListController',
 		$scope.items = list;
 		$scope.itemsThisPage = Object.keys(list).length;
 		$scope.totalItems = count.sum;
-		$scope.itemsPerPage = 5;
+		$scope.itemsPerPage = count.itemsPerPage;
 		$scope.maxSize = 10;
 
 		$scope.setPage = function(page) {
@@ -121,6 +117,7 @@ AdminApp.controller('ListController',
 		};
 
 		$scope.onExport = function() {
+			// TODO: Export is not working with $q async deferred function. Need to investigate.
 			var deferred = $q.defer();
 
 			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge, { responseType: 'arraybuffer' })
@@ -244,12 +241,15 @@ AdminApp.controller('FormController',
 		if ($scope.$parent.read !== undefined) {
 			$scope.$on('disableForm', function(event, obj) {
 
+				// disable json editor
 				$scope.editor.disable();
 
-				// TODO: when using sceditor WYSIWYG, need to fire function to "readOnly = true"
-				// Examples that work, but are specific to the field sceditor is applied on:
-				// $scope.editor.root.editors.description.sceditor_instance.readOnly(true)
-				// console.dir($scope.editor.root.editors.description.sceditor_instance.);
+				// check for sceditor plugin instances and disable it
+				for (var key in $scope.editor.root.editors) {
+					if($scope.editor.getEditor("root."+key).sceditor_instance !== undefined){
+						$scope.editor.getEditor("root."+key).sceditor_instance.readOnly(true);
+					}
+				}
 
 			});
 		}

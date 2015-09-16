@@ -20,7 +20,6 @@ function getCaption($context, $edge, $term){
 			break;
 
 		case 'fields':
-
 			// checks if title caption exists in dictionary
 			if (!empty($caption['fields'][$edge][$term])) {
 					return $caption['fields'][$edge][$term];

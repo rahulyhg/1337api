@@ -48,17 +48,12 @@ AdminApp.factory('authService',
 				}
 
 			},
-			login: function(data, successAuth, errorAuth) {
-
-				// define variables
+			login: function(data, successAuth) {
 				var deferred = $q.defer();
 
 				loginSubmit = $http.post(config.API_SIGNIN_URL, data).then(function(res) {
-					if (res.data.error) {
-						errorAuth(res);
-					} else {
-						successAuth(res);
-					}
+					successAuth(res);
+					deferred.resolve(res);
 				});
 				
 				return deferred.promise;
@@ -229,7 +224,7 @@ AdminApp.factory('apiInterceptor',
 			},
 			'responseError': function(res) {
 
-				if (res.status === 400) {
+				if (res.status === 400 || res.status === 405) {
 					$log.error(res.data.message);
 					swal("ERRO", res.data.message, "error");
 				}
