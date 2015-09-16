@@ -40,7 +40,7 @@ function api_validateToken($authHeader){
 	} 
 	else {
 		// The request lacks the authorization token
-		header('HTTP/1.0 400 Bad Request');
+		header('HTTP/1.0 401 Unauthorized');
 		echo 'Token not found in request';
 		return false;
 	}

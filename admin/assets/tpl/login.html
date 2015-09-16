@@ -17,14 +17,6 @@
 
 			<div class="panel-body">
 
-				<!-- ALERT ROW -->	
-				<div class="row" ng-controller="AlertController">
-					<div class="col-lg-12">
-						<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)"><i class="fa fa-exclamation-circle"></i> {{alert.msg}}</alert>
-					</div>
-				</div>
-				<!-- END ALERT ROW -->	
-
 				<form role="form" name="loginForm" ng-submit="login()">
 					<fieldset>
 						<div class="form-group">

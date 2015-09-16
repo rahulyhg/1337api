@@ -78,8 +78,8 @@ AdminApp.factory('authService',
 
 // apiService Factory
 AdminApp.factory('apiService', 
-	['$q', '$http', '$location', '$route', 'config',
-	function($q, $http, $location, $route, config) {
+	['$q', '$http', '$location', '$route', '$log', 'config',
+	function($q, $http, $location, $route, $log, config) {
 
 		var apiService = {
 
@@ -114,8 +114,8 @@ AdminApp.factory('apiService',
 									deferred.resolve();
 								}
 								else {
+									$log.warn('ID does not exist.');
 									deferred.reject('ID dos not exist');
-									console.log('ID does not exist.');
 									$location.url('/');
 								}
 
@@ -127,8 +127,8 @@ AdminApp.factory('apiService',
 
 					}
 					else {
+						$log.warn('Edge dos not exist.');
 						deferred.reject('Edge dos not exist');
-						console.log('Edge dos not exist.');
 						$location.url('/');
 					}
 				});

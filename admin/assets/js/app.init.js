@@ -1,7 +1,9 @@
 /* ************************************************************
 ANGULAR INIT
 ************************************************************ */
-var AdminApp = angular.module('AdminApp', ['ngRoute', 'ngStorage', 'angular-loading-bar', 'angular-json-editor', 'ui.bootstrap']);
+var AdminApp = angular.module('AdminApp', 
+	['ngRoute', 'ngStorage', 'angular-loading-bar', 'angular-json-editor', 'ui.bootstrap']
+);
 
 (function(){
 "use strict";
