@@ -28,16 +28,12 @@ AdminApp.controller('MainController',
 			window.location.href = window.location.pathname;
 		}
 
-		function errorAuth(res) {
-			$log.debug('login: failed.');
-		}
-
 		$scope.login = function() {
 			var formData = {
 				email: $scope.user.email,
 				password: $scope.user.password
 			};
-			authService.login(formData, successAuth, errorAuth);
+			authService.login(formData, successAuth);
 		};
 
 		$scope.logout = function() {

@@ -48,17 +48,12 @@ AdminApp.factory('authService',
 				}
 
 			},
-			login: function(data, successAuth, errorAuth) {
-
-				// define variables
+			login: function(data, successAuth) {
 				var deferred = $q.defer();
 
 				loginSubmit = $http.post(config.API_SIGNIN_URL, data).then(function(res) {
-					if (res.data.error) {
-						errorAuth(res);
-					} else {
-						successAuth(res);
-					}
+					successAuth(res);
+					deferred.resolve(res);
 				});
 				
 				return deferred.promise;
