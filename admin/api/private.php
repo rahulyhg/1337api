@@ -472,8 +472,9 @@ function api_count($req){
 	$count = R::count( $req['edge'] );
 	$limit = $config['api']['params']['pagination'];
 
-	$res['sum'] 		= $count;
-	$res['pages'] 	= round($count/$limit);
+	$res['sum'] 			= $count;
+	$res['pages'] 			= round($count/$limit);
+	$res['itemsPerPage'] 	= $limit;
 	
 	// OUTPUT
 	api_output($res);

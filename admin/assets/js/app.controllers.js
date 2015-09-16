@@ -99,7 +99,7 @@ AdminApp.controller('ListController',
 		$scope.items = list;
 		$scope.itemsThisPage = Object.keys(list).length;
 		$scope.totalItems = count.sum;
-		$scope.itemsPerPage = 5;
+		$scope.itemsPerPage = count.itemsPerPage;
 		$scope.maxSize = 10;
 
 		$scope.setPage = function(page) {

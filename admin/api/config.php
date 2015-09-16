@@ -28,11 +28,7 @@
 			),
 		'params' => array(
 			'pagination' => 5,
-		),
-		'messages'	=> array(
-			'hi' 		=> 'Hi Elijah, your API is UP!',
-			'forbidden' => 'elijah says: NO.'
-		),
+		)
 	);
 
 	/* CONFIG FORM BUILDER - GLOBALS */
