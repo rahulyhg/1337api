@@ -217,6 +217,8 @@ AdminApp.factory('apiInterceptor',
 			},
 			'response': function(res){
 
+				$log.debug(res.data);
+
 				if (res.data.error) {
 					$log.error(res.data.message);
 					swal("ERRO", res.data.message, "error");
