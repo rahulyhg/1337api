@@ -5,17 +5,9 @@ use \Firebase\JWT\JWT;
 ** AUTH INIT *****************************************************************************************
 *************************************************************************************************** */ 
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	if(!empty($req)){
-		$req['content'] = json_decode(file_get_contents("php://input"), true);
-		api_signin($req);		
-	}
-	else{
-		header('HTTP/1.0 400 Bad Request');
-		$res = array('error' => true, 'message' => 'HTTP/1.0 400 Bad Request');
-		echo json_encode($res);
-		die();
-	}
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($req)) {
+	$req['content'] = json_decode(file_get_contents("php://input"), true);
+	api_signin($req);		
 } 
 else{
 	header('HTTP/1.0 405 Method Not Allowed');
