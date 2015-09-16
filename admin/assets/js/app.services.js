@@ -78,15 +78,15 @@ AdminApp.factory('authService',
 
 // apiService Factory
 AdminApp.factory('apiService', 
-	['$q', '$http', '$location', '$route', 'config',
-	function($q, $http, $location, $route, config) {
+	['$q', '$http', '$location', '$route', '$log', 'config',
+	function($q, $http, $location, $route, $log, config) {
 
 		var apiService = {
 
 			getHi: function() {
 				var deferred = $q.defer();
 
-				hi = $http.get(config.API_BASE_URL + '/hi').then(function(res) {
+				hi = $http.get(config.API_BASE_URL + '/hi', {cache: true}).then(function(res) {
 					deferred.resolve(res.data);
 				});
 				return deferred.promise;
@@ -114,8 +114,8 @@ AdminApp.factory('apiService',
 									deferred.resolve();
 								}
 								else {
+									$log.warn('ID does not exist.');
 									deferred.reject('ID dos not exist');
-									console.log('ID does not exist.');
 									$location.url('/');
 								}
 
@@ -127,8 +127,8 @@ AdminApp.factory('apiService',
 
 					}
 					else {
+						$log.warn('Edge dos not exist.');
 						deferred.reject('Edge dos not exist');
-						console.log('Edge dos not exist.');
 						$location.url('/');
 					}
 				});
@@ -139,7 +139,7 @@ AdminApp.factory('apiService',
 			getEdges: function() {
 				var deferred = $q.defer();
 
-				edges = $http.get(config.API_BASE_URL + '/edges').then(function(response) {
+				edges = $http.get(config.API_BASE_URL + '/edges',{cache: true}).then(function(response) {
 					deferred.resolve(response.data.beans);
 				});
 
@@ -150,7 +150,7 @@ AdminApp.factory('apiService',
 				var deferred = $q.defer();
 				var edge = $route.current.params.edge;
 
-				schema = $http.get(config.API_BASE_URL + '/schema/' + edge).then(function(response) {
+				schema = $http.get(config.API_BASE_URL + '/schema/' + edge,{cache: true}).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
@@ -217,6 +217,8 @@ AdminApp.factory('apiInterceptor',
 			},
 			'response': function(res){
 
+				$log.debug(res.data);
+
 				if (res.data.error) {
 					$log.error(res.data.message);
 					swal("ERRO", res.data.message, "error");
@@ -226,7 +228,13 @@ AdminApp.factory('apiInterceptor',
 				return res;
 			},
 			'responseError': function(res) {
-				if (res.status === 400 || res.status === 401 || res.status === 403) {
+
+				if (res.status === 400) {
+					$log.error(res.data.message);
+					swal("ERRO", res.data.message, "error");
+				}
+
+				if (res.status === 401 || res.status === 403) {
 					$log.error(res.data.message);
 					
 					if ($location.path() !== '/login' && typeof reloadLock === 'undefined') {

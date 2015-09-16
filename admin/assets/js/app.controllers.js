@@ -1,3 +1,6 @@
+(function(){
+"use strict";
+
 /* ************************************************************
 ANGULAR ADMIN APP CONTROLLERS
 ************************************************************ */
@@ -8,26 +11,25 @@ AdminApp.controller('MainController',
 	function($scope, $location, $localStorage, $log, authService, apiService) {
 
 		$scope.$on('$routeChangeStart', function() {
-			// fired on success of viewContent load.
+			$log.debug('routeChangeStart');
 		});
 
 		$scope.$on('$routeChangeSuccess', function() {
-			// fired on success of routeChange.
+			$log.debug('routeChangeSuccess');
 		});
 
 		$scope.$on('$viewContentLoaded', function() {
-			// fired on success of viewContent load.
+			$log.debug('viewContentLoaded');
 		});
 
 		function successAuth(res) {
 			$localStorage.token = res.data.token;
-				$log.debug('login: success');
-				window.location.href = window.location.pathname;
+			$log.debug('login: success');
+			window.location.href = window.location.pathname;
 		}
 
 		function errorAuth(res) {
 			$log.debug('login: failed.');
-			$scope.$broadcast('sendAlert', res);
 		}
 
 		$scope.login = function() {
@@ -94,10 +96,9 @@ AdminApp.controller('MenuController',
 
 // LIST Controller
 AdminApp.controller('ListController', 
-	['$scope', '$location', '$http', '$routeParams', 'schema', 'list', 'count', 'config',
-	function($scope, $location, $http, $routeParams, schema, list, count, config) {
+	['$scope', '$location', '$http', '$routeParams', '$q', 'schema', 'list', 'count', 'config',
+	function($scope, $location, $http, $routeParams, $q, schema, list, count, config) {
 
-		$scope.alert = {};
 		$scope.schema = schema;
 		$scope.items = list;
 		$scope.itemsThisPage = Object.keys(list).length;
@@ -120,13 +121,16 @@ AdminApp.controller('ListController',
 		};
 
 		$scope.onExport = function() {
+			var deferred = $q.defer();
 
-			$http.get(config.API_BASE_URL + '/export/' + $routeParams.edge, { responseType: 'arraybuffer' })
-				.success(function(data) {
+			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge, { responseType: 'arraybuffer' })
+				.then(function(data) {
 					var file = new Blob([data], { type: 'application/csv' });
 					var expTimestamp = Date.now();
 					saveAs(file, 'export-' + $routeParams.edge + '-' + expTimestamp + '.csv');
+					deferred.resolve('export-' + $routeParams.edge + '-' + expTimestamp + '.csv');
 			});
+			return deferred.promise;
 
 		};
 
@@ -185,8 +189,8 @@ AdminApp.controller('ReadController',
 
 // UPDATE Controller
 AdminApp.controller('UpdateController', 
-	['$scope', 'schema', 'read',
-	function($scope, schema, read) {
+	['$scope', '$log', 'schema', 'read',
+	function($scope, $log, schema, read) {
 
 		$scope.item = read;
 		$scope.schema = schema;
@@ -194,7 +198,7 @@ AdminApp.controller('UpdateController',
 
 		$scope.onChange = function(data) {
 			// fired onChange of form data.
-			console.dir(data);
+			$log.debug(data);
 		};
 
 	}]
@@ -202,8 +206,8 @@ AdminApp.controller('UpdateController',
 
 // Update Password Controller
 AdminApp.controller('UpdatePasswordController', 
-	['$scope',
-	function($scope) {
+	['$scope', '$log',
+	function($scope, $log) {
 
 		// TODO: would be nice to validate if new_password and confirm_new_password are equal values thru JSON Schema frontend.
 		var schema =
@@ -221,7 +225,7 @@ AdminApp.controller('UpdatePasswordController',
 
 		$scope.onChange = function(data) {
 			// fired onChange of form data.
-			console.dir(data);
+			$log.debug(data);
 		};
 
 	}]
@@ -229,8 +233,8 @@ AdminApp.controller('UpdatePasswordController',
 
 // Form Controller
 AdminApp.controller('FormController', 
-	['$scope', '$http', '$location', '$routeParams', '$q', 'config', 
-	function($scope, $http, $location, $routeParams, $q, config) {
+	['$scope', '$http', '$location', '$routeParams', '$log', '$q', 'config', 
+	function($scope, $http, $location, $routeParams, $log, $q, config) {
 		var edge = $routeParams.edge;
 		var id = $routeParams.id;
 
@@ -243,9 +247,9 @@ AdminApp.controller('FormController',
 				$scope.editor.disable();
 
 				// TODO: when using sceditor WYSIWYG, need to fire function to "readOnly = true"
-				// Examples that doesn't work:
-				// instance.readOnly(1);
-				// $scope.editor.plugins.sceditor.readOnly(true);
+				// Examples that work, but are specific to the field sceditor is applied on:
+				// $scope.editor.root.editors.description.sceditor_instance.readOnly(true)
+				// console.dir($scope.editor.root.editors.description.sceditor_instance.);
 
 			});
 		}
@@ -254,7 +258,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 			var deferred = $q.defer();
 
-			create = $http.post(config.API_BASE_URL + '/create/' + edge, item).then(function(res) {
+			var create = $http.post(config.API_BASE_URL + '/create/' + edge, item).then(function(res) {
 				$location.path('/list/' + edge);
 				deferred.resolve(res.data);
 			});
@@ -263,9 +267,13 @@ AdminApp.controller('FormController',
 
 		$scope.onUpdate = function() {
 			var item = $scope.editor.getValue();
-			$http.post(config.API_BASE_URL + '/update/' + edge + '/' + id, item).success(function() {
+			var deferred = $q.defer();
+
+			var update = $http.post(config.API_BASE_URL + '/update/' + edge + '/' + id, item).then(function(res) {
 				$location.path('/list/' + edge);
+				deferred.resolve(res.data);
 			});
+			return deferred.promise;
 		};
 
 		$scope.onUpdatePassword = function() {
@@ -273,7 +281,7 @@ AdminApp.controller('FormController',
 			var id = $scope.$parent.user.id;
 
 			$http.post(config.API_BASE_URL + '/updatePassword/user/' + id, item).success(function() {
-				console.log('PUT!');
+				//TODO: define what to do after updatePassword success. Should user be logged out?
 				//$location.path('/list/'+edge);
 			});
 		};
@@ -285,31 +293,25 @@ AdminApp.controller('FormController',
 				 text: "Esse registro será permanentemente excluído do banco de dados.",
 				 type: "warning",
 				 showCancelButton: true,
-				 confirmButtonColor: "#DD6B55",
+				 confirmButtonColor: "#c9302c",
 				 confirmButtonText: "Sim, excluir",
 				 closeOnConfirm: false 
 				}, 
 				function(){
 					$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
 						$location.path('/list/' + edge);
+						$log.debug(response.data.message);
 						swal("Sucesso", response.data.message, "success"); 
 					});
-					delete $scope.items[id];
+					delete $scope.itemId;
 				});
 		};
 
 	}]
 );
 
-AdminApp.controller('AlertController', function($scope) {
-	$scope.alerts = [];
+/* ************************************************************
+./end ANGULAR ADMIN APP CONTROLLERS
+************************************************************ */
 
-	$scope.$on('sendAlert', function(event, obj) {
-		$scope.alerts.push({type: 'danger', msg: obj.data.message});
-	});
-
-	$scope.closeAlert = function(index) {
-		$scope.alerts.splice(index, 1);
-	};
-
-});
+})();
