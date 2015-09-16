@@ -86,7 +86,7 @@ AdminApp.factory('apiService',
 			getHi: function() {
 				var deferred = $q.defer();
 
-				hi = $http.get(config.API_BASE_URL + '/hi').then(function(res) {
+				hi = $http.get(config.API_BASE_URL + '/hi', {cache: true}).then(function(res) {
 					deferred.resolve(res.data);
 				});
 				return deferred.promise;
@@ -139,7 +139,7 @@ AdminApp.factory('apiService',
 			getEdges: function() {
 				var deferred = $q.defer();
 
-				edges = $http.get(config.API_BASE_URL + '/edges').then(function(response) {
+				edges = $http.get(config.API_BASE_URL + '/edges',{cache: true}).then(function(response) {
 					deferred.resolve(response.data.beans);
 				});
 
@@ -150,7 +150,7 @@ AdminApp.factory('apiService',
 				var deferred = $q.defer();
 				var edge = $route.current.params.edge;
 
-				schema = $http.get(config.API_BASE_URL + '/schema/' + edge).then(function(response) {
+				schema = $http.get(config.API_BASE_URL + '/schema/' + edge,{cache: true}).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
