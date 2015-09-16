@@ -244,12 +244,15 @@ AdminApp.controller('FormController',
 		if ($scope.$parent.read !== undefined) {
 			$scope.$on('disableForm', function(event, obj) {
 
+				// disable json editor
 				$scope.editor.disable();
 
-				// TODO: when using sceditor WYSIWYG, need to fire function to "readOnly = true"
-				// Examples that work, but are specific to the field sceditor is applied on:
-				// $scope.editor.root.editors.description.sceditor_instance.readOnly(true)
-				// console.dir($scope.editor.root.editors.description.sceditor_instance.);
+				// check for sceditor plugin instances and disable it
+				for (var key in $scope.editor.root.editors) {
+					if($scope.editor.getEditor("root."+key).sceditor_instance !== undefined){
+						$scope.editor.getEditor("root."+key).sceditor_instance.readOnly(true);
+					}
+				}
 
 			});
 		}
