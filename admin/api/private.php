@@ -271,9 +271,14 @@ function api_create($req){
 
 		// insert item, returns id if success
 		R::store($item);
+		$id = R::getInsertID();
 		R::commit();
-		$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
 
+		$res = array(
+			'id' 		=> $id,
+			'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
+		);
+		
 		// OUTPUT
 		api_output($res);
 	}

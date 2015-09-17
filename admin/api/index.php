@@ -67,7 +67,7 @@ function api_forbid(){
 };
 
 // ERROR OUTPUT
-function api_error($msg, $debug){
+function api_error($msg, $debug = ''){
 	global $config;
 
 	$res = array('error' => true, 'message' => getMessage($msg));
