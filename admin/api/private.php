@@ -4,68 +4,55 @@ use Goodby\CSV\Export\Standard\Exporter;
 use Goodby\CSV\Export\Standard\ExporterConfig;
 
 /* ***************************************************************************************************
-** API AUTH FUNCTIONS ********************************************************************************
+** PRIVATE API VALIDATE REQUEST FUNCTIONS ************************************************************
 *************************************************************************************************** */ 
 
-function api_validateToken($authHeader){
-   global $config;
-
-	// Look for the 'authorization' header
-	if($authHeader){
-
-		// Extract the jwt from the Bearer
-		list($jwt) = sscanf( $authHeader, 'Bearer %s');
-
-		if ($jwt) {
-
-			try {	
-				// decode the jwt using the key from config
-				$secretKey 	= base64_decode($config['auth']['jwtKey']);
-				$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
-				return true;
-			} 
-			catch (Exception $e) {
-				// the token was not able to be decoded.
-				// this is likely because the signature was not able to be verified (tampered token)
-				header('HTTP/1.0 401 Unauthorized');
-				return false;
-			}
-		} 
-		else {
-			// No token was able to be extracted from the authorization header
-			header('HTTP/1.0 401 Unauthorized');
-			return false;
-		}
-
-	} 
-	else {
-		// The request lacks the authorization token
-		header('HTTP/1.0 401 Unauthorized');
-		echo 'Token not found in request';
-		return false;
-	}
-
-}
-
-// check authorization headers
-$headers = apache_request_headers();
-	
-if(array_key_exists('Authorization', $headers) && api_validateToken($headers['Authorization']) ){
-	$auth = true;
-}
-else{
-	$auth = false;
-	header('HTTP/1.0 401 Unauthorized');
-	die();
-};
-
-// check method headers
+// CHECK REQUEST_METHOD HEADER
 if ( empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GET','POST']) ) {
 	header('HTTP/1.0 405 Method Not Allowed');
 	$res = array('error' => true, 'message' => 'HTTP/1.0 405 Method Not Allowed');
 	echo json_encode($res);
 	die();
 }
+
+// CHECK AUTHORIZATION HEADER
+if(function_exists('apache_request_headers')){
+	$headers = apache_request_headers();
+	if(array_key_exists('Authorization', $headers)){
+		$authHeader = $headers['Authorization'];
+	}
+} 
+else {
+	$headers = $_SERVER;
+	if(array_key_exists('HTTP_AUTHORIZATION', $headers)){
+		$authHeader = $headers['HTTP_AUTHORIZATION'];
+	}
+}
+
+// VALIDATE AUTHORIZATION HEADER
+try {
+	if(!empty($authHeader)){
+		// Extract the jwt from the Bearer
+		list($jwt) = sscanf( $authHeader, 'Bearer %s');
+
+		if($jwt) {
+			// decode the jwt using the key from config
+			$secretKey 	= base64_decode($config['auth']['jwtKey']);
+			$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
+		} 
+		else {
+			throw new Exception('Token not found at Authorization Header.', 1);
+		}
+	} 
+	else{
+		throw new Exception('Authorization Header not found.', 1);
+	}
+	
+} catch (Exception $e) {
+	header('HTTP/1.0 401 Unauthorized');
+	echo $e->getMessage();
+	die();
+};
 
 /* ***************************************************************************************************
 ** PRIVATE GET ROUTES ********************************************************************************
@@ -81,7 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		case 'edges':
 			if (empty($req['edge'])){
 				api_edges();
-			} else {
+			} 
+			else {
 				api_forbid();
 			}
 		break;
@@ -175,18 +163,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			}
 		break;
 
-		case 'update':
-			if (in_array($req['edge'], $config['api']['beans'])){
-				api_update($req);
+		case 'updatePassword':
+			if ($req['edge'] == 'user' && !empty($req['param'])){
+				api_updatePassword($req);
 			}
 			else{
 				api_forbid();
 			}
 		break;
 
-		case 'updatePassword':
-			if ($req['edge'] == "user" && !empty($req['param'])){
-				api_updatePassword($req);
+		case 'update':
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_update($req);
 			}
 			else{
 				api_forbid();
