@@ -7,14 +7,6 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 ** PRIVATE API VALIDATE REQUEST FUNCTIONS ************************************************************
 *************************************************************************************************** */ 
 
-// CHECK REQUEST_METHOD HEADER
-if ( empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GET','POST']) ) {
-	header('HTTP/1.0 405 Method Not Allowed');
-	$res = array('error' => true, 'message' => 'HTTP/1.0 405 Method Not Allowed');
-	echo json_encode($res);
-	die();
-}
-
 // CHECK AUTHORIZATION HEADER
 if(function_exists('apache_request_headers')){
 	$headers = apache_request_headers();
@@ -28,8 +20,8 @@ else {
 		$authHeader = $headers['HTTP_AUTHORIZATION'];
 	}
 }
-
 // VALIDATE AUTHORIZATION HEADER
+$auth = false;
 try {
 	if(!empty($authHeader)){
 		// Extract the jwt from the Bearer
@@ -39,6 +31,15 @@ try {
 			// decode the jwt using the key from config
 			$secretKey 	= base64_decode($config['auth']['jwtKey']);
 			$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
+
+			if($token){
+				$auth = true;
+			}
+
+			else {
+				throw new Exception('Invalid token found at Authorization Header.', 1);
+			}
+
 		} 
 		else {
 			throw new Exception('Token not found at Authorization Header.', 1);
@@ -53,6 +54,14 @@ try {
 	echo $e->getMessage();
 	die();
 };
+
+// CHECK REQUEST_METHOD HEADER
+if ( $auth == false || empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GET','POST']) ) {
+	header('HTTP/1.0 405 Method Not Allowed');
+	$res = array('error' => true, 'message' => 'HTTP/1.0 405 Method Not Allowed');
+	echo json_encode($res);
+	die();
+}
 
 /* ***************************************************************************************************
 ** PRIVATE GET ROUTES ********************************************************************************
@@ -214,15 +223,10 @@ function api_hi(){
 	global $caption;
 
 	if(!empty($caption['messages'])) {
-		$res = array(
-			'message' => getMessage('HI'),
-		);
+		$res = array('message' => getMessage('HI'));
 	} 
 	else{
-		$res = array(
-			'error' => true,
-			'message' => 'Arquivo de mensagens não encontrado.'
-		);
+		$res = array('error' => true, 'message' => 'Arquivo de mensagens não encontrado.');
 	}
 
 	// OUTPUT
@@ -233,40 +237,49 @@ function api_hi(){
 function api_create($req){
 	global $config;
 
-	$item = R::dispense( $req['edge'] );
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
+	R::begin();
+	try{
+	
+		// dispense 'edge'
+		$item = R::dispense( $req['edge'] );
+		$schema['raw'] = R::getAssoc('DESCRIBE ' . $req['edge']);
 
-	foreach ($req['content'] as $k => $v) {
+		// foreach $req content, build array to insert
+		foreach ($req['content'] as $field => $v) {
 
-		// IF rel uploads many-to-many relationship
-		if($k == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
-			
-			$upload = R::dispense( 'uploads' );
-			$upload->id = $v;
-			$item->sharedUploadList[] = $upload;
-		}
-		// IF field is a password, hash it up
-		else if ($k == 'password'){
-			$item[$k] = md5($v);
-		}
-		else{
-			$item[$k] = $v;			
-		};		
-	};
+			// IF field defines uploads many-to-many relationship
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+				$upload = R::dispense( 'uploads' );
+				$upload->id = $v;
+				$item->sharedUploadList[] = $upload;
+			}
 
-	$item['created'] 	= R::isoDateTime();
-	$item['modified'] 	= R::isoDateTime();
+			// IF field is a password, hash it up
+			else if ($field == 'password'){
+				$item[$field] = md5($v);
+			}
 
-	$id = R::store($item);
+			else{
+				$item[$field] = $v;			
+			};
+		
+		};
 
-	if($id){
+		// inject created and modified current time to array to insert
+		$item['created'] 	= R::isoDateTime();
+		$item['modified'] 	= R::isoDateTime();
+
+		// insert item, returns id if success
+		R::store($item);
+		R::commit();
 		$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
 
 		// OUTPUT
 		api_output($res);
 	}
-	else{
-		api_error('CREATE_FAIL');
+	catch(Exception $e) {
+		R::rollback();
+		api_error('CREATE_FAIL', $e->getMessage());
 	}
 
 };

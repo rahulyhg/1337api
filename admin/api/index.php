@@ -23,7 +23,7 @@ $config['api']['beans'] = R::inspect();
 
 // REDBEAN ORM DEBUG MODE ON
 if($config['api']['debug']){
-	R::debug( TRUE, 0 );
+	R::debug( TRUE, 1 );
 };
 
 /* ***************************************************************************************************
@@ -67,8 +67,15 @@ function api_forbid(){
 };
 
 // ERROR OUTPUT
-function api_error($msg){
+function api_error($msg, $debug){
+	global $config;
+
 	$res = array('error' => true, 'message' => getMessage($msg));
+	
+	if($config['api']['debug']){
+		$res['debug'] = $debug;
+	};	
+
 	api_output($res);
 };
 
