@@ -229,7 +229,7 @@ function api_hi(){
 		$res = array('error' => true, 'message' => 'Arquivo de mensagens não encontrado.');
 	}
 
-	// OUTPUT
+	//output response
 	api_output($res);
 
 };
@@ -274,12 +274,13 @@ function api_create($req){
 		$id = R::getInsertID();
 		R::commit();
 
+		// build api response array
 		$res = array(
 			'id' 		=> $id,
 			'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
 		);
 		
-		// OUTPUT
+		//output response
 		api_output($res);
 	}
 	catch(Exception $e) {
@@ -290,31 +291,53 @@ function api_create($req){
 };
 
 function api_read($req){
-   global $config;
+	global $config;
 
-	// READ - view one
-	$item = R::load( $req['edge'], $req['param'] );
+	try {
 
-	foreach ($item as $k => $v) {
-		if(!in_array($k, $config['schema']['default']['blacklist'])) {
+		// select item
+		$item = R::load( $req['edge'], $req['param'] );
 
-			$res[$k] = $v;
+		// IF item retrieved
+		if(!empty($item['id'])){
 
-			// IF ONE-TO-MANY RELATIONSHIP
-			if(substr($k, -3, 3) == '_id'){
-				$parentBean = substr($k, 0, -3);
-				$parent = R::load( $parentBean , $v );
-				
-				foreach ($parent as $key => $value) {
-					$res[$parentBean][$v][$key] = $value;
+			// foreach $item field, build array to response 
+			foreach ($item as $field => $v) {
+				if(!in_array($k, $config['schema']['default']['blacklist'])) {
+
+					$res[$field] = $v;
+
+					// IF field represents one-to-many relationship
+					if(substr($field, -3, 3) == '_id'){
+						$parentEdge = substr($field, 0, -3);
+						$parent = R::load( $parentEdge , $v );
+
+						// IF parent is retrieved
+						if(!empty($parent['id'])){
+							
+							// foreach $parent field, build array to response 
+							foreach ($parent as $parentField => $parentValue) {
+								$res[$parentEdge][$v][$parentField] = $parentValue;
+							};
+						}
+						else{
+							throw new Exception('Error Processing Request (ID: '.$v.' FROM TABLE: '.$parentEdge.' NOT FOUND', 1);
+						}	
+					}
 				};
-			}
-		
-		};
-	};
+			};
 
-	// OUTPUT
-	api_output($res);
+			//output response
+			api_output($res);
+		}
+		else{
+			throw new Exception('Error Processing Request (ID: '.$req['param'].' FROM TABLE: '.$req['edge'].' NOT FOUND', 1);
+		}
+		
+	} catch (Exception $e) {
+		api_error('READ_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_exists($req){
@@ -331,7 +354,7 @@ function api_exists($req){
 		$res['exists'] = true;
 	}
 
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
@@ -344,7 +367,7 @@ function api_export($req){
     $bean = R::findAll( $req['edge'] );
     $rawData = R::exportAll($bean, false, array('part'));
 
-	// OUTPUT
+	//output response
 	$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
 	$name = 'export-'.$req['edge'].'-'.$dateHash.'.csv';
     
@@ -387,7 +410,7 @@ function api_update($req){
 	R::store( $item );
 	$res['message'] = 'Atualizado com Sucesso. (id: '.$req['param'].')';
 
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
@@ -415,7 +438,7 @@ function api_updatePassword($req){
 
 	}
 
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
@@ -426,7 +449,7 @@ function api_destroy($req){
 
 	$res['message'] = 'Excluído com Sucesso. (id: '.$req['param'].')';
 
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
@@ -468,14 +491,14 @@ function api_list($req){
 
 	};
 
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
 function api_search($req){
 	$res['message'] = 'in development: action "search"';
 
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
@@ -490,7 +513,7 @@ function api_count($req){
 	$res['pages'] 			= round($count/$limit);
 	$res['itemsPerPage'] 	= $limit;
 	
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
@@ -639,7 +662,7 @@ function api_schema($req){
 				);
 		}
 
-		// OUTPUT
+		//output response
 		api_output($res);
 	}
 
@@ -772,7 +795,7 @@ function api_upload($req){
 	$res['id'] = $id;
 	$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
 
-	// OUTPUT
+	//output response
 	api_output($res);
 
 };
