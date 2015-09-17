@@ -341,18 +341,9 @@ function api_read($req){
 };
 
 function api_exists($req){
-   global $config;
-
-	// EXISTS?
+	// check if item is retrieved from database
 	$exists = R::find($req['edge'],' id = '.$req['param'].' ' );
-
-	if( empty( $exists ) )
-	{
-		$res['exists'] = false;
-	}
-	else{
-		$res['exists'] = true;
-	}
+	$res['exists'] = !empty($exists) ? true : false;
 
 	//output response
 	api_output($res);
