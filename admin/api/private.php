@@ -490,7 +490,7 @@ function api_destroy($req){
 			'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$id.')',
 		);
 
-		//output response
+		// output response
 		api_output($res);
 
 	} catch (Exception $e) {
@@ -501,45 +501,42 @@ function api_destroy($req){
 };
 
 function api_list($req){
-   global $config;
+	global $config;
 
-	// LIST - list all
-	if(empty($req['param'])){
-		$items = R::findAll( $req['edge'] );
+	try {
 
+		// check if request is paginated or ALL
+		if(!empty($req['param'])){
+			// param page exists, let's get this page 
+			$page 	= $req['param'];
+			$limit 	= $config['api']['params']['pagination'];
+			$items 	= R::findAll( $req['edge'], 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
+		}else{
+			// param page doesn't exist, let's get all
+			$items = R::findAll( $req['edge'], 'ORDER BY id DESC' );
+		}
+
+		// check if list is not empty
 		if(!empty($items)){
+			// list is not empty, let's foreach and build response array
 			foreach ($items as $item => $content) {
-				foreach ($content as $k => $v) {
-					$res[$item][$k] = $v;
+				foreach ($content as $field => $value) {
+					$res[$item][$field] = $value;
 				};
 			};
-		} else{
+		}
+		else{
+			// list is empty, let's return empty array
 			$res = array();
 		}
 
+		// output response
+		api_output($res);
+
+	} catch (Exception $e) {
+		api_error('LIST_FAIL', $e->getMessage());
 	}
 
-	// LIST - paginated
-	else{
-		
-		$page 	= $req['param'];
-		$limit 	= $config['api']['params']['pagination'];
-		$items 	= R::findAll( $req['edge'], 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
-
-		if(!empty($items)){
-			foreach ($items as $item => $content) {
-				foreach ($content as $k => $v) {
-					$res[$item][$k] = $v;
-				};
-			};			
-		} else{
-			$res = array();
-		}
-
-	};
-
-	//output response
-	api_output($res);
 };
 
 function api_search($req){
