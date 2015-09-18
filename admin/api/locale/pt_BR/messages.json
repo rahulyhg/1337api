@@ -1,8 +1,17 @@
 {
 	"AUTH_USERPASS_FAIL": "Login ou senha incorreta, tente novamente.",
 	"CREATE_FAIL": "Erro na gravação do registro.",
+	"CREATE_SUCCESS": "Criado com sucesso.",
+	"COUNT_FAIL": "Erro na contagem dos registros.",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
+	"DESTROY_FAIL": "Erro na exclusão do registro.",
+	"DESTROY_SUCCESS": "Excluído com sucesso.",
+	"EXPORT_FAIL": "Não foi possível exportar os registros.",
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
-	"INVALID_SCHEMA": "Não foi possível processar sua requisição. (schema inválido)"
+	"INVALID_SCHEMA": "Não foi possível processar sua requisição. (schema inválido)",
+	"LIST_FAIL": "Erro na listagem dos registros.",
+	"READ_FAIL": "Erro na leitura do registro.",
+	"UPDATE_FAIL": "Erro na atualização do registro.",
+	"UPDATE_SUCCESS": "Atualizado com sucesso."
 }

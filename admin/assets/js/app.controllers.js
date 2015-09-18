@@ -96,7 +96,7 @@ AdminApp.controller('ListController',
 	function($scope, $location, $http, $routeParams, $q, schema, list, count, config) {
 
 		$scope.schema = schema;
-		$scope.items = list;
+		$scope.items = $.map(list, function(el) { return el; });
 		$scope.itemsThisPage = Object.keys(list).length;
 		$scope.totalItems = count.sum;
 		$scope.itemsPerPage = count.itemsPerPage;
@@ -117,18 +117,16 @@ AdminApp.controller('ListController',
 		};
 
 		$scope.onExport = function() {
-			// TODO: Export is not working with $q async deferred function. Need to investigate.
 			var deferred = $q.defer();
 
-			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge, { responseType: 'arraybuffer' })
-				.then(function(data) {
-					var file = new Blob([data], { type: 'application/csv' });
+			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge)
+				.then(function(res) {
+					var file = new Blob([res.data], { type: 'application/csv' });
 					var expTimestamp = Date.now();
 					saveAs(file, 'export-' + $routeParams.edge + '-' + expTimestamp + '.csv');
 					deferred.resolve('export-' + $routeParams.edge + '-' + expTimestamp + '.csv');
-			});
+				});
 			return deferred.promise;
-
 		};
 
 		$scope.onDestroy = function(id) {

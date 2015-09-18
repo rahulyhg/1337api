@@ -19,7 +19,7 @@
 
 	/* CONFIG API - GLOBALS */
 	$config['api'] = array(
-		'debug' 	=> FALSE,
+		'debug' 	=> TRUE,
 		'locale' 	 => 'pt_BR',
 		'actions' 	=> array(
 			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists', 'export'),

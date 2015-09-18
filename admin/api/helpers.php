@@ -53,7 +53,7 @@ function getMessage($term) {
 		return $caption['messages'][$term];
 	}
 	else {
-		return $term . ' MESSAGE NOT FOUND.';
+		return $term;
 	}
 };
 

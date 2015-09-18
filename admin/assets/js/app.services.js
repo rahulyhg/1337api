@@ -211,12 +211,16 @@ AdminApp.factory('apiInterceptor',
 				return config;
 			},
 			'response': function(res){
-
 				$log.debug(res.data);
 
 				if (res.data.error) {
 					$log.error(res.data.message);
 					swal("ERRO", res.data.message, "error");
+					
+					if(res.data.debug){
+						$log.error(res.data.debug);
+					}
+					
 					return $q.reject(res);
 				}
 

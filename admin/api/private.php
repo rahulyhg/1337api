@@ -4,63 +4,59 @@ use Goodby\CSV\Export\Standard\Exporter;
 use Goodby\CSV\Export\Standard\ExporterConfig;
 
 /* ***************************************************************************************************
-** API AUTH FUNCTIONS ********************************************************************************
+** PRIVATE API VALIDATE REQUEST FUNCTIONS ************************************************************
 *************************************************************************************************** */ 
 
-function api_validateToken($authHeader){
-   global $config;
-
-	// Look for the 'authorization' header
-	if($authHeader){
-
+// CHECK AUTHORIZATION HEADER
+if(function_exists('apache_request_headers')){
+	$headers = apache_request_headers();
+	if(array_key_exists('Authorization', $headers)){
+		$authHeader = $headers['Authorization'];
+	}
+} 
+else {
+	$headers = $_SERVER;
+	if(array_key_exists('HTTP_AUTHORIZATION', $headers)){
+		$authHeader = $headers['HTTP_AUTHORIZATION'];
+	}
+}
+// VALIDATE AUTHORIZATION HEADER
+$auth = false;
+try {
+	if(!empty($authHeader)){
 		// Extract the jwt from the Bearer
 		list($jwt) = sscanf( $authHeader, 'Bearer %s');
 
-		if ($jwt) {
+		if($jwt) {
+			// decode the jwt using the key from config
+			$secretKey 	= base64_decode($config['auth']['jwtKey']);
+			$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
 
-			try {	
-				// decode the jwt using the key from config
-				$secretKey 	= base64_decode($config['auth']['jwtKey']);
-				$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
-				return true;
-			} 
-			catch (Exception $e) {
-				// the token was not able to be decoded.
-				// this is likely because the signature was not able to be verified (tampered token)
-				header('HTTP/1.0 401 Unauthorized');
-				return false;
+			if($token){
+				$auth = true;
 			}
+
+			else {
+				throw new Exception('Invalid token found at Authorization Header.', 1);
+			}
+
 		} 
 		else {
-			// No token was able to be extracted from the authorization header
-			header('HTTP/1.0 401 Unauthorized');
-			return false;
+			throw new Exception('Token not found at Authorization Header.', 1);
 		}
-
 	} 
-	else {
-		// The request lacks the authorization token
-		header('HTTP/1.0 401 Unauthorized');
-		echo 'Token not found in request';
-		return false;
+	else{
+		throw new Exception('Authorization Header not found.', 1);
 	}
-
-}
-
-// check authorization headers
-$headers = apache_request_headers();
 	
-if(array_key_exists('Authorization', $headers) && api_validateToken($headers['Authorization']) ){
-	$auth = true;
-}
-else{
-	$auth = false;
+} catch (Exception $e) {
 	header('HTTP/1.0 401 Unauthorized');
+	echo $e->getMessage();
 	die();
 };
 
-// check method headers
-if ( empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GET','POST']) ) {
+// CHECK REQUEST_METHOD HEADER
+if ( $auth == false || empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GET','POST']) ) {
 	header('HTTP/1.0 405 Method Not Allowed');
 	$res = array('error' => true, 'message' => 'HTTP/1.0 405 Method Not Allowed');
 	echo json_encode($res);
@@ -81,7 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		case 'edges':
 			if (empty($req['edge'])){
 				api_edges();
-			} else {
+			} 
+			else {
 				api_forbid();
 			}
 		break;
@@ -175,18 +172,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			}
 		break;
 
-		case 'update':
-			if (in_array($req['edge'], $config['api']['beans'])){
-				api_update($req);
+		case 'updatePassword':
+			if ($req['edge'] == 'user' && !empty($req['param'])){
+				api_updatePassword($req);
 			}
 			else{
 				api_forbid();
 			}
 		break;
 
-		case 'updatePassword':
-			if ($req['edge'] == "user" && !empty($req['param'])){
-				api_updatePassword($req);
+		case 'update':
+			if (in_array($req['edge'], $config['api']['beans'])){
+				api_update($req);
 			}
 			else{
 				api_forbid();
@@ -226,18 +223,13 @@ function api_hi(){
 	global $caption;
 
 	if(!empty($caption['messages'])) {
-		$res = array(
-			'message' => getMessage('HI'),
-		);
+		$res = array('message' => getMessage('HI'));
 	} 
 	else{
-		$res = array(
-			'error' => true,
-			'message' => 'Arquivo de mensagens não encontrado.'
-		);
+		$res = array('error' => true, 'message' => 'Arquivo de mensagens não encontrado.');
 	}
 
-	// OUTPUT
+	//output response
 	api_output($res);
 
 };
@@ -245,144 +237,211 @@ function api_hi(){
 function api_create($req){
 	global $config;
 
-	$item = R::dispense( $req['edge'] );
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
+	R::begin();
+	try{
+	
+		// dispense 'edge'
+		$item = R::dispense( $req['edge'] );
+		$schema['raw'] = R::getAssoc('DESCRIBE ' . $req['edge']);
 
-	foreach ($req['content'] as $k => $v) {
+		// foreach $req content, build array to insert
+		foreach ($req['content'] as $field => $v) {
 
-		// IF rel uploads many-to-many relationship
-		if($k == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
-			
-			$upload = R::dispense( 'uploads' );
-			$upload->id = $v;
-			$item->sharedUploadList[] = $upload;
-		}
-		// IF field is a password, hash it up
-		else if ($k == 'password'){
-			$item[$k] = md5($v);
-		}
-		else{
-			$item[$k] = $v;			
-		};		
-	};
+			// IF field defines uploads many-to-many relationship
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+				$upload = R::dispense( 'uploads' );
+				$upload->id = $v;
+				$item->sharedUploadList[] = $upload;
+			}
 
-	$item['created'] 	= R::isoDateTime();
-	$item['modified'] 	= R::isoDateTime();
+			// IF field is a password, hash it up
+			else if ($field == 'password'){
+				$item[$field] = md5($v);
+			}
 
-	$id = R::store($item);
+			else{
+				$item[$field] = $v;			
+			};
+		
+		};
 
-	if($id){
-		$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
+		// inject created and modified current time to array to insert
+		$item['created'] 	= R::isoDateTime();
+		$item['modified'] 	= R::isoDateTime();
 
-		// OUTPUT
+		// insert item, returns id if success
+		R::store($item);
+		$id = R::getInsertID();
+		R::commit();
+
+		// build api response array
+		$res = array(
+			'id' 		=> $id,
+			'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
+		);
+		
+		//output response
 		api_output($res);
 	}
-	else{
-		api_error('CREATE_FAIL');
+	catch(Exception $e) {
+		R::rollback();
+		api_error('CREATE_FAIL', $e->getMessage());
 	}
 
 };
 
 function api_read($req){
-   global $config;
+	global $config;
 
-	// READ - view one
-	$item = R::load( $req['edge'], $req['param'] );
+	try {
 
-	foreach ($item as $k => $v) {
-		if(!in_array($k, $config['schema']['default']['blacklist'])) {
+		// select item
+		$item = R::load( $req['edge'], $req['param'] );
 
-			$res[$k] = $v;
+		// IF item retrieved
+		if(!empty($item['id'])){
 
-			// IF ONE-TO-MANY RELATIONSHIP
-			if(substr($k, -3, 3) == '_id'){
-				$parentBean = substr($k, 0, -3);
-				$parent = R::load( $parentBean , $v );
-				
-				foreach ($parent as $key => $value) {
-					$res[$parentBean][$v][$key] = $value;
+			// foreach $item field, build array to response 
+			foreach ($item as $field => $v) {
+				if(!in_array($k, $config['schema']['default']['blacklist'])) {
+
+					$res[$field] = $v;
+
+					// IF field represents one-to-many relationship
+					if(substr($field, -3, 3) == '_id'){
+						$parentEdge = substr($field, 0, -3);
+						$parent = R::load( $parentEdge , $v );
+
+						// IF parent is retrieved
+						if(!empty($parent['id'])){
+							
+							// foreach $parent field, build array to response 
+							foreach ($parent as $parentField => $parentValue) {
+								$res[$parentEdge][$v][$parentField] = $parentValue;
+							};
+						}
+						else{
+							throw new Exception('Error Processing Request (ID: '.$v.' FROM TABLE: '.$parentEdge.' NOT FOUND', 1);
+						}	
+					}
 				};
-			}
-		
-		};
-	};
+			};
 
-	// OUTPUT
-	api_output($res);
+			//output response
+			api_output($res);
+		}
+		else{
+			throw new Exception('Error Processing Request (ID: '.$req['param'].' FROM TABLE: '.$req['edge'].' NOT FOUND', 1);
+		}
+		
+	} catch (Exception $e) {
+		api_error('READ_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_exists($req){
-   global $config;
-
-	// EXISTS?
+	// check if item is retrieved from database
 	$exists = R::find($req['edge'],' id = '.$req['param'].' ' );
+	$res['exists'] = !empty($exists) ? true : false;
 
-	if( empty( $exists ) )
-	{
-		$res['exists'] = false;
-	}
-	else{
-		$res['exists'] = true;
-	}
-
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
 function api_export($req){
-   global $config;
 
-	$config = new ExporterConfig();
-	$exporter = new Exporter($config);
+	try {
 
-    $bean = R::findAll( $req['edge'] );
-    $rawData = R::exportAll($bean, false, array('part'));
+		// init Goodby\CSV\Export\ 
+		if (class_exists('Goodby\CSV\Export\Standard\ExporterConfig')) {
+			$exportConfig = new ExporterConfig();
+			if (class_exists('Goodby\CSV\Export\Standard\Exporter')) {
+				$exporter = new Exporter($exportConfig);
+			}
+			else{
+				throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\Exporter)", 1);
+			}
+		}
+		else{
+			throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\ExporterConfig)", 1);
+		}
 
-	// OUTPUT
-	$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
-	$name = 'export-'.$req['edge'].'-'.$dateHash.'.csv';
-    
-	header('Cache-Control: max-age=60, must-revalidate');
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename='. $name);
-    header('Pragma: no-cache');
-    header("Expires: 0");
-    $outstream = $exporter->export('php://output', $rawData);
-    fclose($outstream);
+		// collect data
+		$rawData = R::findAll($req['edge']);
+		$data = R::exportAll($rawData, FALSE, array('NULL'));
 
-    exit();
+		// inject field keys to data as csv export table heading
+		$keys = array_keys($data[0]);
+		array_unshift($data, $keys);
+
+		// define outstream
+		$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
+		$filename = 'export-'.$req['edge'].'-'.$dateHash.'.csv';
+
+		//outstream response
+		header('Content-Type: text/csv');
+		header('Content-Disposition: attachment; filename='. $filename);
+
+		// TODO: how to export big tables? memory runs out.
+		$outstream = $exporter->export('php://output', $data);
+		
+	} catch (Exception $e) {
+		api_error('EXPORT_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_update($req){
-   global $config;
+	global $config;
 
-	$item = R::load( $req['edge'], $req['param'] );
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
+	R::begin();
+	try {
+		// dispense 'edge'
+		$id = $req['param'];
+		$item = R::load( $req['edge'], $id );
+		$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
 
-	foreach ($req['content'] as $k => $v) {
-		// IF rel uploads many-to-many relationship
-		if($k == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+		// foreach $req content, build array to update
+		foreach ($req['content'] as $field => $v) {
 			
-			$upload = R::dispense( 'uploads' );
-			$upload->id = $v;
-			$item->sharedUploadList[] = $upload;
-		}
-		// IF field is a password, hash it up
-		else if ($k == 'password'){
-			$item[$k] = md5($v);
-		}
-		else{
-			$item[$k] = $v;			
+			// IF field defines uploads many-to-many relationship
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+				$upload = R::dispense( 'uploads' );
+				$upload->id = $v;
+				$item->sharedUploadList[] = $upload;
+			}
+			// IF field is a password, hash it up
+			else if ($field == 'password'){
+				$item[$field] = md5($v);
+			}
+			else{
+				$item[$field] = $v;			
+			};
+
 		};
-		
-	};
+
+		// inject modified current time to array to update
 		$item['modified'] = R::isoDateTime();
 
-	R::store( $item );
-	$res['message'] = 'Atualizado com Sucesso. (id: '.$req['param'].')';
+		// update item, commit if success
+		R::store( $item );
+		R::commit();
 
-	// OUTPUT
-	api_output($res);
+		// build api response array
+		$res = array(
+			'id' 		=> $id,
+			'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$id.')',
+		);
+
+		//output response
+		api_output($res);
+		
+	} catch (Exception $e) {
+		R::rollback();
+		api_error('UPDATE_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_updatePassword($req){
@@ -409,83 +468,99 @@ function api_updatePassword($req){
 
 	}
 
-	// OUTPUT
+	//output response
 	api_output($res);
 };
 
 function api_destroy($req){
 
-	$item = R::load( $req['edge'], $req['param'] );
-    R::trash( $item );
+	R::begin();
+	try {
+		// dispense 'edge'
+		$id = $req['param'];
+		$item = R::load( $req['edge'], $id );
 
-	$res['message'] = 'Excluído com Sucesso. (id: '.$req['param'].')';
+		// destroy item, commit if success
+	    R::trash($item);
+		R::commit();
 
-	// OUTPUT
-	api_output($res);
+		// build api response array
+		$res = array(
+			'id' 		=> $id,
+			'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$id.')',
+		);
+
+		// output response
+		api_output($res);
+
+	} catch (Exception $e) {
+		R::rollback();
+		api_error('DESTROY_FAIL', $e->getMessage());		
+	}
+
 };
 
 function api_list($req){
-   global $config;
+	global $config;
 
-	// LIST - list all
-	if(empty($req['param'])){
-		$items = R::findAll( $req['edge'] );
+	try {
 
+		// check if request is paginated or ALL
+		if(!empty($req['param'])){
+			// param page exists, let's get this page 
+			$page 	= $req['param'];
+			$limit 	= $config['api']['params']['pagination'];
+			$items 	= R::findAll( $req['edge'], 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
+		}else{
+			// param page doesn't exist, let's get all
+			$items = R::findAll( $req['edge'], 'ORDER BY id DESC' );
+		}
+
+		// check if list is not empty
 		if(!empty($items)){
+			// list is not empty, let's foreach and build response array
 			foreach ($items as $item => $content) {
-				foreach ($content as $k => $v) {
-					$res[$item][$k] = $v;
+				foreach ($content as $field => $value) {
+					$res[$item][$field] = $value;
 				};
 			};
-		} else{
+		}
+		else{
+			// list is empty, let's return empty array
 			$res = array();
 		}
 
+		// output response
+		api_output($res);
+
+	} catch (Exception $e) {
+		api_error('LIST_FAIL', $e->getMessage());
 	}
 
-	// LIST - paginated
-	else{
-		
-		$page 	= $req['param'];
-		$limit 	= $config['api']['params']['pagination'];
-		$items 	= R::findAll( $req['edge'], 'ORDER BY id LIMIT '.(($page-1)*$limit).', '.$limit);
-
-		if(!empty($items)){
-			foreach ($items as $item => $content) {
-				foreach ($content as $k => $v) {
-					$res[$item][$k] = $v;
-				};
-			};			
-		} else{
-			$res = array();
-		}
-
-	};
-
-	// OUTPUT
-	api_output($res);
-};
-
-function api_search($req){
-	$res['message'] = 'in development: action "search"';
-
-	// OUTPUT
-	api_output($res);
 };
 
 function api_count($req){
 	global $config;
 
-	// COUNT - count all
-	$count = R::count( $req['edge'] );
-	$limit = $config['api']['params']['pagination'];
+	try {
+		// define response vars
+		$count = R::count($req['edge']);
+		$limit = $config['api']['params']['pagination'];
 
-	$res['sum'] 			= $count;
-	$res['pages'] 			= round($count/$limit);
-	$res['itemsPerPage'] 	= $limit;
-	
-	// OUTPUT
-	api_output($res);
+		// build response array
+		$res = array(
+			'sum' 			=> $count,
+			'pages' 		=> round($count/$limit),
+			'itemsPerPage' 	=> $limit
+		);
+
+		// output response
+		api_output($res);
+		
+	} catch (Exception $e) {
+		api_error('COUNT_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_schema($req){
@@ -633,7 +708,7 @@ function api_schema($req){
 				);
 		}
 
-		// OUTPUT
+		//output response
 		api_output($res);
 	}
 
@@ -766,9 +841,17 @@ function api_upload($req){
 	$res['id'] = $id;
 	$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
 
-	// OUTPUT
+	//output response
 	api_output($res);
 
+};
+
+
+function api_search($req){
+	$res['message'] = 'in development: action "search"';
+
+	//output response
+	api_output($res);
 };
 
 ?>
