@@ -487,7 +487,7 @@ function api_list($req){
 		
 		$page 	= $req['param'];
 		$limit 	= $config['api']['params']['pagination'];
-		$items 	= R::findAll( $req['edge'], 'ORDER BY id LIMIT '.(($page-1)*$limit).', '.$limit);
+		$items 	= R::findAll( $req['edge'], 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
 
 		if(!empty($items)){
 			foreach ($items as $item => $content) {

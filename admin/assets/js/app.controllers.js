@@ -96,7 +96,7 @@ AdminApp.controller('ListController',
 	function($scope, $location, $http, $routeParams, $q, schema, list, count, config) {
 
 		$scope.schema = schema;
-		$scope.items = list;
+		$scope.items = $.map(list, function(el) { return el; });
 		$scope.itemsThisPage = Object.keys(list).length;
 		$scope.totalItems = count.sum;
 		$scope.itemsPerPage = count.itemsPerPage;

@@ -47,7 +47,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr ng-repeat="item in items">
+						<tr ng-repeat="item in items | orderBy:'id':true">
 							<td>{{item.id}}</td>
 							<td><a href="#/read/{{schema.bean}}/{{item.id}}">{{item.name}}</a></td>
 							<td class="hidden-xs">{{item.created}}</td>
