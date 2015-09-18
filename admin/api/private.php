@@ -424,7 +424,7 @@ function api_update($req){
 		// inject modified current time to array to update
 		$item['modified'] = R::isoDateTime();
 
-		// update item, returns id if success
+		// update item, commit if success
 		R::store( $item );
 		R::commit();
 
@@ -474,13 +474,30 @@ function api_updatePassword($req){
 
 function api_destroy($req){
 
-	$item = R::load( $req['edge'], $req['param'] );
-    R::trash( $item );
+	R::begin();
+	try {
+		// dispense 'edge'
+		$id = $req['param'];
+		$item = R::load( $req['edge'], $id );
 
-	$res['message'] = 'Excluído com Sucesso. (id: '.$req['param'].')';
+		// destroy item, commit if success
+	    R::trash($item);
+		R::commit();
 
-	//output response
-	api_output($res);
+		// build api response array
+		$res = array(
+			'id' 		=> $id,
+			'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$id.')',
+		);
+
+		//output response
+		api_output($res);
+
+	} catch (Exception $e) {
+		R::rollback();
+		api_error('DESTROY_FAIL', $e->getMessage());		
+	}
+
 };
 
 function api_list($req){
