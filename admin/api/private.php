@@ -393,35 +393,55 @@ function api_export($req){
 };
 
 function api_update($req){
-   global $config;
+	global $config;
 
-	$item = R::load( $req['edge'], $req['param'] );
-	$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
+	R::begin();
+	try {
+		// dispense 'edge'
+		$id = $req['param'];
+		$item = R::load( $req['edge'], $id );
+		$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
 
-	foreach ($req['content'] as $k => $v) {
-		// IF rel uploads many-to-many relationship
-		if($k == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+		// foreach $req content, build array to update
+		foreach ($req['content'] as $field => $v) {
 			
-			$upload = R::dispense( 'uploads' );
-			$upload->id = $v;
-			$item->sharedUploadList[] = $upload;
-		}
-		// IF field is a password, hash it up
-		else if ($k == 'password'){
-			$item[$k] = md5($v);
-		}
-		else{
-			$item[$k] = $v;			
+			// IF field defines uploads many-to-many relationship
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+				$upload = R::dispense( 'uploads' );
+				$upload->id = $v;
+				$item->sharedUploadList[] = $upload;
+			}
+			// IF field is a password, hash it up
+			else if ($field == 'password'){
+				$item[$field] = md5($v);
+			}
+			else{
+				$item[$field] = $v;			
+			};
+
 		};
-		
-	};
+
+		// inject modified current time to array to update
 		$item['modified'] = R::isoDateTime();
 
-	R::store( $item );
-	$res['message'] = 'Atualizado com Sucesso. (id: '.$req['param'].')';
+		// update item, returns id if success
+		R::store( $item );
+		R::commit();
 
-	//output response
-	api_output($res);
+		// build api response array
+		$res = array(
+			'id' 		=> $id,
+			'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$id.')',
+		);
+
+		//output response
+		api_output($res);
+		
+	} catch (Exception $e) {
+		R::rollback();
+		api_error('UPDATE_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_updatePassword($req){

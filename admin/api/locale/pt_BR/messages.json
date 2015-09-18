@@ -7,5 +7,7 @@
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
 	"INVALID_SCHEMA": "Não foi possível processar sua requisição. (schema inválido)",
-	"READ_FAIL": "Erro na leitura do registro."
+	"READ_FAIL": "Erro na leitura do registro.",
+	"UPDATE_FAIL": "Erro na atualização do registro.",
+	"UPDATE_SUCCESS": "Atualizado com sucesso."
 }
