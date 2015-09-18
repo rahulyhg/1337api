@@ -2,6 +2,7 @@
 	"AUTH_USERPASS_FAIL": "Login ou senha incorreta, tente novamente.",
 	"CREATE_FAIL": "Erro na gravação do registro.",
 	"CREATE_SUCCESS": "Criado com sucesso.",
+	"COUNT_FAIL": "Erro na contagem dos registros.",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
 	"DESTROY_FAIL": "Erro na exclusão do registro.",
 	"DESTROY_SUCCESS": "Excluído com sucesso.",

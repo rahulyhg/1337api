@@ -539,26 +539,28 @@ function api_list($req){
 
 };
 
-function api_search($req){
-	$res['message'] = 'in development: action "search"';
-
-	//output response
-	api_output($res);
-};
-
 function api_count($req){
 	global $config;
 
-	// COUNT - count all
-	$count = R::count( $req['edge'] );
-	$limit = $config['api']['params']['pagination'];
+	try {
+		// define response vars
+		$count = R::count($req['edge']);
+		$limit = $config['api']['params']['pagination'];
 
-	$res['sum'] 			= $count;
-	$res['pages'] 			= round($count/$limit);
-	$res['itemsPerPage'] 	= $limit;
-	
-	//output response
-	api_output($res);
+		// build response array
+		$res = array(
+			'sum' 			=> $count,
+			'pages' 		=> round($count/$limit),
+			'itemsPerPage' 	=> $limit
+		);
+
+		// output response
+		api_output($res);
+		
+	} catch (Exception $e) {
+		api_error('COUNT_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_schema($req){
@@ -842,6 +844,14 @@ function api_upload($req){
 	//output response
 	api_output($res);
 
+};
+
+
+function api_search($req){
+	$res['message'] = 'in development: action "search"';
+
+	//output response
+	api_output($res);
 };
 
 ?>
