@@ -350,27 +350,46 @@ function api_exists($req){
 };
 
 function api_export($req){
-   global $config;
 
-	$config = new ExporterConfig();
-	$exporter = new Exporter($config);
+	try {
 
-    $bean = R::findAll( $req['edge'] );
-    $rawData = R::exportAll($bean, false, array('part'));
+		// init Goodby\CSV\Export\ 
+		if (class_exists('Goodby\CSV\Export\Standard\ExporterConfig')) {
+			$exportConfig = new ExporterConfig();
+			if (class_exists('Goodby\CSV\Export\Standard\Exporter')) {
+				$exporter = new Exporter($exportConfig);
+			}
+			else{
+				throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\Exporter)", 1);
+			}
+		}
+		else{
+			throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\ExporterConfig)", 1);
+		}
 
-	//output response
-	$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
-	$name = 'export-'.$req['edge'].'-'.$dateHash.'.csv';
-    
-	header('Cache-Control: max-age=60, must-revalidate');
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename='. $name);
-    header('Pragma: no-cache');
-    header("Expires: 0");
-    $outstream = $exporter->export('php://output', $rawData);
-    fclose($outstream);
+		// collect data
+		$rawData = R::findAll($req['edge']);
+		$data = R::exportAll($rawData, FALSE, array('NULL'));
 
-    exit();
+		// inject field keys to data as csv export table heading
+		$keys = array_keys($data[0]);
+		array_unshift($data, $keys);
+
+		// define outstream
+		$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
+		$filename = 'export-'.$req['edge'].'-'.$dateHash.'.csv';
+
+		//outstream response
+		header('Content-Type: text/csv');
+		header('Content-Disposition: attachment; filename='. $filename);
+
+		// TODO: how to export big tables? memory runs out.
+		$outstream = $exporter->export('php://output', $data);
+		
+	} catch (Exception $e) {
+		api_error('EXPORT_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_update($req){

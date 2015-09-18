@@ -211,7 +211,6 @@ AdminApp.factory('apiInterceptor',
 				return config;
 			},
 			'response': function(res){
-
 				$log.debug(res.data);
 
 				if (res.data.error) {

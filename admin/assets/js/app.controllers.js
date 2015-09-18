@@ -119,7 +119,7 @@ AdminApp.controller('ListController',
 		$scope.onExport = function() {
 			var deferred = $q.defer();
 
-			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge, { responseType: 'arraybuffer' })
+			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge)
 				.then(function(res) {
 					var file = new Blob([res.data], { type: 'application/csv' });
 					var expTimestamp = Date.now();
@@ -127,7 +127,6 @@ AdminApp.controller('ListController',
 					deferred.resolve('export-' + $routeParams.edge + '-' + expTimestamp + '.csv');
 				});
 			return deferred.promise;
-
 		};
 
 		$scope.onDestroy = function(id) {

@@ -3,6 +3,7 @@
 	"CREATE_FAIL": "Erro na gravação do registro.",
 	"CREATE_SUCCESS": "Criado com sucesso.",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
+	"EXPORT_FAIL": "Não foi possível exportar os registros.",
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
 	"INVALID_SCHEMA": "Não foi possível processar sua requisição. (schema inválido)",
