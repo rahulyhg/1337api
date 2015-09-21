@@ -19,7 +19,8 @@ if(R::testConnection() == FALSE){
 };
 
 // INSPECT TABLES
-$config['api']['beans'] = R::inspect();
+$api = array();
+$api['edges'] = R::inspect();
 
 // REDBEAN ORM DEBUG MODE ON
 if($config['api']['debug']){

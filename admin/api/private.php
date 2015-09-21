@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'search':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_search($req);
 			}
 			else{
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'read':
-			if (in_array($req['edge'], $config['api']['beans']) && !empty($req['param'])){
+			if (in_array($req['edge'], $api['edges']) && !empty($req['param'])){
 				api_read($req);
 			}
 			else{
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'exists':
-			if (in_array($req['edge'], $config['api']['beans']) && !empty($req['param'])){
+			if (in_array($req['edge'], $api['edges']) && !empty($req['param'])){
 				api_exists($req);
 			}
 			else{
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'list':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_list($req);
 			}
 			else{
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'count':
-			if (in_array($req['edge'], $config['api']['beans']) && empty($req['param'])){
+			if (in_array($req['edge'], $api['edges']) && empty($req['param'])){
 				api_count($req);
 			}
 			else{
@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'schema':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_schema($req);
 			}
 			else{
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;		
 
 		case 'export':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_export($req);
 			}
 			else{
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	switch($req['action']) {
 
 		case 'create':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_create($req);
 			}
 			else{
@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		break;
 
 		case 'update':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_update($req);
 			}
 			else{
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		break;
 
 		case 'upload':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_upload($req);
 			}
 			else{
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		break;
 
 		case 'destroy':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_destroy($req);
 			}
 			else{
@@ -235,7 +235,7 @@ function api_hi(){
 };
 
 function api_create($req){
-	global $config;
+	global $api;
 
 	R::begin();
 	try{
@@ -248,7 +248,7 @@ function api_create($req){
 		foreach ($req['content'] as $field => $v) {
 
 			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $v;
 				$item->sharedUploadList[] = $upload;
@@ -393,7 +393,7 @@ function api_export($req){
 };
 
 function api_update($req){
-	global $config;
+	global $api;
 
 	R::begin();
 	try {
@@ -406,7 +406,7 @@ function api_update($req){
 		foreach ($req['content'] as $field => $v) {
 			
 			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $v;
 				$item->sharedUploadList[] = $upload;
@@ -566,6 +566,7 @@ function api_count($req){
 function api_schema($req){
 	global $config;
 	global $caption;
+	global $api;
 
 	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$req['edge']);
 
@@ -685,7 +686,7 @@ function api_schema($req){
 		};
 
 		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-		if(in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+		if(in_array($req['edge'] .'_uploads', $api['edges'])){
 		
 			$res['properties']['uploads_id'] = 
 				
@@ -719,26 +720,32 @@ function api_schema($req){
 }
 
 function api_edges(){
+	global $api;
 	global $config;
 
 	try {
 
 		// build edges list
-		$edges = array();
-		foreach ($config['api']['beans'] as $k => $edge) {
-			if( !in_array($edge, $config['api']['edges']['blacklist']) ) {
+		if (!empty($api['edges'])) {
+			$edges = array();
+			foreach ($api['edges'] as $k => $edge) {
+				if( !in_array($edge, $config['api']['edges']['blacklist']) ) {
 
-				$edges[$edge] = array(
-					'name' 			=> $edge,
-					'title' 		=> getCaption('edges', $edge, $edge),
-					'count' 		=> R::count($edge),
-					'icon' 			=> getCaption('icon', $edge, $edge),
-					'has_parent' 	=> false,
-					'has_child' 	=> false,
-				);
+					$edges[$edge] = array(
+						'name' 			=> $edge,
+						'title' 		=> getCaption('edges', $edge, $edge),
+						'count' 		=> R::count($edge),
+						'icon' 			=> getCaption('icon', $edge, $edge),
+						'has_parent' 	=> false,
+						'has_child' 	=> false,
+					);
 
+				};
 			};
-		};
+		}
+		else {
+			throw new Exception('Error Processing Request', 1);
+		}
 
 		// build hierarchy array, if exists		
 		$hierarchyArr = R::getAll('
