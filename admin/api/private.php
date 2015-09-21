@@ -766,39 +766,35 @@ function api_edges(){
 			$hierarchy = array();
 		}
 
-		// BUILD HIERARCHY LIST - DEPTH 1
-		foreach ($edges as $bean => $obj) {
-			if( array_key_exists($bean, $hierarchy) ){
+		// if not empty hierarchy, build depth
+		if(!empty($hierarchy)){
 
-				$edges[$bean]['has_parent'] = true;
+			// build hierarchy list - depth 1
+			foreach ($edges as $edge => $obj) {
+				if( array_key_exists($edge, $hierarchy) ){
+					$edges[$edge]['has_parent'] = true;
 
-				foreach ($hierarchy[$bean] as $y => $z) {
-					$edges[$z]['has_child'] = true;
-					$edges[$bean]['parent'][$z] = $edges[$z];
-				}
-
-			};
-		};
-		// BUILD HIERARCHY LIST - DEPTH 2
-		foreach ($edges as $bean => $obj) {
-			if($edges[$bean]['has_parent']){
-
-				foreach ($edges[$bean]['parent'] as $parentBean => $parentObj) {
-
-					if( array_key_exists($parentBean, $hierarchy) ){
-
-						$edges[$bean]['parent'][$parentBean]['has_parent'] = true;
-
-						foreach ($hierarchy[$parentBean] as $y => $z) {
-							$edges[$bean]['parent'][$parentBean]['parent'][$z] = $edges[$z];
-						}
-
+					foreach ($hierarchy[$edge] as $y => $z) {
+						$edges[$z]['has_child'] = true;
+						$edges[$edge]['parent'][$z] = $edges[$z];
 					}
-				}
 
+					// build hierarchy list - depth 2
+					if($edges[$edge]['has_parent']){
+						foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
+							if(array_key_exists($parentBean, $hierarchy)){
+								$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
+								foreach ($hierarchy[$parentBean] as $y => $z) {
+									$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
+								}
+							}
+						}
+					};
+
+				};
 			};
 
-		};
+		}
 
 		// build api response array
 		$res = array(
