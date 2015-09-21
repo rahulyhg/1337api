@@ -7,6 +7,7 @@
 	"DESTROY_FAIL": "Erro na exclusão do registro.",
 	"DESTROY_SUCCESS": "Excluído com sucesso.",
 	"EXPORT_FAIL": "Não foi possível exportar os registros.",
+	"EDGES_FAIL": "Não foi possível recuperar edges da API.",
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
 	"INVALID_SCHEMA": "Não foi possível processar sua requisição. (schema inválido)",

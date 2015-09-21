@@ -135,7 +135,7 @@ AdminApp.factory('apiService',
 				var deferred = $q.defer();
 
 				edges = $http.get(config.API_BASE_URL + '/edges',{cache: true}).then(function(response) {
-					deferred.resolve(response.data.beans);
+					deferred.resolve(response.data.edges);
 				});
 
 				return deferred.promise;

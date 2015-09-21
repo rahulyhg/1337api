@@ -719,80 +719,94 @@ function api_schema($req){
 }
 
 function api_edges(){
-   global $config;
-   global $caption;
+	global $config;
 
-	// BUILD HIERARCHY, IF EXISTS
-	$hierarchy = array();
-	$hierarchyArr = R::getAll('
-		SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
-		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-		WHERE REFERENCED_TABLE_NAME IS NOT NULL
-	');
+	try {
 
-	foreach ($hierarchyArr as $key => $value) {
-		if( empty($hierarchy[$value['child']]) ){
-			$hierarchy[$value['child']] = array();
-		} 
-		array_push($hierarchy[$value['child']], $value['parent']);
+		// build edges list
+		$edges = array();
+		foreach ($config['api']['beans'] as $k => $edge) {
+			if( !in_array($edge, $config['api']['edges']['blacklist']) ) {
+
+				$edges[$edge] = array(
+					'name' 			=> $edge,
+					'title' 		=> getCaption('edges', $edge, $edge),
+					'count' 		=> R::count($edge),
+					'icon' 			=> getCaption('icon', $edge, $edge),
+					'has_parent' 	=> false,
+					'has_child' 	=> false,
+				);
+
+			};
+		};
+
+		// build hierarchy array, if exists		
+		$hierarchyArr = R::getAll('
+			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
+			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+			WHERE REFERENCED_TABLE_NAME IS NOT NULL
+		');
+
+		if(!empty($hierarchyArr)){
+			foreach ($hierarchyArr as $k => $v) {
+				if(empty($hierarchy[$v['child']])){
+					$hierarchy[$v['child']] = array();
+				} 
+				array_push($hierarchy[$v['child']], $v['parent']);
+			};
+		}
+		else{
+			$hierarchy = array();
+		}
+
+		// BUILD HIERARCHY LIST - DEPTH 1
+		foreach ($edges as $bean => $obj) {
+			if( array_key_exists($bean, $hierarchy) ){
+
+				$edges[$bean]['has_parent'] = true;
+
+				foreach ($hierarchy[$bean] as $y => $z) {
+					$edges[$z]['has_child'] = true;
+					$edges[$bean]['parent'][$z] = $edges[$z];
+				}
+
+			};
+		};
+		// BUILD HIERARCHY LIST - DEPTH 2
+		foreach ($edges as $bean => $obj) {
+			if($edges[$bean]['has_parent']){
+
+				foreach ($edges[$bean]['parent'] as $parentBean => $parentObj) {
+
+					if( array_key_exists($parentBean, $hierarchy) ){
+
+						$edges[$bean]['parent'][$parentBean]['has_parent'] = true;
+
+						foreach ($hierarchy[$parentBean] as $y => $z) {
+							$edges[$bean]['parent'][$parentBean]['parent'][$z] = $edges[$z];
+						}
+
+					}
+				}
+
+			};
+
+		};
+
+		// build api response array
+		$res = array(
+			'edges' 	=> $edges,
+			'actions' 	=> $config['api']['actions'],
+		);
+
+		// output response
+		api_output($res);
+
+	} 
+	catch (Exception $e) {
+		api_error('EDGES_FAIL', $e->getMessage());
 	}
 
-	// BUILD BEANS LIST
-	foreach ($config['api']['beans'] as $k => $v) {
-
-		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
-
-			$beans[$v] = array(
-				'name' 			=> $v,
-				'title' 		=> getCaption('edges', $v, $v),
-				'count' 		=> R::count($v),
-				'icon' 			=> getCaption('icon', $v, $v),
-				'has_parent' 	=> false,
-				'has_child' 	=> false,
-			);
-
-		};
-
-	};
-
-	// BUILD HIERARCHY LIST - DEPTH 1
-	foreach ($beans as $bean => $obj) {
-		if( array_key_exists($bean, $hierarchy) ){
-
-			$beans[$bean]['has_parent'] = true;
-
-			foreach ($hierarchy[$bean] as $y => $z) {
-				$beans[$z]['has_child'] = true;
-				$beans[$bean]['parent'][$z] = $beans[$z];
-			}
-
-		};
-	};
-	// BUILD HIERARCHY LIST - DEPTH 2
-	foreach ($beans as $bean => $obj) {
-		if($beans[$bean]['has_parent']){
-
-			foreach ($beans[$bean]['parent'] as $parentBean => $parentObj) {
-
-				if( array_key_exists($parentBean, $hierarchy) ){
-
-					$beans[$bean]['parent'][$parentBean]['has_parent'] = true;
-
-					foreach ($hierarchy[$parentBean] as $y => $z) {
-						$beans[$bean]['parent'][$parentBean]['parent'][$z] = $beans[$z];
-					}
-
-				}
-			}
-
-		};
-
-	};
-
-	$res['beans'] 		= $beans;
-	$res['actions'] 	= $config['api']['actions'];
-
-	api_output($res);
 };
 
 function api_upload($req){
