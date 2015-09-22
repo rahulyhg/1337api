@@ -182,6 +182,8 @@ ANGULAR JSON EDITOR
 var jeUploadFunction = function(type, file, cbs) {
 
 						if (file) {
+							// TODO: token is being recovered with jQuery, not Angular. future study to roadmap.
+							var token = JSON.parse(localStorage.getItem('ngStorage-token'));
 							var reader = new FileReader();
 
 							reader.onloadend = function(evt) {
@@ -189,6 +191,7 @@ var jeUploadFunction = function(type, file, cbs) {
 								var uploadData = '{"filename":"' + file.name + '", "filesize":"' + file.size + '", "blob":"' + b + '"}';
 								var percentComplete = 0;
 
+									// TODO: POST request is being done with jQuery, not Angular. future study to roadmap.
 									$.ajax({
 										xhr: function() {
 											var xhr = new window.XMLHttpRequest();
@@ -201,10 +204,11 @@ var jeUploadFunction = function(type, file, cbs) {
 												}
 											}, false);
 											return xhr;
-										},
+										},										
 										type: 'POST',
 										// TODO: need to pass "edge" at upload url.
 										url: 'api/private/upload/page',
+										headers: {'Authorization':'Bearer ' + token},
 										contentType: 'application/json; charset=utf-8',
 										dataType: 'json',
 										data: uploadData,
