@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'search':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_search($req);
 			}
 			else{
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'read':
-			if (in_array($req['edge'], $config['api']['beans']) && !empty($req['param'])){
+			if (in_array($req['edge'], $api['edges']) && !empty($req['param'])){
 				api_read($req);
 			}
 			else{
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'exists':
-			if (in_array($req['edge'], $config['api']['beans']) && !empty($req['param'])){
+			if (in_array($req['edge'], $api['edges']) && !empty($req['param'])){
 				api_exists($req);
 			}
 			else{
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'list':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_list($req);
 			}
 			else{
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'count':
-			if (in_array($req['edge'], $config['api']['beans']) && empty($req['param'])){
+			if (in_array($req['edge'], $api['edges']) && empty($req['param'])){
 				api_count($req);
 			}
 			else{
@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;
 
 		case 'schema':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_schema($req);
 			}
 			else{
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 		break;		
 
 		case 'export':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_export($req);
 			}
 			else{
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	switch($req['action']) {
 
 		case 'create':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_create($req);
 			}
 			else{
@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		break;
 
 		case 'update':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_update($req);
 			}
 			else{
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		break;
 
 		case 'upload':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_upload($req);
 			}
 			else{
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		break;
 
 		case 'destroy':
-			if (in_array($req['edge'], $config['api']['beans'])){
+			if (in_array($req['edge'], $api['edges'])){
 				api_destroy($req);
 			}
 			else{
@@ -235,7 +235,7 @@ function api_hi(){
 };
 
 function api_create($req){
-	global $config;
+	global $api;
 
 	R::begin();
 	try{
@@ -248,7 +248,7 @@ function api_create($req){
 		foreach ($req['content'] as $field => $v) {
 
 			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $v;
 				$item->sharedUploadList[] = $upload;
@@ -393,7 +393,7 @@ function api_export($req){
 };
 
 function api_update($req){
-	global $config;
+	global $api;
 
 	R::begin();
 	try {
@@ -406,7 +406,7 @@ function api_update($req){
 		foreach ($req['content'] as $field => $v) {
 			
 			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $v;
 				$item->sharedUploadList[] = $upload;
@@ -566,6 +566,7 @@ function api_count($req){
 function api_schema($req){
 	global $config;
 	global $caption;
+	global $api;
 
 	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$req['edge']);
 
@@ -685,7 +686,7 @@ function api_schema($req){
 		};
 
 		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-		if(in_array($req['edge'] .'_uploads', $config['api']['beans'])){
+		if(in_array($req['edge'] .'_uploads', $api['edges'])){
 		
 			$res['properties']['uploads_id'] = 
 				
@@ -719,139 +720,194 @@ function api_schema($req){
 }
 
 function api_edges(){
-   global $config;
-   global $caption;
+	global $api;
+	global $config;
 
-	// BUILD HIERARCHY, IF EXISTS
-	$hierarchy = array();
-	$hierarchyArr = R::getAll('
-		SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
-		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-		WHERE REFERENCED_TABLE_NAME IS NOT NULL
-	');
+	try {
 
-	foreach ($hierarchyArr as $key => $value) {
-		if( empty($hierarchy[$value['child']]) ){
-			$hierarchy[$value['child']] = array();
-		} 
-		array_push($hierarchy[$value['child']], $value['parent']);
-	}
+		// build edges list
+		if (!empty($api['edges'])) {
+			$edges = array();
+			foreach ($api['edges'] as $k => $edge) {
+				if( !in_array($edge, $config['api']['edges']['blacklist']) ) {
 
-	// BUILD BEANS LIST
-	foreach ($config['api']['beans'] as $k => $v) {
+					$edges[$edge] = array(
+						'name' 			=> $edge,
+						'title' 		=> getCaption('edges', $edge, $edge),
+						'count' 		=> R::count($edge),
+						'icon' 			=> getCaption('icon', $edge, $edge),
+						'has_parent' 	=> false,
+						'has_child' 	=> false,
+					);
 
-		if( !in_array($v, $config['api']['edges']['blacklist']) ) {
+				};
+			};
+		}
+		else {
+			throw new Exception('Error Processing Request', 1);
+		}
 
-			$beans[$v] = array(
-				'name' 			=> $v,
-				'title' 		=> getCaption('edges', $v, $v),
-				'count' 		=> R::count($v),
-				'icon' 			=> getCaption('icon', $v, $v),
-				'has_parent' 	=> false,
-				'has_child' 	=> false,
-			);
+		// build hierarchy array, if exists		
+		$hierarchyArr = R::getAll('
+			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
+			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+			WHERE REFERENCED_TABLE_NAME IS NOT NULL
+		');
 
-		};
+		if(!empty($hierarchyArr)){
+			foreach ($hierarchyArr as $k => $v) {
+				if(empty($hierarchy[$v['child']])){
+					$hierarchy[$v['child']] = array();
+				} 
+				array_push($hierarchy[$v['child']], $v['parent']);
+			};
+		}
+		else{
+			$hierarchy = array();
+		}
 
-	};
+		// if not empty hierarchy, build depth
+		if(!empty($hierarchy)){
 
-	// BUILD HIERARCHY LIST - DEPTH 1
-	foreach ($beans as $bean => $obj) {
-		if( array_key_exists($bean, $hierarchy) ){
+			// build hierarchy list - depth 1
+			foreach ($edges as $edge => $obj) {
+				if( array_key_exists($edge, $hierarchy) ){
+					$edges[$edge]['has_parent'] = true;
 
-			$beans[$bean]['has_parent'] = true;
-
-			foreach ($hierarchy[$bean] as $y => $z) {
-				$beans[$z]['has_child'] = true;
-				$beans[$bean]['parent'][$z] = $beans[$z];
-			}
-
-		};
-	};
-	// BUILD HIERARCHY LIST - DEPTH 2
-	foreach ($beans as $bean => $obj) {
-		if($beans[$bean]['has_parent']){
-
-			foreach ($beans[$bean]['parent'] as $parentBean => $parentObj) {
-
-				if( array_key_exists($parentBean, $hierarchy) ){
-
-					$beans[$bean]['parent'][$parentBean]['has_parent'] = true;
-
-					foreach ($hierarchy[$parentBean] as $y => $z) {
-						$beans[$bean]['parent'][$parentBean]['parent'][$z] = $beans[$z];
+					foreach ($hierarchy[$edge] as $y => $z) {
+						$edges[$z]['has_child'] = true;
+						$edges[$edge]['parent'][$z] = $edges[$z];
 					}
 
-				}
-			}
+					// build hierarchy list - depth 2
+					if($edges[$edge]['has_parent']){
+						foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
+							if(array_key_exists($parentBean, $hierarchy)){
+								$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
+								foreach ($hierarchy[$parentBean] as $y => $z) {
+									$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
+								}
+							}
+						}
+					};
 
-		};
+				};
+			};
 
-	};
+		}
 
-	$res['beans'] 		= $beans;
-	$res['actions'] 	= $config['api']['actions'];
+		// build api response array
+		$res = array(
+			'edges' 	=> $edges,
+			'actions' 	=> $config['api']['actions'],
+		);
 
-	api_output($res);
+		// output response
+		api_output($res);
+
+	} 
+	catch (Exception $e) {
+		api_error('EDGES_FAIL', $e->getMessage());
+	}
+
 };
 
 function api_upload($req){
+	global $config;
 
-	// var definition
-	$data = $req['content']['blob'];
+	R::begin();
+	try{
 
-	list($type, $data) 	= explode(';', $data);
-	list(, $data)      	= explode(',', $data);
-	$data = base64_decode($data);
-	$type = explode(':', $type);
-	$type = $type[1];
+		// validate content from $req
+			// if blob was sent
+			if (!empty($req['content']['blob'])) {
+				$blob = $req['content']['blob'];
+			} 
+			else{
+				throw new Exception("Error Processing Request (blob not found at request)", 1);
+			}
 
-	$basePath 		= '../uploads/';
-	$chronoPath 	= str_replace('-', '/', R::isoDate()) . '/';
-	$fullPath 		= $basePath . $chronoPath;
-	$filename 			= $req['content']['filename'];
-	$md5Filename 		= md5($filename) . '.' . end(explode('.', $filename));
+			// if filesize was sent
+			if (!empty($req['content']['filesize'])) {
+				$filesize = $req['content']['filesize'];
+			} 
+			else{
+				throw new Exception("Error Processing Request (filesize not found at request)", 1);
+			}
 
-	// build insert array
-	$file = array(
-		'path' 		=> $chronoPath . $md5Filename,
-		'filename' 	=> $md5Filename,
-		'type' 		=> $type,
-		'size' 		=> $req['content']['filesize'],
-		'edge' 		=> $req['edge'],
-		'created' 	=> R::isoDateTime(),
-		'modified' 	=> R::isoDateTime(),
-	);
+			// if filename was sent
+			if (!empty($req['content']['filename'])) {
+				$filename = $req['content']['filename'];
+			} 
+			else{
+				throw new Exception("Error Processing Request (filename not found at request)", 1);
+			}
 
-	// write file
-	if (!file_exists($fullPath)) {
-		mkdir( $fullPath, 0777, true );
-	};
+		// explode $blob
+			// TODO: this procedure can be done in one line if I use regex. verify correct expression.
+			list($type, $blob) = explode(';', $blob);
+			list(,$type) = explode(':', $type);
+			list(,$blob) = explode(',', $blob);
 
-	file_put_contents($fullPath . $filename, $data);
+			// decode blob data
+			$data = base64_decode($blob);
 
-	// insert at database
-	$upload = R::dispense('uploads');
-	
-	foreach ($file as $k => $v) {
-		$upload[$k] = $v;
-	};
+		// define path and new filename
+			$basepath 	= $config['api']['uploads']['basepath'];
+			$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
+			$fullpath 	= $basepath . $datepath;
+			$hashname 	= md5($filename.'-'.R::isoDateTime()) . '.' . end(explode('.', $filename));
 
-	$id = R::store($upload);
-	$res['id'] = $id;
-	$res['message'] = 'Criado com Sucesso. (id: '.$id.')';
+		// write file
+			// TODO: we should validate if the file was actually saved at disk.
+			// if folder doesn't exist, mkdir 
+			if (!file_exists($fullpath)) {
+				mkdir( $fullpath, 0777, true );
+			};
+			file_put_contents($fullpath . $hashname, $data);
 
-	//output response
-	api_output($res);
+		// insert at database
+			
+			// build insert upload array
+			$upload = array(
+				'path' 		=> $datepath . $hashname,
+				'filename' 	=> $hashname,
+				'type' 		=> $type,
+				'size' 		=> $filesize,
+				'edge' 		=> $req['edge'],
+				'created' 	=> R::isoDateTime(),
+				'modified' 	=> R::isoDateTime(),
+			);
+
+			// dispense uploads edge
+			$file = R::dispense('uploads');
+
+			foreach ($upload as $k => $v) {
+				$upload[$k] = $v;
+			}			
+
+			R::store($file);
+			$id = R::getInsertID();
+			R::commit();
+
+		// build api response array
+			$res = array(
+				'id' 		=> $id,
+				'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: '.$id.')',
+			);
+
+		//output response
+			api_output($res);
+	}
+	catch(Exception $e) {
+		R::rollback();
+		api_error('UPLOAD_FAIL', $e->getMessage());
+	}
 
 };
 
-
 function api_search($req){
-	$res['message'] = 'in development: action "search"';
-
-	//output response
-	api_output($res);
+	api_error('SEARCH_SOON');
 };
 
 ?>

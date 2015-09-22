@@ -30,7 +30,10 @@
 			),
 		'params' => array(
 			'pagination' => 5,
-		)
+		),
+		'uploads' => array(
+			'basepath' => '../uploads/',
+		),
 	);
 
 	/* CONFIG FORM BUILDER - GLOBALS */

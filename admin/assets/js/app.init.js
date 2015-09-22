@@ -182,6 +182,8 @@ ANGULAR JSON EDITOR
 var jeUploadFunction = function(type, file, cbs) {
 
 						if (file) {
+							// TODO: token is being recovered with jQuery, not Angular. future study to roadmap.
+							var token = JSON.parse(localStorage.getItem('ngStorage-token'));
 							var reader = new FileReader();
 
 							reader.onloadend = function(evt) {
@@ -189,6 +191,7 @@ var jeUploadFunction = function(type, file, cbs) {
 								var uploadData = '{"filename":"' + file.name + '", "filesize":"' + file.size + '", "blob":"' + b + '"}';
 								var percentComplete = 0;
 
+									// TODO: POST request is being done with jQuery, not Angular. future study to roadmap.
 									$.ajax({
 										xhr: function() {
 											var xhr = new window.XMLHttpRequest();
@@ -201,16 +204,29 @@ var jeUploadFunction = function(type, file, cbs) {
 												}
 											}, false);
 											return xhr;
-										},
+										},										
 										type: 'POST',
 										// TODO: need to pass "edge" at upload url.
 										url: 'api/private/upload/page',
+										headers: {'Authorization':'Bearer ' + token},
 										contentType: 'application/json; charset=utf-8',
 										dataType: 'json',
 										data: uploadData,
-
 										success: function(data, textStatus, jQxhr) {
-											cbs.success('' + data.id + '');
+
+											if (data.error) {
+												// TODO: If this function was being done via Angular, we could use $log to debug errors.
+												console.dir(data.message);
+												swal("ERRO", data.message, "error");
+
+												if(data.debug){
+													console.dir(data.debug);
+												}
+												cbs.success('');
+											}
+											else {
+												cbs.success('' + data.id + '');
+											}
 										},
 										error: function(jqXhr, textStatus, errorThrown) {
 											console.log(errorThrown);
