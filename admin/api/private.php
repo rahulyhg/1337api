@@ -883,7 +883,7 @@ function api_upload($req){
 			$file = R::dispense('uploads');
 
 			foreach ($upload as $k => $v) {
-				$upload[$k] = $v;
+				$file[$k] = $v;
 			}			
 
 			R::store($file);
