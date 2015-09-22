@@ -212,9 +212,21 @@ var jeUploadFunction = function(type, file, cbs) {
 										contentType: 'application/json; charset=utf-8',
 										dataType: 'json',
 										data: uploadData,
-
 										success: function(data, textStatus, jQxhr) {
-											cbs.success('' + data.id + '');
+
+											if (data.error) {
+												// TODO: If this function was being done via Angular, we could use $log to debug errors.
+												console.dir(data.message);
+												swal("ERRO", data.message, "error");
+
+												if(data.debug){
+													console.dir(data.debug);
+												}
+												cbs.success('');
+											}
+											else {
+												cbs.success('' + data.id + '');
+											}
 										},
 										error: function(jqXhr, textStatus, errorThrown) {
 											console.log(errorThrown);
