@@ -865,10 +865,7 @@ function api_upload($req){
 
 
 function api_search($req){
-	$res['message'] = 'in development: action "search"';
-
-	//output response
-	api_output($res);
+	api_error('SEARCH_SOON');
 };
 
 ?>
