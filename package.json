@@ -2,7 +2,7 @@
 	"name": "ng-redbean-admin",
 	"version": "0.1.0",
 	"description": "Angular-JS based AdminApp.",
-	"main": "gulp.js",
+	"main": "gulpfile.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
