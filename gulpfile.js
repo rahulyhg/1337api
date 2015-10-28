@@ -11,7 +11,7 @@ var rename 		= require('gulp-rename');
 var bowerFiles 	= require('main-bower-files');
 
 // Define paths variables
-var dest_path =  'assets/test';
+var dest_path =  'assets';
 
 // grab libraries files from `bower_components-vendor` folder, minify and publish
 gulp.task('bower_components', function() {
@@ -24,10 +24,10 @@ gulp.task('bower_components', function() {
 
 		// grab vendor js files from bower_components, minify and push in /public
 		.pipe(jsFilter)
-		.pipe(gulp.dest(dest_path + '/js/'))
+		.pipe(gulp.dest(dest_path + '/js/test'))
 		.pipe(uglify())
 		.pipe(concat('vendor.min.js'))
-		.pipe(gulp.dest(dest_path + '/js/'))
+		.pipe(gulp.dest(dest_path + '/js/test'))
 
 		// grab vendor css files from bower_components, minify and push in /public
 		.pipe(cssFilter)

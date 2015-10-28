@@ -31,5 +31,16 @@
 	"main": "",
 	"moduleType": [],
 	"homepage": "",
-	"private": true
+	"private": true,
+    "overrides": {
+        "SCEditor": {
+            "main": 
+            [
+            	"src/jquery.sceditor.js",
+            	"languages/pt-BR.js"
+            ]
+        }
+    }
+
+
 }
