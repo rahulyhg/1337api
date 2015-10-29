@@ -9,6 +9,7 @@ var uglify 		= require('gulp-uglify');
 var minifycss 	= require('gulp-minify-css');
 var rename 		= require('gulp-rename');
 var bowerFiles 	= require('main-bower-files');
+var wrap 		= require('gulp-wrap');
 
 // Define paths variables
 var dest_path =  'assets';
@@ -26,6 +27,7 @@ gulp.task('bower_components', function() {
 		.pipe(jsFilter)
 		.pipe(gulp.dest(dest_path + '/js/test'))
 		.pipe(uglify())
+        .pipe(wrap('//<%= file.path %>\n<%= contents %>'))
 		.pipe(concat('vendor.min.js'))
 		.pipe(gulp.dest(dest_path + '/js/test'))
 
