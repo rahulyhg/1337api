@@ -20,7 +20,7 @@ gulp.task('vendor', function() {
 		var dest_path 	=  'assets/vendor';
 		var jsFilter 	= gulpFilter('*.js');
 		var cssFilter 	= gulpFilter('*.css');
-		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.svg', '*.ttf']);	
+		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.svg', '*.ttf']);
 
 		return gulp
 			.src(bowerFiles())
