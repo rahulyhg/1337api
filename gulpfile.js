@@ -1,4 +1,4 @@
-// start gulp file
+// start gulp
 var gulp = require('gulp');
 
 // define plug-ins
@@ -9,46 +9,43 @@ var uglify 		= require('gulp-uglify');
 var minifycss 	= require('gulp-minify-css');
 var rename 		= require('gulp-rename');
 var bowerFiles 	= require('main-bower-files');
-var wrap 		= require('gulp-wrap');
+var addsrc 		= require('gulp-add-src');
+var gutil 		= require('gulp-util');
 
-// Define paths variables
-var dest_path =  'assets';
+// grab libraries files from `assets/vendor` folder, minify and publish
+gulp.task('vendor', function() {
 
-// grab libraries files from `bower_components-vendor` folder, minify and publish
-gulp.task('bower_components', function() {
+		// define gulp task vendor vars
+		var dest_path 	=  'assets/vendor';
+		var jsFilter 	= gulpFilter('*.js');
+		var cssFilter 	= gulpFilter('*.css');
+		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.svg', '*.ttf']);
+		
+		return gulp
+			.src(bowerFiles())
 
-		var jsFilter = gulpFilter('*.js');
-		var cssFilter = gulpFilter('*.css');
-		var fontFilter = gulpFilter(['*.eot', '*.woff', '*.svg', '*.ttf']);
+			// javascript
+			.pipe(jsFilter)
+			.pipe(addsrc(dest_path + '/other_components/**/*.js'))
+			.pipe(uglify())
+			.pipe(concat('vendor.min.js', { newLine: '\r\n\r\n' }))
+			.pipe(gulp.dest(dest_path))
 
-		return gulp.src(bowerFiles())
+			// css
+			.pipe(cssFilter)
+			.pipe(addsrc(dest_path + '/other_components/**/*.css'))
+			.pipe(minifycss())
+			.pipe(rename({suffix: ".min"}))
+			.pipe(gulp.dest(dest_path))
 
-		// grab vendor js files from bower_components, minify and push in /public
-		.pipe(jsFilter)
-		.pipe(gulp.dest(dest_path + '/js/test'))
-		.pipe(uglify())
-        .pipe(wrap('//<%= file.path %>\n<%= contents %>'))
-		.pipe(concat('vendor.min.js'))
-		.pipe(gulp.dest(dest_path + '/js/test'))
-
-		// grab vendor css files from bower_components, minify and push in /public
-		.pipe(cssFilter)
-//        .pipe(gulp.dest(dest_path + '/css'))
-		.pipe(minifycss())
-		.pipe(rename({
-			suffix: ".min"
-		}))
-		.pipe(gulp.dest(dest_path + '/css'))
-
-		// grab vendor font files from bower_components and push in /public
-		.pipe(fontFilter)
-		.pipe(flatten())
-		.pipe(gulp.dest(dest_path + '/fonts'));
+			// fonts
+			.pipe(fontFilter)
+			.pipe(flatten())
+			.pipe(gulp.dest(dest_path + '/fonts'))
+		;
 });
 
-
 /*
-
 var gulp        = require('gulp');
 var concat      = require('gulp-concat');
 var uglify      = require('gulp-uglify');
