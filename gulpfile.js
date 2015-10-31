@@ -11,6 +11,7 @@ var rename 		= require('gulp-rename');
 var bowerFiles 	= require('main-bower-files');
 var addsrc 		= require('gulp-add-src');
 var gutil 		= require('gulp-util');
+var wrap = require('gulp-wrap');
 
 // grab libraries files from `assets/vendor` folder, minify and publish
 gulp.task('vendor', function() {
@@ -19,8 +20,8 @@ gulp.task('vendor', function() {
 		var dest_path 	=  'assets/vendor';
 		var jsFilter 	= gulpFilter('*.js');
 		var cssFilter 	= gulpFilter('*.css');
-		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.svg', '*.ttf']);
-		
+		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.svg', '*.ttf']);	
+
 		return gulp
 			.src(bowerFiles())
 
@@ -28,6 +29,7 @@ gulp.task('vendor', function() {
 			.pipe(jsFilter)
 			.pipe(addsrc(dest_path + '/other_components/**/*.js'))
 			.pipe(uglify())
+			.pipe(wrap('//<%= file.relative %>\n<%= contents %>'))
 			.pipe(concat('vendor.min.js', { newLine: '\r\n\r\n' }))
 			.pipe(gulp.dest(dest_path))
 
