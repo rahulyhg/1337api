@@ -27,7 +27,7 @@ gulp.task('vendor', function() {
 
 			// javascript
 			.pipe(jsFilter)
-			.pipe(addsrc(dest_path + '/other_components/**/*.js'))
+			.pipe(addsrc.append(dest_path + '/other_components/**/*.js'))
 			.pipe(uglify())
 			.pipe(wrap('//<%= file.relative %>\n<%= contents %>'))
 			.pipe(concat('vendor.min.js', { newLine: '\r\n\r\n' }))
