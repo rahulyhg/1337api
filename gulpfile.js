@@ -60,7 +60,18 @@ gulp.task
 		;
 });
 
+gulp.task
+	('vendor-fonts', function() {
 
+		// define gulp task vendor vars
+		var dest_path 	=  'assets/vendor';
+		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.woff2', '*.svg', '*.ttf']);
 
+		return gulp
+			.src(bowerFiles())
+			.pipe(fontFilter)
+			.pipe(flatten())
+			.pipe(gulp.dest('assets/fonts'))
 		;
+});	
 
