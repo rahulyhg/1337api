@@ -14,6 +14,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/umstudio/ums_redbean#readme",
   "devDependencies": {
+    "del": "^2.0.2",
     "gulp": "^3.9.0",
     "gulp-add-src": "^0.2.0",
     "gulp-concat": "^2.6.0",

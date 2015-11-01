@@ -14,6 +14,7 @@ var gutil 		= require('gulp-util');
 var edit        = require('gulp-edit');
 var wrap 		= require('gulp-wrap');
 var less 		= require('gulp-less');
+var del 		= require('del');
 
 // grab libraries files from `assets/vendor` folder, minify and publish
 gulp.task
@@ -22,7 +23,11 @@ gulp.task
 		// define gulp task vendor vars
 		var dest_path 	=  'assets/vendor';
 		var jsFilter 	= gulpFilter('*.js', {restore: true});
+		
+		// cleaning up
+		del([dest_path + '/vendor.min.js']);
 
+		// gulp js
 		return gulp
 			.src(bowerFiles())
 			.pipe(jsFilter)
@@ -44,6 +49,10 @@ gulp.task
 		var cssFilter 	= gulpFilter('*.css', {restore: true});
 		var lessFilter 	= gulpFilter('*.less', {restore: true});
 
+		// cleaning up
+		del([dest_path + '/vendor.min.css']);
+
+		// gulp css
 		return gulp
 			.src(bowerFiles())
 			.pipe(lessFilter)
