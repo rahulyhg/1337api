@@ -243,7 +243,7 @@ var jeUploadFunction = function(type, file, cbs) {
 
 var jePluginsConfig = {
 						sceditor: {
-							style: 'assets/css/libs/jquery.sceditor.default.min.css',
+							style: 'assets/css/jquery.sceditor.default.min.css',
 							toolbar: 'bold,italic,underline|strike,subscript,superscript|link,unlink|removeformat|bulletlist,orderedlist|source',
 							locale: 'pt-BR',
 							emoticonsEnabled: false,

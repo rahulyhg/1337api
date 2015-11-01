@@ -1,2 +1,3 @@
 uploads
-assets/bower_components
+node_modules
+assets/vendor/bower_components
