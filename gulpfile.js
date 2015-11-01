@@ -2,36 +2,35 @@
 var gulp = require('gulp');
 
 // define plug-ins
-var flatten 	= require('gulp-flatten');
-var concat 		= require('gulp-concat');
-var gulpFilter 	= require('gulp-filter');
-var uglify 		= require('gulp-uglify');
-var minifycss 	= require('gulp-minify-css');
-var rename 		= require('gulp-rename');
-var bowerFiles 	= require('main-bower-files');
-var addsrc 		= require('gulp-add-src');
-var gutil 		= require('gulp-util');
-var edit        = require('gulp-edit');
-var wrap 		= require('gulp-wrap');
-var less 		= require('gulp-less');
-var del 		= require('del');
+var flatten 		= require('gulp-flatten');
+var concat 			= require('gulp-concat');
+var filter 			= require('gulp-filter');
+var uglify 			= require('gulp-uglify');
+var minifyCss 		= require('gulp-minify-css');
+var rename 			= require('gulp-rename');
+var mainBowerFiles 	= require('main-bower-files');
+var addSrc 			= require('gulp-add-src');
+var util 			= require('gulp-util');
+var edit 			= require('gulp-edit');
+var wrap 			= require('gulp-wrap');
+var less 			= require('gulp-less');
+var del 			= require('del');
 
-// grab libraries files from `assets/vendor` folder, minify and publish
 gulp.task
 	('vendor-js', function() {
 
 		// define gulp task vendor vars
 		var dest_path 	=  'assets/vendor';
-		var jsFilter 	= gulpFilter('*.js', {restore: true});
+		var jsFilter 	= filter('*.js', {restore: true});
 		
 		// cleaning up
 		del([dest_path + '/vendor.min.js']);
 
 		// gulp js
 		return gulp
-			.src(bowerFiles())
+			.src(mainBowerFiles())
 			.pipe(jsFilter)
-			.pipe(addsrc.append(dest_path + '/other_components/**/*.js'))
+			.pipe(addSrc.append(dest_path + '/other_components/**/*.js'))
 			.pipe(uglify())
 			.pipe(wrap('//<%= file.relative %>\n<%= contents %>'))
 			.pipe(concat('vendor.min.js', { newLine: '\r\n' }))
@@ -46,21 +45,21 @@ gulp.task
 
 		// define gulp task vendor vars
 		var dest_path 	=  'assets/vendor';
-		var cssFilter 	= gulpFilter('*.css', {restore: true});
-		var lessFilter 	= gulpFilter('*.less', {restore: true});
+		var cssFilter 	= filter('*.css', {restore: true});
+		var lessFilter 	= filter('*.less', {restore: true});
 
 		// cleaning up
 		del([dest_path + '/vendor.min.css']);
 
 		// gulp css
 		return gulp
-			.src(bowerFiles())
+			.src(mainBowerFiles())
 			.pipe(lessFilter)
 			.pipe(less())
 			.pipe(lessFilter.restore)
 			.pipe(cssFilter)
-			.pipe(addsrc.append(dest_path + '/other_components/**/*.css'))
-			.pipe(minifycss({keepSpecialComments: 0}))
+			.pipe(addSrc.append(dest_path + '/other_components/**/*.css'))
+			.pipe(minifyCss({keepSpecialComments: 0}))
 			.pipe(wrap('/* <%= file.relative %> */\n<%= contents %>'))
 			.pipe(concat('vendor.min.css', { newLine: '\r\n' }))
 			.pipe(edit(function(src, cb) {src = '/* Last modified: ' + new Date().toLocaleString() + ' */\n\n' + src; cb(null, src);}))
@@ -74,10 +73,10 @@ gulp.task
 
 		// define gulp task vendor vars
 		var dest_path 	=  'assets/vendor';
-		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.woff2', '*.svg', '*.ttf']);
+		var fontFilter 	= filter(['*.eot', '*.woff', '*.woff2', '*.svg', '*.ttf']);
 
 		return gulp
-			.src(bowerFiles())
+			.src(mainBowerFiles())
 			.pipe(fontFilter)
 			.pipe(flatten())
 			.pipe(gulp.dest('assets/fonts'))
