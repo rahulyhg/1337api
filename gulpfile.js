@@ -75,3 +75,4 @@ gulp.task
 		;
 });	
 
+gulp.task('default', ['vendor-js', 'vendor-css', 'vendor-fonts']);
