@@ -7,6 +7,9 @@ require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config.php';
 require __DIR__ . '/helpers.php';
 
+// KLEIN ROUTER SETUP
+$router = new \Klein\Klein();
+
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 R::setAutoResolve( TRUE );
@@ -26,6 +29,16 @@ $api['edges'] = R::inspect();
 if($config['api']['debug']){
 	R::debug( TRUE, 1 );
 };
+
+/* KLEIN IDEA
+function helloWorld(){
+	return "hi";
+}
+
+$router->respond('GET', '/api/[private|public|auth:mode]/hello-world', function($request, $response) {
+	print_r($request);
+});
+$router->dispatch();
 
 /* ***************************************************************************************************
 ** API REQUEST ***************************************************************************************
