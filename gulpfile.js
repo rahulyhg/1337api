@@ -11,39 +11,27 @@ var rename 		= require('gulp-rename');
 var bowerFiles 	= require('main-bower-files');
 var addsrc 		= require('gulp-add-src');
 var gutil 		= require('gulp-util');
-var wrap = require('gulp-wrap');
+var edit        = require('gulp-edit');
+var wrap 		= require('gulp-wrap');
 
 // grab libraries files from `assets/vendor` folder, minify and publish
-gulp.task('vendor', function() {
+gulp.task
+	('vendor-js', function() {
 
 		// define gulp task vendor vars
 		var dest_path 	=  'assets/vendor';
-		var jsFilter 	= gulpFilter('*.js');
-		var cssFilter 	= gulpFilter('*.css');
-		var fontFilter 	= gulpFilter(['*.eot', '*.woff', '*.svg', '*.ttf']);
+		var jsFilter 	= gulpFilter('*.js', {restore: true});
 
 		return gulp
 			.src(bowerFiles())
-
-			// javascript
 			.pipe(jsFilter)
 			.pipe(addsrc.append(dest_path + '/other_components/**/*.js'))
 			.pipe(uglify())
 			.pipe(wrap('//<%= file.relative %>\n<%= contents %>'))
-			.pipe(concat('vendor.min.js', { newLine: '\r\n\r\n' }))
+			.pipe(concat('vendor.min.js', { newLine: '\r\n' }))
+			.pipe(edit(function(src, cb) {src = '// Last modified: ' + new Date().toLocaleString() + '\n\n' + src; cb(null, src);}))
 			.pipe(gulp.dest(dest_path))
-
-			// css
-			.pipe(cssFilter)
-			.pipe(addsrc(dest_path + '/other_components/**/*.css'))
-			.pipe(minifycss())
-			.pipe(rename({suffix: ".min"}))
-			.pipe(gulp.dest(dest_path))
-
-			// fonts
-			.pipe(fontFilter)
-			.pipe(flatten())
-			.pipe(gulp.dest(dest_path + '/fonts'))
+			.pipe(jsFilter.restore)
 		;
 });
 
