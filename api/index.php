@@ -30,14 +30,44 @@ if($config['api']['debug']){
 	R::debug( TRUE, 1 );
 };
 
-/* KLEIN IDEA
-function helloWorld(){
-	return "hi";
-}
+/* ***************************************************************************************************
+** KLEIN ROUTER - PRIVATE ROUTES *********************************************************************
+*************************************************************************************************** */ 
 
-$router->respond('GET', '/api/[private|public|auth:mode]/hello-world', function($request, $response) {
-	print_r($request);
+$router->respond(function ($request, $response, $service, $app) use ($router) {
+
+    $router->onError(function ($router, $err_msg, $request, $response) {
+
+		$err = array(
+			'error' => true, 
+			'message' => getMessage($err_msg)
+		);
+		echo json_encode($err);
+
+    });
+
 });
+
+$router->with('/api/private', function () use ($router) {
+	require 'private.php';
+
+	$router->respond('GET', '/hi', function ($request, $response) {
+		$response->json(api_hi($request));
+	});
+
+	$router->respond('GET', '/edges', function ($request, $response) {
+		$response->json(api_edges($request));
+	});
+
+	$router->respond('GET', '/read/[a:edge]/[i:id]', function ($request, $response) {
+		$response->json(api_read($request));
+	});
+});
+
+
+
+
+
 $router->dispatch();
 
 /* ***************************************************************************************************
@@ -95,7 +125,7 @@ function api_error($msg, $debug = ''){
 
 // API JSON OUTPUT
 function api_output($res){
-	echo json_encode($res);
+//	echo json_encode($res);
 };
 
-?>
+?>	
