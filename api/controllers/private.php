@@ -6,7 +6,7 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 /* ***************************************************************************************************
 ** PRIVATE API VALIDATE REQUEST FUNCTIONS ************************************************************
 *************************************************************************************************** */ 
-
+/*
 // CHECK AUTHORIZATION HEADER
 if(function_exists('apache_request_headers')){
 	$headers = apache_request_headers();
@@ -62,44 +62,13 @@ if ( $auth == false || empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GE
 	echo json_encode($res);
 	die();
 }
-
+*/
 /* ***************************************************************************************************
 ** PRIVATE GET ROUTES ********************************************************************************
 *************************************************************************************************** */ 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 	switch($req['action']) {
-
-		case 'hi':
-			api_hi();
-		break;
-
-		case 'edges':
-			if (empty($req['edge'])){
-				api_edges();
-			} 
-			else {
-				api_forbid();
-			}
-		break;
-
-		case 'search':
-			if (in_array($req['edge'], $api['edges'])){
-				api_search($req);
-			}
-			else{
-				api_forbid();
-			}
-		break;
-
-		case 'read':
-			if (in_array($req['edge'], $api['edges']) && !empty($req['param'])){
-				api_read($req);
-			}
-			else{
-				api_forbid();
-			}
-		break;
 
 		case 'exists':
 			if (in_array($req['edge'], $api['edges']) && !empty($req['param'])){
@@ -216,23 +185,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 };
 
 /* ***************************************************************************************************
+** PRIVATE GET FUNCTIONS *****************************************************************************
+*************************************************************************************************** */ 
+
+function api_hi($request, $response){
+	global $caption;
+
+	try {
+		if(!empty($caption['messages'])) {
+			$res = array('message' => getMessage('HI'));
+			$response->json($res);
+		} 
+		else{
+			throw new Exception("Arquivo de mensagens não encontrado.", 1);
+		}
+		
+	} catch (Exception $e) {
+		throw new Exception("Arquivo de mensagens não encontrado.", 1);
+	}
+};
+
+/* ***************************************************************************************************
 ** PRIVATE RETURN FUNCTIONS **************************************************************************
 *************************************************************************************************** */ 
 
-function api_hi(){
-	global $caption;
-
-	if(!empty($caption['messages'])) {
-		$res = array('message' => getMessage('HI'));
-	} 
-	else{
-		$res = array('error' => true, 'message' => 'Arquivo de mensagens não encontrado.');
-	}
-
-	//output response
-	api_output($res);
-
-};
 
 function api_create($req){
 	global $api;
@@ -290,13 +266,13 @@ function api_create($req){
 
 };
 
-function api_read($req){
+function api_read($request){
 	global $config;
-
+	
 	try {
 
 		// select item
-		$item = R::load( $req['edge'], $req['param'] );
+		$item = R::load( $request->edge, $request->id );
 
 		// IF item retrieved
 		if(!empty($item['id'])){
@@ -328,10 +304,10 @@ function api_read($req){
 			};
 
 			//output response
-			api_output($res);
+			return $res;
 		}
 		else{
-			throw new Exception('Error Processing Request (ID: '.$req['param'].' FROM TABLE: '.$req['edge'].' NOT FOUND', 1);
+			throw new Exception('Error Processing Request (ID: '.$request->id.' FROM TABLE: '.$request->edge.' NOT FOUND', 1);
 		}
 		
 	} catch (Exception $e) {
@@ -810,7 +786,7 @@ function api_edges(){
 		);
 
 		// output response
-		api_output($res);
+		return $res;
 
 	} 
 	catch (Exception $e) {
