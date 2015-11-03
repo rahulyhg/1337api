@@ -550,7 +550,7 @@ function api_count($req){
 		// build response array
 		$res = array(
 			'sum' 			=> $count,
-			'pages' 		=> round($count/$limit),
+			'pages' 		=> ceil($count/$limit),
 			'itemsPerPage' 	=> $limit
 		);
 
