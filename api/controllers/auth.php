@@ -9,8 +9,9 @@ $this->respond('POST', '',
 	function ($request, $response, $service) {
 		global $config;
 
+		// FORM DATA
 		$formData = json_decode($request->body(), true);
-		$service->validate($formData['email'], 'ERRO: email deve ser informado.')->isEmail();
+		$service->validate($formData['email'], 'ERRO: email deve ser informado.')->notNull()->isEmail();
 		$service->validate($formData['password'], 'ERRO: password deve ser informado.')->notNull();
 
 		// VALIDATE CREDENTIALS
