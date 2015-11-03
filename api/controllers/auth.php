@@ -7,15 +7,16 @@ use \Firebase\JWT\JWT;
 
 $this->respond('POST', '', 
 	function ($request, $response, $service) {
-		$service->validateParam('email', 'ERRO: email deve ser informado.')->isEmail();
-		$service->validateParam('password', 'ERRO: password deve ser informado.')->notNull();
-
 		global $config;
+
+		$formData = json_decode($request->body(), true);
+		$service->validate($formData['email'], 'ERRO: email deve ser informado.')->isEmail();
+		$service->validate($formData['password'], 'ERRO: password deve ser informado.')->notNull();
 
 		// VALIDATE CREDENTIALS
 		$userCredentials = array(
-			'email' 	=> $request->email,
-			'password' 	=> md5($request->password)
+			'email' 	=> $formData['email'],
+			'password' 	=> md5($formData['password'])
 		);
 
 		$user = R::findOne('user', 'email = :email AND password = :password AND active = true', $userCredentials );
