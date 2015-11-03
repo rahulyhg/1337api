@@ -36,6 +36,11 @@ if($config['api']['debug']){
 
 $router->respond(function ($request, $response, $service, $app) use ($router) {
 
+	$service->addValidator('edge', function ($str) {
+		global $api;
+		return in_array($str, $api['edges']);
+	});
+
     $router->onError(function ($router, $err_msg, $request, $response) {
 
 		$err = array(

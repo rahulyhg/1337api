@@ -301,7 +301,9 @@ $this->respond('GET', '/export/[a:edge]',
 /* ************************************************************************************************ */
 
 $this->respond('GET', '/count/[a:edge]', 
-	function ($request, $response) {
+	function ($request, $response, $service) {
+		$service->validateParam('edge', 'EDGES_FAIL')->isEdge();
+
 		global $config;
 
 		try {
