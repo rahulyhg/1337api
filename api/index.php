@@ -61,7 +61,7 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 $router->with("/api/public", "controllers/public.php");
 $router->with("/api/private", "controllers/private.php");
-//$router->with("/api/auth", "controllers/auth.php");
+$router->with("/api/auth", "controllers/auth.php");
 
 $router->dispatch();
 
