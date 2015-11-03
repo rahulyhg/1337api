@@ -36,6 +36,16 @@ if($config['api']['debug']){
 
 $router->respond(function ($request, $response, $service, $app) use ($router) {
 
+// if angular style, like this. If jquery style TODO formdata
+// 	print_r($request->paramsPost());
+
+	$request->formData = array();
+	$decoded = json_decode($request->body(), true);
+	
+	if(!empty($decoded)){
+		$request->formData = $decoded;
+	}
+
 	$service->addValidator('edge', function ($str) {
 		global $api;
 		return in_array($str, $api['edges']);

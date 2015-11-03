@@ -10,7 +10,7 @@ $this->respond('POST', '',
 		global $config;
 
 		// FORM DATA
-		$formData = json_decode($request->body(), true);
+		$formData = $request->formData;
 		$service->validate($formData['email'], 'ERRO: email deve ser informado.')->notNull()->isEmail();
 		$service->validate($formData['password'], 'ERRO: password deve ser informado.')->notNull();
 

@@ -31,7 +31,7 @@
 	"overrides": {
 		"font-awesome": {
 			"main": [
-			    "less/font-awesome.less",
+				"less/font-awesome.less",
 				"./fonts/*.*"
 			]			
 		}
