@@ -48,39 +48,11 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 });
 
+$router->with("/api/public", "controllers/public.php");
 $router->with("/api/private", "controllers/private.php");
-
+//$router->with("/api/auth", "controllers/auth.php");
 
 $router->dispatch();
-
-/* ***************************************************************************************************
-** API REQUEST ***************************************************************************************
-*************************************************************************************************** */ 
-
-// BUILD $REQ OBJ FROM SERVER $_REQUEST
-foreach ($_REQUEST as $k => $v) {
-	$req[$k] = $v;
-};
-
-/* ***************************************************************************************************
-** API REQUEST MODE **********************************************************************************
-*************************************************************************************************** */ 
-
-// SWITCH ROUTER FOR REQUEST MODE
-switch ($req['mode']) {
-	case 'auth':
-		require 'auth.php';
-		break;
-	case 'private':
-		require 'private.php';
-		break;
-	case 'public':
-		require 'public.php';
-		break;
-	default:
-		api_forbid();
-		break;
-};
 
 /* ***************************************************************************************************
 ** API OUTPUT FUNCTIONS ******************************************************************************
@@ -103,7 +75,7 @@ function api_error($msg, $debug = ''){
 		$res['debug'] = $debug;
 	};	
 
-	api_output($res);
+	echo json_encode($res);
 };
 
 // API JSON OUTPUT
