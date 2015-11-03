@@ -51,6 +51,12 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
     });
 
+    $router->onHttpError(function ($code, $request, $response, $router) {
+		header('HTTP/1.0 400 Bad Request');
+		$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+		echo json_encode($err);
+    });
+
 });
 
 $router->with("/api/public", "controllers/public.php");
