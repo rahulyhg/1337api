@@ -48,24 +48,7 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 });
 
-$router->with('/api/private', function () use ($router) {
-	require 'private.php';
-
-	$router->respond('GET', '/hi', function ($request, $response) {
-		$response->json(api_hi($request));
-	});
-
-	$router->respond('GET', '/edges', function ($request, $response) {
-		$response->json(api_edges($request));
-	});
-
-	$router->respond('GET', '/read/[a:edge]/[i:id]', function ($request, $response) {
-		$response->json(api_read($request));
-	});
-});
-
-
-
+$router->with("/api/private", "controllers/private.php");
 
 
 $router->dispatch();
