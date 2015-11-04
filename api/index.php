@@ -7,6 +7,7 @@ ini_set('display_errors', 'On');
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config.php';
 require __DIR__ . '/controllers/api.php';
+require __DIR__ . '/controllers/auth.php';
 require __DIR__ . '/helpers/shared.php';
 
 // KLEIN ROUTER SETUP
@@ -107,7 +108,9 @@ $router->with('/api/public', function () use ($router) {
 	$router->respond('GET', '/', 'api_soon');
 });
 
-$router->with("/api/auth", "controllers/auth.php");
+$router->with('/api/auth', function () use ($router) {
+	$router->respond('POST', '', 'auth_signin'); 
+});
 
 $router->dispatch();
 
