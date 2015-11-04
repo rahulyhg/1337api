@@ -511,12 +511,15 @@ function api_read ($request, $response, $service) {
 
 function api_exists ($request, $response, $service) {
 	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+	$service->validateParam('id', 'INVALID_REQUEST')->notNull();
 
 	// check if item is retrieved from database
-	$exists = R::find($request->edge,' id = '.$request->id.' ' );
-	$payload['exists'] = !empty($exists) ? true : false;
+	$item = R::find( $request->edge, ' id = '.$request->id );
+	$exists = !empty($item) ? true : false;
 
-	//output response
+	// build api response payload
+	$payload = array('exists' => $exists);
+	// output response payload
 	$response->json($payload);
 };
 
