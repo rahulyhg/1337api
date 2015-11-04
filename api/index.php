@@ -51,10 +51,16 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 	$service->addValidator('edge', function ($str) {
 		global $api;
-		return in_array($str, $api['edges']);
+		if (in_array($str, $api['edges'])) {
+			return true;
+		}
+		else{
+			header('HTTP/1.0 404 Not Found');
+			return false;
+		}
 	});
 
-    $router->onError(function ($router, $err_msg, $request, $response) {
+	$router->onError(function ($router, $err_msg, $request, $response) {
 
 		$err = array(
 			'error' => true, 

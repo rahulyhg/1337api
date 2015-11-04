@@ -184,7 +184,9 @@ function api_edges ($request, $response) {
 	}
 };
 
-function api_list ($request, $response) {
+function api_list ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGES_FAIL')->isEdge();
+
 	global $config;
 
 	try {
