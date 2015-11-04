@@ -144,9 +144,4 @@ function api_error($msg, $debug = ''){
 	echo json_encode($res);
 };
 
-// API JSON OUTPUT
-function api_output($res){
-//	echo json_encode($res);
-};
-
 ?>	
