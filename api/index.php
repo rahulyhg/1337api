@@ -80,6 +80,17 @@ $router->with('/api/private', function () use ($router) {
 
 	// ROUTES
 	$router->respond('GET', '/hi', 'api_hi');
+	$router->respond('GET', '/edges', 'api_edges'); 
+
+	$router->respond('GET', '/list/[a:edge]/[i:page]?', 'api_list'); 
+	$router->respond('GET', '/count/[a:edge]', 'api_count');
+	$router->respond('GET', '/export/[a:edge]', 'api_export'); 
+	$router->respond('GET', '/schema/[a:edge]', 'api_schema');
+
+	$router->respond('GET', '/read/[a:edge]/[i:id]', 'api_read');
+	$router->respond('GET', '/exists/[a:edge]/[i:id]', 'api_exists'); 
+
+
 	// $klein->respond('POST', '/posts', $callback);
 	// $klein->respond('PUT', '/posts/[i:id]', $callback);
 	// $klein->respond('DELETE', '/posts/[i:id]', $callback);
