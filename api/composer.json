@@ -16,7 +16,8 @@
 			"redbeanphp": "master@dev",
 			"firebase/php-jwt": "~3.0",
 			"sinergi/dictionary": "*",
-	        "goodby/csv": "*"
+	        "goodby/csv": "*",
+		"slim/slim": "^3.0@RC"
     	},
 	
 	"autoload": {
