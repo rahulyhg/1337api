@@ -90,6 +90,11 @@ $router->with('/api/private', function () use ($router) {
 	$router->respond('GET', '/read/[a:edge]/[i:id]', 'api_read');
 	$router->respond('GET', '/exists/[a:edge]/[i:id]', 'api_exists'); 
 
+	$router->respond('POST', '/create/[a:edge]', 'api_create');
+	$router->respond('POST', '/update/[a:edge]/[i:id]', 'api_update');
+	$router->respond('POST', '/updatePassword/user/[i:id]', 'api_updatePassword'); 
+	$router->respond('POST', '/destroy/[a:edge]/[i:id]', 'api_destroy'); 
+	$router->respond('POST', '/upload/[a:edge]', 'api_upload');
 
 	// $klein->respond('POST', '/posts', $callback);
 	// $klein->respond('PUT', '/posts/[i:id]', $callback);
@@ -99,8 +104,7 @@ $router->with('/api/private', function () use ($router) {
 });
 
 $router->with('/api/public', function () use ($router) {
-	$router->respond('GET', '/hi', 'api_hi');
-
+	$router->respond('GET', '/', 'api_soon');
 });
 
 $router->with("/api/auth", "controllers/auth.php");
