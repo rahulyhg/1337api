@@ -10,8 +10,33 @@ require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
 require __DIR__ . '/helpers/shared.php';
 
-// KLEIN ROUTER SETUP
-$router = new \Klein\Klein();
+// SLIM ROUTER SETUP
+$app = new \Slim\App;
+
+
+/* ***************************************************************************************************
+** HELLO WORLD ***************************************************************************************
+*************************************************************************************************** */ 
+function helloWorld ($request, $response, $args) {
+
+	$payload = array(
+		'message' => 'Hello',
+		'name' => $args['name']		
+	);
+
+    return $response->withJson($payload);
+}
+
+// TEST
+$app->get('/hello/{name}', 'helloWorld');
+
+// Run app
+$app->run();
+
+die();
+/* ***************************************************************************************************
+** ./end HELLO WORLD *********************************************************************************
+*************************************************************************************************** */ 
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
