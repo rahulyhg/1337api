@@ -326,7 +326,7 @@ function api_schema ($request, $response) {
 
 						$payload['properties'][$field] = array(
 							'type' 				=> 'integer',
-							'title' 			=> getCaption('fields', $payload['edge'], $parent),
+							'title' 			=> getCaption('fields', $payload['bean'], $parent),
 							'required'	 		=> true,
 							'minLength'	 		=> 1,
 							'enum' 				=> array(),
@@ -743,7 +743,7 @@ function api_upload ($request, $response) {
 				'filename' 	=> $hashname,
 				'type' 		=> $type,
 				'size' 		=> $filesize,
-				'edge' 		=> $req['edge'],
+				'edge' 		=> $request->edge,
 				'created' 	=> R::isoDateTime(),
 				'modified' 	=> R::isoDateTime(),
 			);
