@@ -459,42 +459,41 @@ function api_schema ($request, $response, $service) {
 };
 
 function api_read ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
-
 	global $config;
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+	$service->validateParam('id', 'INVALID_REQUEST')->notNull();
 	
 	try {
-
-		// select item
+		// load item
 		$item = R::load( $request->edge, $request->id );
 
-		// IF item retrieved
+		// if item retrieved
 		if(!empty($item['id'])){
 
-			// foreach $item field, build array to response 
-			foreach ($item as $field => $v) {
+			// foreach $item field, build response payload array
+			foreach ($item as $field => $value) {
 				if(!in_array($field, $config['schema']['default']['blacklist'])) {
 
-					$payload[$field] = $v;
+					$payload[$field] = $value;
 
 					// IF field represents one-to-many relationship
 					if(substr($field, -3, 3) == '_id'){
 						$parentEdge = substr($field, 0, -3);
-						$parent = R::load( $parentEdge , $v );
+						$parent = R::load( $parentEdge, $value );
 
 						// IF parent is retrieved
 						if(!empty($parent['id'])){
 							
-							// foreach $parent field, build array to response 
+							// foreach $parent field, add to response payload array
 							foreach ($parent as $parentField => $parentValue) {
-								$payload[$parentEdge][$v][$parentField] = $parentValue;
+								$payload[$parentEdge][$value][$parentField] = $parentValue;
 							};
 						}
 						else{
-							throw new Exception('Error Processing Request (ID: '.$v.' FROM TABLE: '.$parentEdge.' NOT FOUND', 1);
+							throw new Exception('Error Processing Request (ID: '.$value.' FROM TABLE: '.$parentEdge.' NOT FOUND', 1);
 						}	
 					}
-				};
+				}
 			};
 
 			//output response payload
