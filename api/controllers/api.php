@@ -521,7 +521,10 @@ function api_exists ($request, $response, $service) {
 };
 
 function api_soon ($request, $response) {
-	$payload['message'] = 'elijah says: public API still in development.';
+
+	// build api response payload
+	$payload = array('message' => getMessage('COMING_SOON'));
+	// output response payload
 	$response->json($payload);
 };
 
