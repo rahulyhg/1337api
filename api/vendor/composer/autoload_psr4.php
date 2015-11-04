@@ -7,5 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Sinergi\\Dictionary\\' => array($vendorDir . '/sinergi/dictionary/src/Dictionary'),
+    'Klein\\' => array($vendorDir . '/klein/klein/src/Klein'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
 );

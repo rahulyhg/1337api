@@ -3,9 +3,12 @@
 /* ***************************************************************************************************
 ** COMING SOON ***************************************************************************************
 *************************************************************************************************** */ 
-	$res['message'] = 'elijah says: public API still in development.';
 
-	// OUTPUT
-	api_output($res);
+$this->respond('GET', '*',
+	function ($request, $response) {
+		$data['message'] = 'elijah says: public API still in development.';
+		$response->json($data);
+	}
+);
 
 ?>

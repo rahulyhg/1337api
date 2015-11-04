@@ -8,15 +8,18 @@ RewriteEngine On
 #
 # RewriteBase /
 
+# API KLEIN ROUTER CONFIG
+# ----------------------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    Options -MultiViews
+
+    RewriteEngine On
+    RewriteBase /api
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
 # API AUTHORIZATION REWRITE RULES
 # ----------------------------------------------------------------------------------------
 RewriteCond %{HTTP:Authorization} ^(.*)
 RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
-
-# API ENDPOINTS by elijah
-# ----------------------------------------------------------------------------------------
-RewriteCond 	%{REQUEST_FILENAME} !-f
-RewriteRule 	^([^/]+)$ index.php?mode=$1 [L]
-RewriteRule 	^([^/]+)/([^/]+)$ index.php?mode=$1&action=$2 [L]
-RewriteRule 	^([^/]+)/([^/]+)/([^/]+)$ index.php?mode=$1&action=$2&edge=$3 [L]
-RewriteRule 	^([^/]+)/([^/]+)/([^/]+)/([^/]+)$ index.php?mode=$1&action=$2&edge=$3&param=$4 [L]
