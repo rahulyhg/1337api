@@ -295,7 +295,7 @@ function api_export ($request, $response, $service) {
 };
 
 function api_schema ($request, $response, $service) {
-	$service->validateParam('edge', 'INVALID_REQUEST')->isEdge();
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
 
 	global $api;
 	global $config;
