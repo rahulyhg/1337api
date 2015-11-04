@@ -1,10 +1,12 @@
 <?php
-
+error_reporting(-1);
+ini_set('display_errors', 'On');
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config.php';
+require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/helpers/shared.php';
 
 // KLEIN ROUTER SETUP
@@ -69,8 +71,27 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 });
 
-$router->with("/api/public", "controllers/public.php");
-$router->with("/api/private", "controllers/private.php");
+$router->with('/api/private', function () use ($router) {
+
+	// VALIDATE AUTH
+	$router->respond(function ($request, $response, $service) { 
+		$service->validate('teste', 'teste')->isLen(4,16); 
+	});
+
+	// ROUTES
+	$router->respond('GET', '/hi', 'api_hi');
+	// $klein->respond('POST', '/posts', $callback);
+	// $klein->respond('PUT', '/posts/[i:id]', $callback);
+	// $klein->respond('DELETE', '/posts/[i:id]', $callback);
+	// $klein->respond('OPTIONS', null, $callback);
+
+});
+
+$router->with('/api/public', function () use ($router) {
+	$router->respond('GET', '/hi', 'api_hi');
+
+});
+
 $router->with("/api/auth", "controllers/auth.php");
 
 $router->dispatch();

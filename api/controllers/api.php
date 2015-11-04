@@ -68,6 +68,26 @@ if ( $auth == false || empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GE
 ** PRIVATE ENDPOINTS *********************************************************************************
 *************************************************************************************************** */ 
 
+function api_hi ($request, $response) {
+	global $caption;
+
+	try {
+		if(!empty($caption['messages'])) {
+			$data = array('message' => getMessage('HI'));
+			$response->json($data);
+		} 
+		else{
+			throw new Exception("Arquivo de mensagens não encontrado.", 1);
+		}
+		
+	} catch (Exception $e) {
+		throw new Exception("Arquivo de mensagens não encontrado.", 1);
+	}
+};
+
+
+
+/*
 $this->respond('GET', '/hi', 
 	function ($request, $response) {
 		global $caption;
@@ -86,8 +106,6 @@ $this->respond('GET', '/hi',
 		}
 	}
 );
-
-/* ************************************************************************************************ */
 
 $this->respond('GET', '/edges', 
 	function ($request, $response) {
@@ -183,8 +201,6 @@ $this->respond('GET', '/edges',
 	}
 );
 
-/* ************************************************************************************************ */
-
 $this->respond('GET', '/read/[a:edge]/[i:id]', 
 	function ($request, $response) {
 		global $config;
@@ -237,8 +253,6 @@ $this->respond('GET', '/read/[a:edge]/[i:id]',
 	}
 );
 
-/* ************************************************************************************************ */
-
 $this->respond('GET', '/exists/[a:edge]/[i:id]', 
 	function ($request, $response) {
 
@@ -250,8 +264,6 @@ $this->respond('GET', '/exists/[a:edge]/[i:id]',
 		$response->json($data);
 	}
 );
-
-/* ************************************************************************************************ */
 
 $this->respond('GET', '/export/[a:edge]', 
 	function ($request, $response) {
@@ -298,8 +310,6 @@ $this->respond('GET', '/export/[a:edge]',
 	}
 );
 
-/* ************************************************************************************************ */
-
 $this->respond('GET', '/count/[a:edge]', 
 	function ($request, $response, $service) {
 		$service->validateParam('edge', 'EDGES_FAIL')->isEdge();
@@ -328,8 +338,6 @@ $this->respond('GET', '/count/[a:edge]',
 	}
 
 );
-
-/* ************************************************************************************************ */
 
 $this->respond('GET', '/schema/[a:edge]', 
 	function ($request, $response) {
@@ -496,8 +504,6 @@ $this->respond('GET', '/schema/[a:edge]',
 	}
 );
 
-/* ************************************************************************************************ */
-
 $this->respond('GET', '/list/[a:edge]/[i:page]?', 
 	function ($request, $response) {
 		global $config;
@@ -542,7 +548,7 @@ $this->respond('GET', '/list/[a:edge]/[i:page]?',
 /* ***************************************************************************************************
 ** POST FUNCTIONS ************************************************************************************
 *************************************************************************************************** */ 
-
+/*
 $this->respond('POST', '/create/[a:edge]', 
 	function ($request, $response) {
 		global $api;
@@ -601,8 +607,6 @@ $this->respond('POST', '/create/[a:edge]',
 	}
 );
 
-/* ************************************************************************************************ */
-
 $this->respond('POST', '/update/[a:edge]/[i:id]', 
 	function ($request, $response) {
 		global $api;
@@ -657,8 +661,6 @@ $this->respond('POST', '/update/[a:edge]/[i:id]',
 	}
 );
 
-/* ************************************************************************************************ */
-
 $this->respond('POST', '/updatePassword/user/[i:id]', 
 	function ($request, $response) {
 		global $config;
@@ -689,8 +691,6 @@ $this->respond('POST', '/updatePassword/user/[i:id]',
 	}
 );
 
-/* ************************************************************************************************ */
-
 $this->respond('POST', '/destroy/[a:edge]/[i:id]', 
 	function ($request, $response) {
 		R::begin();
@@ -719,8 +719,6 @@ $this->respond('POST', '/destroy/[a:edge]/[i:id]',
 
 	}
 );
-
-/* ************************************************************************************************ */
 
 $this->respond('POST', '/upload/[a:edge]', 
 	function ($request, $response) {
@@ -819,6 +817,16 @@ $this->respond('POST', '/upload/[a:edge]',
 	}
 );
 
-/* ************************************************************************************************ */
 
+/* ***************************************************************************************************
+** COMING SOON ***************************************************************************************
+*************************************************************************************************** */ 
+/*
+$this->respond('GET', '*',
+	function ($request, $response) {
+		$data['message'] = 'elijah says: public API still in development.';
+		$response->json($data);
+	}
+);
+*/
 ?>
