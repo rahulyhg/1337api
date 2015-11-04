@@ -539,337 +539,286 @@ $this->respond('GET', '/list/[a:edge]/[i:page]?',
 	}
 );
 
-
-
-
-
-
-
 /* ***************************************************************************************************
-** PRIVATE POST ROUTES *******************************************************************************
+** POST FUNCTIONS ************************************************************************************
 *************************************************************************************************** */ 
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+$this->respond('POST', '/create/[a:edge]', 
+	function ($request, $response) {
+		global $api;
 
-	$req['content'] = json_decode(file_get_contents("php://input"),true);
-
-	switch($req['action']) {
-
-		case 'create':
-			if (in_array($req['edge'], $api['edges'])){
-				api_create($req);
-			}
-			else{
-				api_forbid();
-			}
-		break;
-
-		case 'updatePassword':
-			if ($req['edge'] == 'user' && !empty($req['param'])){
-				api_updatePassword($req);
-			}
-			else{
-				api_forbid();
-			}
-		break;
-
-		case 'update':
-			if (in_array($req['edge'], $api['edges'])){
-				api_update($req);
-			}
-			else{
-				api_forbid();
-			}
-		break;
-
-		case 'upload':
-			if (in_array($req['edge'], $api['edges'])){
-				api_upload($req);
-			}
-			else{
-				api_forbid();
-			}
-		break;
-
-		case 'destroy':
-			if (in_array($req['edge'], $api['edges'])){
-				api_destroy($req);
-			}
-			else{
-				api_forbid();
-			}
-		break;
-
-		default:
-				api_forbid();
-		break;
-	};
-
-};
-
-
-
-/* ***************************************************************************************************
-** PRIVATE RETURN FUNCTIONS **************************************************************************
-*************************************************************************************************** */ 
-
-
-function api_create($req){
-	global $api;
-
-	R::begin();
-	try{
-	
-		// dispense 'edge'
-		$item = R::dispense( $req['edge'] );
-		$schema['raw'] = R::getAssoc('DESCRIBE ' . $req['edge']);
-
-		// foreach $req content, build array to insert
-		foreach ($req['content'] as $field => $v) {
-
-			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
-				$upload = R::dispense( 'uploads' );
-				$upload->id = $v;
-				$item->sharedUploadList[] = $upload;
-			}
-
-			// IF field is a password, hash it up
-			else if ($field == 'password'){
-				$item[$field] = md5($v);
-			}
-
-			else{
-				$item[$field] = $v;			
-			};
+		R::begin();
+		try{
 		
-		};
+			// dispense 'edge'
+			$item = R::dispense( $request->edge );
+			$schema['raw'] = R::getAssoc('DESCRIBE ' . $request->edge);
 
-		// inject created and modified current time to array to insert
-		$item['created'] 	= R::isoDateTime();
-		$item['modified'] 	= R::isoDateTime();
+			// foreach $req content, build array to insert
+			foreach ($request->formData as $field => $v) {
 
-		// insert item, returns id if success
-		R::store($item);
-		$id = R::getInsertID();
-		R::commit();
+				// IF field defines uploads many-to-many relationship
+				if($field == 'uploads_id' && in_array($request->edge .'_uploads', $api['edges'])){
+					$upload = R::dispense( 'uploads' );
+					$upload->id = $v;
+					$item->sharedUploadList[] = $upload;
+				}
 
-		// build api response array
-		$res = array(
-			'id' 		=> $id,
-			'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
-		);
-		
-		//output response
-		api_output($res);
-	}
-	catch(Exception $e) {
-		R::rollback();
-		api_error('CREATE_FAIL', $e->getMessage());
-	}
+				// IF field is a password, hash it up
+				else if ($field == 'password'){
+					$item[$field] = md5($v);
+				}
 
-};
-
-function api_update($req){
-	global $api;
-
-	R::begin();
-	try {
-		// dispense 'edge'
-		$id = $req['param'];
-		$item = R::load( $req['edge'], $id );
-		$schema['raw'] = R::getAssoc('DESCRIBE '.$req['edge']);
-
-		// foreach $req content, build array to update
-		foreach ($req['content'] as $field => $v) {
+				else{
+					$item[$field] = $v;
+				};
 			
-			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
-				$upload = R::dispense( 'uploads' );
-				$upload->id = $v;
-				$item->sharedUploadList[] = $upload;
-			}
-			// IF field is a password, hash it up
-			else if ($field == 'password'){
-				$item[$field] = md5($v);
-			}
-			else{
-				$item[$field] = $v;			
 			};
 
-		};
+			// inject created and modified current time to array to insert
+			$item['created'] 	= R::isoDateTime();
+			$item['modified'] 	= R::isoDateTime();
 
-		// inject modified current time to array to update
-		$item['modified'] = R::isoDateTime();
-
-		// update item, commit if success
-		R::store( $item );
-		R::commit();
-
-		// build api response array
-		$res = array(
-			'id' 		=> $id,
-			'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$id.')',
-		);
-
-		//output response
-		api_output($res);
-		
-	} catch (Exception $e) {
-		R::rollback();
-		api_error('UPDATE_FAIL', $e->getMessage());
-	}
-
-};
-
-function api_updatePassword($req){
-   global $config;
-
-	$item = R::load( $req['edge'], $req['param'] );
-
-	if( $item['password'] == md5($req['content']['password']) ){
-		
-		if ($req['content']['new_password'] == $req['content']['confirm_new_password']) {
-
-			$item['password'] = md5($req['content']['new_password']);
-			$item['modified'] = R::isoDateTime();
-			R::store( $item );
-			$res['message'] = 'Atualizado com Sucesso. (id: '.$req['param'].')';
-
-		} else{
-			$res['message'] = 'deu ruim. confirmação não bate';
-
-		}
-
-	} else{
-		$res['message'] = 'deu ruim. password errado';
-
-	}
-
-	//output response
-	api_output($res);
-};
-
-function api_destroy($req){
-
-	R::begin();
-	try {
-		// dispense 'edge'
-		$id = $req['param'];
-		$item = R::load( $req['edge'], $id );
-
-		// destroy item, commit if success
-	    R::trash($item);
-		R::commit();
-
-		// build api response array
-		$res = array(
-			'id' 		=> $id,
-			'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$id.')',
-		);
-
-		// output response
-		api_output($res);
-
-	} catch (Exception $e) {
-		R::rollback();
-		api_error('DESTROY_FAIL', $e->getMessage());		
-	}
-
-};
-
-function api_upload($req){
-	global $config;
-
-	R::begin();
-	try{
-
-		// validate content from $req
-			// if blob was sent
-			if (!empty($req['content']['blob'])) {
-				$blob = $req['content']['blob'];
-			} 
-			else{
-				throw new Exception("Error Processing Request (blob not found at request)", 1);
-			}
-
-			// if filesize was sent
-			if (!empty($req['content']['filesize'])) {
-				$filesize = $req['content']['filesize'];
-			} 
-			else{
-				throw new Exception("Error Processing Request (filesize not found at request)", 1);
-			}
-
-			// if filename was sent
-			if (!empty($req['content']['filename'])) {
-				$filename = $req['content']['filename'];
-			} 
-			else{
-				throw new Exception("Error Processing Request (filename not found at request)", 1);
-			}
-
-		// explode $blob
-			// TODO: this procedure can be done in one line if I use regex. verify correct expression.
-			list($type, $blob) = explode(';', $blob);
-			list(,$type) = explode(':', $type);
-			list(,$blob) = explode(',', $blob);
-
-			// decode blob data
-			$data = base64_decode($blob);
-
-		// define path and new filename
-			$basepath 	= $config['api']['uploads']['basepath'];
-			$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
-			$fullpath 	= $basepath . $datepath;
-			$hashname 	= md5($filename.'-'.R::isoDateTime()) . '.' . end(explode('.', $filename));
-
-		// write file
-			// TODO: we should validate if the file was actually saved at disk.
-			// if folder doesn't exist, mkdir 
-			if (!file_exists($fullpath)) {
-				mkdir( $fullpath, 0777, true );
-			};
-			file_put_contents($fullpath . $hashname, $data);
-
-		// insert at database
-			
-			// build insert upload array
-			$upload = array(
-				'path' 		=> $datepath . $hashname,
-				'filename' 	=> $hashname,
-				'type' 		=> $type,
-				'size' 		=> $filesize,
-				'edge' 		=> $req['edge'],
-				'created' 	=> R::isoDateTime(),
-				'modified' 	=> R::isoDateTime(),
-			);
-
-			// dispense uploads edge
-			$file = R::dispense('uploads');
-
-			foreach ($upload as $k => $v) {
-				$file[$k] = $v;
-			}			
-
-			R::store($file);
+			// insert item, returns id if success
+			R::store($item);
 			$id = R::getInsertID();
 			R::commit();
 
-		// build api response array
-			$res = array(
+			// build api response array
+			$data = array(
 				'id' 		=> $id,
-				'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: '.$id.')',
+				'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
+			);
+			
+			//output response
+			$response->json($data);
+		}
+		catch(Exception $e) {
+			R::rollback();
+			api_error('CREATE_FAIL', $e->getMessage());
+		}
+
+	}
+);
+
+/* ************************************************************************************************ */
+
+$this->respond('POST', '/update/[a:edge]/[i:id]', 
+	function ($request, $response) {
+		global $api;
+
+		R::begin();
+		try {
+			// dispense 'edge'
+			$id = $request->id;
+			$item = R::load( $request->edge, $id );
+			$schema['raw'] = R::getAssoc('DESCRIBE '.$request->edge);
+
+			// foreach $req content, build array to update
+			foreach ($request->formData as $field => $v) {
+				
+				// IF field defines uploads many-to-many relationship
+				if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
+					$upload = R::dispense( 'uploads' );
+					$upload->id = $v;
+					$item->sharedUploadList[] = $upload;
+				}
+				// IF field is a password, hash it up
+				else if ($field == 'password'){
+					$item[$field] = md5($v);
+				}
+				else{
+					$item[$field] = $v;			
+				};
+
+			};
+
+			// inject modified current time to array to update
+			$item['modified'] = R::isoDateTime();
+
+			// update item, commit if success
+			R::store( $item );
+			R::commit();
+
+			// build api response array
+			$data = array(
+				'id' 		=> $id,
+				'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$id.')',
 			);
 
-		//output response
-			api_output($res);
-	}
-	catch(Exception $e) {
-		R::rollback();
-		api_error('UPLOAD_FAIL', $e->getMessage());
-	}
+			//output response
+			$response->json($data);
+			
+		} catch (Exception $e) {
+			R::rollback();
+			api_error('UPDATE_FAIL', $e->getMessage());
+		}
 
-};
+	}
+);
+
+/* ************************************************************************************************ */
+
+$this->respond('POST', '/updatePassword/user/[i:id]', 
+	function ($request, $response) {
+		global $config;
+
+		$item = R::load( 'user', $request->id );
+
+		if( $item['password'] == md5($request->formData['password']) ){
+			
+			if ($request->formData['new_password'] == $request->formData['confirm_new_password']) {
+
+				$item['password'] = md5($request->formData['new_password']);
+				$item['modified'] = R::isoDateTime();
+				R::store( $item );
+				$data['message'] = 'Atualizado com Sucesso. (id: '.$request->id.')';
+
+			} else{
+				$data['message'] = 'deu ruim. confirmação não bate';
+
+			}
+
+		} else{
+			$data['message'] = 'deu ruim. password errado';
+
+		}
+
+		//output response
+		$response->json($data);
+	}
+);
+
+/* ************************************************************************************************ */
+
+$this->respond('POST', '/destroy/[a:edge]/[i:id]', 
+	function ($request, $response) {
+		R::begin();
+		try {
+			// dispense 'edge'
+			$id = $request->id;
+			$item = R::load( $request->edge, $id );
+
+			// destroy item, commit if success
+		    R::trash($item);
+			R::commit();
+
+			// build api response array
+			$data = array(
+				'id' 		=> $id,
+				'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$id.')',
+			);
+
+			// output response
+			$response->json($data);
+
+		} catch (Exception $e) {
+			R::rollback();
+			api_error('DESTROY_FAIL', $e->getMessage());		
+		}
+
+	}
+);
+
+/* ************************************************************************************************ */
+
+$this->respond('POST', '/upload/[a:edge]', 
+	function ($request, $response) {
+
+		global $config;
+
+		R::begin();
+		try{
+
+			// validate content from $req
+				// if blob was sent
+				if (!empty($request->formData['blob'])) {
+					$blob = $request->formData['blob'];
+				} 
+				else{
+					throw new Exception("Error Processing Request (blob not found at request)", 1);
+				}
+
+				// if filesize was sent
+				if (!empty($request->formData['filesize'])) {
+					$filesize = $request->formData['filesize'];
+				} 
+				else{
+					throw new Exception("Error Processing Request (filesize not found at request)", 1);
+				}
+
+				// if filename was sent
+				if (!empty($request->formData['filename'])) {
+					$filename = $request->formData['filename'];
+				} 
+				else{
+					throw new Exception("Error Processing Request (filename not found at request)", 1);
+				}
+
+			// explode $blob
+				// TODO: this procedure can be done in one line if I use regex. verify correct expression.
+				list($type, $blob) = explode(';', $blob);
+				list(,$type) = explode(':', $type);
+				list(,$blob) = explode(',', $blob);
+
+				// decode blob data
+				$data = base64_decode($blob);
+
+			// define path and new filename
+				$basepath 	= $config['api']['uploads']['basepath'];
+				$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
+				$fullpath 	= $basepath . $datepath;
+				$hashname 	= md5($filename.'-'.R::isoDateTime()) . '.' . end(explode('.', $filename));
+
+			// write file
+				// TODO: we should validate if the file was actually saved at disk.
+				// if folder doesn't exist, mkdir 
+				if (!file_exists($fullpath)) {
+					mkdir( $fullpath, 0777, true );
+				};
+				file_put_contents($fullpath . $hashname, $data);
+
+			// insert at database
+				
+				// build insert upload array
+				$upload = array(
+					'path' 		=> $datepath . $hashname,
+					'filename' 	=> $hashname,
+					'type' 		=> $type,
+					'size' 		=> $filesize,
+					'edge' 		=> $req['edge'],
+					'created' 	=> R::isoDateTime(),
+					'modified' 	=> R::isoDateTime(),
+				);
+
+				// dispense uploads edge
+				$file = R::dispense('uploads');
+
+				foreach ($upload as $k => $v) {
+					$file[$k] = $v;
+				}			
+
+				R::store($file);
+				$id = R::getInsertID();
+				R::commit();
+
+			// build api response array
+				$data = array(
+					'id' 		=> $id,
+					'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: '.$id.')',
+				);
+
+			//output response
+				$response->json($data);
+		}
+		catch(Exception $e) {
+			R::rollback();
+			api_error('UPLOAD_FAIL', $e->getMessage());
+		}
+
+	}
+);
+
+/* ************************************************************************************************ */
 
 ?>
