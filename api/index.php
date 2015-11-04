@@ -1,10 +1,13 @@
 <?php
-
+error_reporting(-1);
+ini_set('display_errors', 'On');
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config.php';
+require __DIR__ . '/controllers/api.php';
+require __DIR__ . '/controllers/auth.php';
 require __DIR__ . '/helpers/shared.php';
 
 // KLEIN ROUTER SETUP
@@ -48,10 +51,16 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 	$service->addValidator('edge', function ($str) {
 		global $api;
-		return in_array($str, $api['edges']);
+		if (in_array($str, $api['edges'])) {
+			return true;
+		}
+		else{
+			header('HTTP/1.0 404 Not Found');
+			return false;
+		}
 	});
 
-    $router->onError(function ($router, $err_msg, $request, $response) {
+	$router->onError(function ($router, $err_msg, $request, $response) {
 
 		$err = array(
 			'error' => true, 
@@ -69,9 +78,45 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 });
 
-$router->with("/api/public", "controllers/public.php");
-$router->with("/api/private", "controllers/private.php");
-$router->with("/api/auth", "controllers/auth.php");
+$router->with('/api/private', function () use ($router) {
+
+	// VALIDATE AUTH
+	$router->respond(function ($request, $response, $service) { 
+		$service->validate('teste', 'teste')->isLen(4,16); 
+	});
+
+	// ROUTES
+	$router->respond('GET', '/hi', 'api_hi');
+	$router->respond('GET', '/edges', 'api_edges'); 
+
+	$router->respond('GET', '/list/[a:edge]/[i:page]?', 'api_list'); 
+	$router->respond('GET', '/count/[a:edge]', 'api_count');
+	$router->respond('GET', '/export/[a:edge]', 'api_export'); 
+	$router->respond('GET', '/schema/[a:edge]', 'api_schema');
+
+	$router->respond('GET', '/read/[a:edge]/[i:id]', 'api_read');
+	$router->respond('GET', '/exists/[a:edge]/[i:id]', 'api_exists'); 
+
+	$router->respond('POST', '/create/[a:edge]', 'api_create');
+	$router->respond('POST', '/update/[a:edge]/[i:id]', 'api_update');
+	$router->respond('POST', '/updatePassword/user/[i:id]', 'api_updatePassword'); 
+	$router->respond('POST', '/destroy/[a:edge]/[i:id]', 'api_destroy'); 
+	$router->respond('POST', '/upload/[a:edge]', 'api_upload');
+
+	// $klein->respond('POST', '/posts', $callback);
+	// $klein->respond('PUT', '/posts/[i:id]', $callback);
+	// $klein->respond('DELETE', '/posts/[i:id]', $callback);
+	// $klein->respond('OPTIONS', null, $callback);
+
+});
+
+$router->with('/api/public', function () use ($router) {
+	$router->respond('GET', '/', 'api_soon');
+});
+
+$router->with('/api/auth', function () use ($router) {
+	$router->respond('POST', '', 'auth_signin'); 
+});
 
 $router->dispatch();
 
@@ -97,11 +142,6 @@ function api_error($msg, $debug = ''){
 	};	
 
 	echo json_encode($res);
-};
-
-// API JSON OUTPUT
-function api_output($res){
-//	echo json_encode($res);
 };
 
 ?>	
