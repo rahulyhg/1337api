@@ -185,7 +185,7 @@ function api_edges ($request, $response) {
 };
 
 function api_list ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGES_FAIL')->isEdge();
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
 
 	global $config;
 
@@ -225,7 +225,7 @@ function api_list ($request, $response, $service) {
 };
 
 function api_count ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGES_FAIL')->isEdge();
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
 	global $config;
 
 	try {
@@ -248,7 +248,8 @@ function api_count ($request, $response, $service) {
 	}
 };
 
-function api_export ($request, $response) {
+function api_export ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
 
 	try {
 
@@ -293,7 +294,9 @@ function api_export ($request, $response) {
 	}
 };
 
-function api_schema ($request, $response) {
+function api_schema ($request, $response, $service) {
+	$service->validateParam('edge', 'INVALID_REQUEST')->isEdge();
+
 	global $api;
 	global $config;
 
@@ -455,7 +458,9 @@ function api_schema ($request, $response) {
 	}
 };
 
-function api_read ($request, $response) {
+function api_read ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+
 	global $config;
 	
 	try {
@@ -504,7 +509,8 @@ function api_read ($request, $response) {
 	}
 };
 
-function api_exists ($request, $response) {
+function api_exists ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
 
 	// check if item is retrieved from database
 	$exists = R::find($request->edge,' id = '.$request->id.' ' );
@@ -523,7 +529,9 @@ function api_soon ($request, $response) {
 ** POST FUNCTIONS ************************************************************************************
 *************************************************************************************************** */ 
 
-function api_create ($request, $response) {
+function api_create ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+
 	global $api;
 
 	R::begin();
@@ -578,7 +586,9 @@ function api_create ($request, $response) {
 	}
 };
 
-function api_update ($request, $response) {
+function api_update ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+
 	global $api;
 
 	R::begin();
@@ -629,7 +639,9 @@ function api_update ($request, $response) {
 	}
 };
 
-function api_updatePassword ($request, $response) {
+function api_updatePassword ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+
 	global $config;
 
 	$item = R::load( 'user', $request->id );
@@ -657,7 +669,9 @@ function api_updatePassword ($request, $response) {
 	$response->json($payload);
 };
 
-function api_destroy ($request, $response) {
+function api_destroy ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+
 	R::begin();
 	try {
 		// dispense 'edge'
@@ -683,7 +697,9 @@ function api_destroy ($request, $response) {
 	}
 };
 
-function api_upload ($request, $response) {
+function api_upload ($request, $response, $service) {
+	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+
 	global $config;
 
 	R::begin();
