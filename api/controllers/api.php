@@ -71,24 +71,20 @@ if ( $auth == false || empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GE
 function api_hi ($request, $response, $args) {
 	global $caption;
 
-	try {
-		if(!empty($caption['messages'])) {
+	if(!empty($caption['messages'])) {
 
-			// build api response payload
-			$payload = array(
-				'message' => getMessage('HI')
-			);
-			
-			// output response payload
-			$response->withJson($payload);
-
-		} 
-		else{
-			throw new Exception("Arquivo de mensagens não encontrado.", 1);
-		}
+		// build api response payload
+		$payload = array(
+			'message' => getMessage('HI')
+		);
 		
-	} catch (Exception $e) {
-		throw new Exception("Arquivo de mensagens não encontrado.", 1);
+		// output response payload
+		$response->withJson($payload);
+
+	} 
+	else{
+		$errorMessage = 'Arquivo de mensagens não encontrado.';
+		throw new Exception($errorMessage, 1);
 	}
 };
 
@@ -96,408 +92,374 @@ function api_edges ($request, $response, $args) {
 	global $api;
 	global $config;
 
-	try {
+	// build edges list
+	if (!empty($api['edges'])) {
+		$edges = array();
+		foreach ($api['edges'] as $k => $edge) {
+			if( !in_array($edge, $config['api']['edges']['blacklist']) ) {
 
-		// build edges list
-		if (!empty($api['edges'])) {
-			$edges = array();
-			foreach ($api['edges'] as $k => $edge) {
-				if( !in_array($edge, $config['api']['edges']['blacklist']) ) {
+				$edges[$edge] = array(
+					'name' 			=> $edge,
+					'title' 		=> getCaption('edges', $edge, $edge),
+					'count' 		=> R::count($edge),
+					'icon' 			=> getCaption('icon', $edge, $edge),
+					'has_parent' 	=> false,
+					'has_child' 	=> false,
+				);
 
-					$edges[$edge] = array(
-						'name' 			=> $edge,
-						'title' 		=> getCaption('edges', $edge, $edge),
-						'count' 		=> R::count($edge),
-						'icon' 			=> getCaption('icon', $edge, $edge),
-						'has_parent' 	=> false,
-						'has_child' 	=> false,
-					);
-
-				};
 			};
-		}
-		else {
-			throw new Exception('Error Processing Request', 1);
-		}
+		};
+	}
+	else {
+		$errorMessage = getMessage('EDGES_FAIL');
+		throw new Exception($errorMessage, 1);
+	}
 
-		// build hierarchy array, if exists		
-		$hierarchyArr = R::getAll('
-			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
-			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE REFERENCED_TABLE_NAME IS NOT NULL
-		');
+	// build hierarchy array, if exists		
+	$hierarchyArr = R::getAll('
+		SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
+		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+		WHERE REFERENCED_TABLE_NAME IS NOT NULL
+	');
 
-		if(!empty($hierarchyArr)){
-			foreach ($hierarchyArr as $k => $v) {
-				if(empty($hierarchy[$v['child']])){
-					$hierarchy[$v['child']] = array();
-				} 
-				array_push($hierarchy[$v['child']], $v['parent']);
-			};
-		}
-		else{
-			$hierarchy = array();
-		}
+	if(!empty($hierarchyArr)){
+		foreach ($hierarchyArr as $k => $v) {
+			if(empty($hierarchy[$v['child']])){
+				$hierarchy[$v['child']] = array();
+			} 
+			array_push($hierarchy[$v['child']], $v['parent']);
+		};
+	}
+	else{
+		$hierarchy = array();
+	}
 
-		// if not empty hierarchy, build depth
-		if(!empty($hierarchy)){
+	// if not empty hierarchy, build depth
+	if(!empty($hierarchy)){
 
-			// build hierarchy list - depth 1
-			foreach ($edges as $edge => $obj) {
-				if( array_key_exists($edge, $hierarchy) ){
-					$edges[$edge]['has_parent'] = true;
+		// build hierarchy list - depth 1
+		foreach ($edges as $edge => $obj) {
+			if( array_key_exists($edge, $hierarchy) ){
+				$edges[$edge]['has_parent'] = true;
 
-					foreach ($hierarchy[$edge] as $y => $z) {
-						$edges[$z]['has_child'] = true;
-						$edges[$edge]['parent'][$z] = $edges[$z];
-					}
+				foreach ($hierarchy[$edge] as $y => $z) {
+					$edges[$z]['has_child'] = true;
+					$edges[$edge]['parent'][$z] = $edges[$z];
+				}
 
-					// build hierarchy list - depth 2
-					if($edges[$edge]['has_parent']){
-						foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
-							if(array_key_exists($parentBean, $hierarchy)){
-								$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
-								foreach ($hierarchy[$parentBean] as $y => $z) {
-									$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
-								}
+				// build hierarchy list - depth 2
+				if($edges[$edge]['has_parent']){
+					foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
+						if(array_key_exists($parentBean, $hierarchy)){
+							$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
+							foreach ($hierarchy[$parentBean] as $y => $z) {
+								$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
 							}
 						}
-					};
-
+					}
 				};
+
 			};
+		};
 
-		}
-
-		// build api response payload
-		$payload = array(
-			'edges' 	=> $edges,
-			'actions' 	=> $config['api']['actions'],
-		);
-
-		// output response playload
-		$response->withJson($payload);
-
-	} 
-	catch (Exception $e) {
-		api_error($response, 'EDGES_FAIL', $e->getMessage());
 	}
+
+	// build api response payload
+	$payload = array(
+		'edges' 	=> $edges,
+		'actions' 	=> $config['api']['actions'],
+	);
+
+	// output response playload
+	$response->withJson($payload);
 };
 
 function api_list ($request, $response, $args) {
 	global $config;
 
-	try {
-
-		// check if request is paginated or ALL
-		if(!empty($args['page'])){
-			// param page exists, let's get this page 
-			$page 	= $args['page'];
-			$limit 	= $config['api']['params']['pagination'];
-			$items 	= R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
-		}else{
-			// param page doesn't exist, let's get all
-			$items = R::findAll( $args['edge'], 'ORDER BY id DESC' );
-		}
-
-		// check if list is not empty
-		if(!empty($items)){
-			// list is not empty, let's foreach and build response array
-			foreach ($items as $item => $content) {
-				foreach ($content as $field => $value) {
-					$payload[$item][$field] = $value;
-				};
-			};
-		}
-		else{
-			// list is empty, let's return empty array
-			$payload = array();
-		}
-
-		// output response
-		$response->withJson($payload);
-
-	} catch (Exception $e) {
-		api_error($response, 'LIST_FAIL', $e->getMessage());
+	// check if request is paginated or ALL
+	if(!empty($args['page'])){
+		// param page exists, let's get this page 
+		$page 	= $args['page'];
+		$limit 	= $config['api']['params']['pagination'];
+		$items 	= R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
+	}else{
+		// param page doesn't exist, let's get all
+		$items = R::findAll( $args['edge'], 'ORDER BY id DESC' );
 	}
+
+	// check if list is not empty
+	if(!empty($items)){
+		// list is not empty, let's foreach and build response array
+		foreach ($items as $item => $content) {
+			foreach ($content as $field => $value) {
+				$payload[$item][$field] = $value;
+			};
+		};
+	}
+	else{
+		// list is empty, let's return empty array
+		$payload = array();
+	}
+
+	// output response
+	$response->withJson($payload);
 };
 
 function api_count ($request, $response, $args) {
 	global $config;
 
-	try {
-		// define response vars
-		$count = R::count($args['edge']);
-		$limit = $config['api']['params']['pagination'];
+	// define response vars
+	$count = R::count( $args['edge'] );
+	$limit = $config['api']['params']['pagination'];
 
-		// build response payload
-		$payload = array(
-			'sum' 			=> $count,
-			'pages' 		=> ceil($count/$limit),
-			'itemsPerPage' 	=> $limit
-		);
+	// build response payload
+	$payload = array(
+		'sum' 			=> $count,
+		'pages' 		=> ceil($count/$limit),
+		'itemsPerPage' 	=> $limit
+	);
 
-		// output response payload
-		$response->withJson($payload);
-		
-	} catch (Exception $e) {
-		api_error($response, 'COUNT_FAIL', $e->getMessage());
-	}
+	// output response payload
+	$response->withJson($payload);
 };
 
 function api_export ($request, $response, $args) {
 
-	try {
+	// TODO:
+	// <b>Strict Standards</b>:  Declaration of Goodby\CSV\Export\Standard\CsvFileObject::fputcsv() should be compatible with SplFileObject::fputcsv($fields, $delimiter = NULL, $enclosure = NULL, $escape = NULL) in <b>/Volumes/DATA/Dev/umstudio/ums_redbean/api/vendor/goodby/csv/src/Goodby/CSV/Export/Standard/CsvFileObject.php</b> on line <b>84</b><br />
 
-		// TODO:
-		// <b>Strict Standards</b>:  Declaration of Goodby\CSV\Export\Standard\CsvFileObject::fputcsv() should be compatible with SplFileObject::fputcsv($fields, $delimiter = NULL, $enclosure = NULL, $escape = NULL) in <b>/Volumes/DATA/Dev/umstudio/ums_redbean/api/vendor/goodby/csv/src/Goodby/CSV/Export/Standard/CsvFileObject.php</b> on line <b>84</b><br />
-
-		// init Goodby\CSV\Export\ 
-		if (class_exists('Goodby\CSV\Export\Standard\ExporterConfig')) {
-			$exportConfig = new ExporterConfig();
-			if (class_exists('Goodby\CSV\Export\Standard\Exporter')) {
-				$exporter = new Exporter($exportConfig);
-			}
-			else{
-				throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\Exporter)", 1);
-			}
+	// init Goodby\CSV\Export\ 
+	if (class_exists('Goodby\CSV\Export\Standard\ExporterConfig')) {
+		$exportConfig = new ExporterConfig();
+		if (class_exists('Goodby\CSV\Export\Standard\Exporter')) {
+			$exporter = new Exporter($exportConfig);
 		}
 		else{
-			throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\ExporterConfig)", 1);
+			throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\Exporter)", 1);
 		}
-
-		// collect data
-		$rawData = R::findAll($args['edge']);
-		$data = R::exportAll($rawData, FALSE, array('NULL'));
-
-		// inject field keys to data as csv export table heading
-		$keys = array_keys($data[0]);
-		array_unshift($data, $keys);
-
-		// define outstream
-		$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
-		$filename = 'export-'.$args['edge'].'-'.$dateHash.'.csv';
-
-		//outstream response
-		header('Content-Type: text/csv');
-		header('Content-Disposition: attachment; filename='. $filename);
-
-		// TODO: how to export big tables? memory runs out.
-		$outstream = $exporter->export('php://output', $data);
-		
-	} catch (Exception $e) {
-		api_error($response, 'EXPORT_FAIL', $e->getMessage());
 	}
+	else{
+		throw new Exception("CLASS NOT FOUND (Goodby\CSV\Export\Standard\ExporterConfig)", 1);
+	}
+
+	// collect data
+	$rawData = R::findAll($args['edge']);
+	$data = R::exportAll($rawData, FALSE, array('NULL'));
+
+	// inject field keys to data as csv export table heading
+	$keys = array_keys($data[0]);
+	array_unshift($data, $keys);
+
+	// define outstream
+	$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
+	$filename = 'export-'.$args['edge'].'-'.$dateHash.'.csv';
+
+	//outstream response
+	header('Content-Type: text/csv');
+	header('Content-Disposition: attachment; filename='. $filename);
+
+	// TODO: how to export big tables? memory runs out.
+	$outstream = $exporter->export('php://output', $data);
 };
 
 function api_schema ($request, $response, $args) {
-
 	global $api;
 	global $config;
 
-	try {
+	// read database schema
+	$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
-		// read database schema
-		$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
+	// if raw schema found
+	if(!empty($schema['raw'])){
 
-		// if raw schema found
-		if(!empty($schema['raw'])){
+		// define schema response array
+		$payload = array(
+			'bean' 					=> $args['edge'],
+			'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
+			'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
+			'type' 					=> 'object',
+			'required' 				=> true,
+			'additionalProperties' 	=> false,
+			'properties' 			=> array(),
+		);
 
-			// define schema response array
-			$payload = array(
-				'bean' 					=> $args['edge'],
-				'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
-				'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
-				'type' 					=> 'object',
-				'required' 				=> true,
-				'additionalProperties' 	=> false,
-				'properties' 			=> array(),
-			);
+		// fill properties node into schema response array
+		foreach ($schema['raw'] as $field => $properties) {
 
-			// fill properties node into schema response array
-			foreach ($schema['raw'] as $field => $properties) {
+			// check if field is not at config blacklist
+			if(!in_array($field, $config['schema']['default']['blacklist'])){
 
-				// check if field is not at config blacklist
-				if(!in_array($field, $config['schema']['default']['blacklist'])){
+				// check if field defines one-to-many relationship
+				if(substr($field, -3, 3) == '_id'){
+					$parent = substr($field, 0, -3);
 
-					// check if field defines one-to-many relationship
-					if(substr($field, -3, 3) == '_id'){
-						$parent = substr($field, 0, -3);
+					$payload['properties'][$field] = array(
+						'type' 				=> 'integer',
+						'title' 			=> getCaption('fields', $payload['bean'], $parent),
+						'required'	 		=> true,
+						'minLength'	 		=> 1,
+						'enum' 				=> array(),
+						'options' 			=> array(
+							'enum_titles' 	=> array(),
+						),
+					);
 
-						$payload['properties'][$field] = array(
-							'type' 				=> 'integer',
-							'title' 			=> getCaption('fields', $payload['bean'], $parent),
-							'required'	 		=> true,
-							'minLength'	 		=> 1,
-							'enum' 				=> array(),
-							'options' 			=> array(
-								'enum_titles' 	=> array(),
-							),
-						);
+					$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
 
-						$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
-
-						foreach ($parentOptions as $key => $value) {
-							$payload['properties'][$field]['enum'][] = $key;
-							$payload['properties'][$field]['options']['enum_titles'][] = $value;
-						};
-
-					}
-
-					// else, field is literal and we can go on
-					else{
-
-						// prepare data
-						$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
-						$type 		= $dbType[0];
-						$format 	= $dbType[0];
-						$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-						$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
-
-						// converts db type to json-editor expected type
-						if(array_key_exists($type, $config['schema']['default']['type'])){
-							$type = $config['schema']['default']['type'][$type];
-						};
-
-						// converts db type to json-editor expected format
-						if(array_key_exists($format, $config['schema']['default']['format'])){
-
-							if($format == 'varchar' && $maxLength > 256){
-								$format = 'textarea';
-							}
-							else{
-								$format = $config['schema']['default']['format'][$format];
-							};
-						};
-
-						// builds default properties array to json-editor
-						$payload['properties'][$field] = array(
-							'type'			=> $type,
-							'format' 		=> $format,
-							'title' 		=> getCaption('fields', $args['edge'], $field),
-							'required'	 	=> true,
-							'minLength' 	=> $minLength,
-							'maxLength'		=> $maxLength
-						);
-
-						// array merge to custom properties defined at config
-						if(isset($config['schema']['custom']['fields'][$field])){
-							$payload['properties'][$field] = array_merge($payload['properties'][$field], $config['schema']['custom']['fields'][$field]);
-						};
-
-						// add '*' to field title if required.
-						if($payload['properties'][$field]['minLength'] > 0){
-							$payload['properties'][$field]['title'] = $payload['properties'][$field]['title'] . '*';
-						}
-
+					foreach ($parentOptions as $key => $value) {
+						$payload['properties'][$field]['enum'][] = $key;
+						$payload['properties'][$field]['options']['enum_titles'][] = $value;
 					};
+
+				}
+
+				// else, field is literal and we can go on
+				else{
+
+					// prepare data
+					$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
+					$type 		= $dbType[0];
+					$format 	= $dbType[0];
+					$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
+					$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+
+					// converts db type to json-editor expected type
+					if(array_key_exists($type, $config['schema']['default']['type'])){
+						$type = $config['schema']['default']['type'][$type];
+					};
+
+					// converts db type to json-editor expected format
+					if(array_key_exists($format, $config['schema']['default']['format'])){
+
+						if($format == 'varchar' && $maxLength > 256){
+							$format = 'textarea';
+						}
+						else{
+							$format = $config['schema']['default']['format'][$format];
+						};
+					};
+
+					// builds default properties array to json-editor
+					$payload['properties'][$field] = array(
+						'type'			=> $type,
+						'format' 		=> $format,
+						'title' 		=> getCaption('fields', $args['edge'], $field),
+						'required'	 	=> true,
+						'minLength' 	=> $minLength,
+						'maxLength'		=> $maxLength
+					);
+
+					// array merge to custom properties defined at config
+					if(isset($config['schema']['custom']['fields'][$field])){
+						$payload['properties'][$field] = array_merge($payload['properties'][$field], $config['schema']['custom']['fields'][$field]);
+					};
+
+					// add '*' to field title if required.
+					if($payload['properties'][$field]['minLength'] > 0){
+						$payload['properties'][$field]['title'] = $payload['properties'][$field]['title'] . '*';
+					}
 
 				};
 
-				// ADD RAW STRUCTURE NODE TO SCHEMA
-				// IF FIELD DEFINES ONE-TO-MANY RELATIONSHIP
-				if(substr($field, -3, 3) == '_id'){
-					$parentBean = substr($field, 0, -3);
-					$parent = R::getAssoc('DESCRIBE '. $parentBean);
+			};
 
-					foreach ($parent as $field => $properties) {
-						$payload['structure'][$parentBean] = array(
-							'field' 		=> $field,
-							'properties' 	=> $properties,
-						);
-					}
-				}
-				// ELSE, FIELD DEFINES
-				else{
-					$payload['structure'][$field] = array(
+			// ADD RAW STRUCTURE NODE TO SCHEMA
+			// IF FIELD DEFINES ONE-TO-MANY RELATIONSHIP
+			if(substr($field, -3, 3) == '_id'){
+				$parentBean = substr($field, 0, -3);
+				$parent = R::getAssoc('DESCRIBE '. $parentBean);
+
+				foreach ($parent as $field => $properties) {
+					$payload['structure'][$parentBean] = array(
 						'field' 		=> $field,
 						'properties' 	=> $properties,
 					);
-				};
-			};
-
-			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-			if(in_array($args['edge'] .'_uploads', $api['edges'])){
-			
-				$payload['properties']['uploads_id'] = 
-					
-					array(
-						'title' 	=> 'Imagem',
-						'type'		=> 'string',
-						'format' 	=> 'url',
-						'required'	=> true,
-						'minLength' => 0,
-						'maxLength' => 128,
-		  				'options'	=> array(
-		  					'upload' 	=> true,
-		  				),
-						'links' 	=> array(
-							array(
-					            'rel' 	=> '',
-								'href' 	=> '{{self}}',
-							),
-						),
-					);
+				}
 			}
+			// ELSE, FIELD DEFINES
+			else{
+				$payload['structure'][$field] = array(
+					'field' 		=> $field,
+					'properties' 	=> $properties,
+				);
+			};
+		};
 
-			//output response
-			$response->withJson($payload);
+		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
+		if(in_array($args['edge'] .'_uploads', $api['edges'])){
+		
+			$payload['properties']['uploads_id'] = 
+				
+				array(
+					'title' 	=> 'Imagem',
+					'type'		=> 'string',
+					'format' 	=> 'url',
+					'required'	=> true,
+					'minLength' => 0,
+					'maxLength' => 128,
+	  				'options'	=> array(
+	  					'upload' 	=> true,
+	  				),
+					'links' 	=> array(
+						array(
+				            'rel' 	=> '',
+							'href' 	=> '{{self}}',
+						),
+					),
+				);
 		}
 
-		else{
-			throw new Exception("Error Processing Request (edge raw schema not found)", 1);
-		}
+		// output response payload
+		$response->withJson($payload);
 
-	} catch (Exception $e) {
-		api_error($response, 'SCHEMA_FAIL', $e->getMessage());
+	}
+
+	else{
+		throw new Exception("Error Processing Request (edge raw schema not found)", 1);
 	}
 };
 
 function api_read ($request, $response, $args) {
 	global $config;
 	
-	try {
-		// load item
-		$item = R::load( $args['edge'], $args['id'] );
+	// load item
+	$item = R::load( $args['edge'], $args['id'] );
 
-		// if item retrieved
-		if(!empty($item['id'])){
+	// if item retrieved
+	if(!empty($item['id'])){
 
-			// foreach $item field, build response payload array
-			foreach ($item as $field => $value) {
-				if(!in_array($field, $config['schema']['default']['blacklist'])) {
+		// foreach $item field, build response payload array
+		foreach ($item as $field => $value) {
+			if(!in_array($field, $config['schema']['default']['blacklist'])) {
 
-					$payload[$field] = $value;
+				$payload[$field] = $value;
 
-					// IF field represents one-to-many relationship
-					if(substr($field, -3, 3) == '_id'){
-						$parentEdge = substr($field, 0, -3);
-						$parent = R::load( $parentEdge, $value );
+				// IF field represents one-to-many relationship
+				if(substr($field, -3, 3) == '_id'){
+					$parentEdge = substr($field, 0, -3);
+					$parent = R::load( $parentEdge, $value );
 
-						// IF parent is retrieved
-						if(!empty($parent['id'])){
-							
-							// foreach $parent field, add to response payload array
-							foreach ($parent as $parentField => $parentValue) {
-								$payload[$parentEdge][$value][$parentField] = $parentValue;
-							};
-						}
-						else{
-							throw new Exception('Error Processing Request (ID: '.$value.' FROM TABLE: '.$parentEdge.' NOT FOUND', 1);
-						}	
+					// IF parent is retrieved
+					if(!empty($parent['id'])){
+						
+						// foreach $parent field, add to response payload array
+						foreach ($parent as $parentField => $parentValue) {
+							$payload[$parentEdge][$value][$parentField] = $parentValue;
+						};
 					}
+					else{
+						throw new Exception('Error Processing Request (ID: '.$value.' FROM TABLE: '.$parentEdge.' NOT FOUND', 1);
+					}	
 				}
-			};
+			}
+		};
 
-			//output response payload
-			$response->withJson($payload);
-		}
-		else{
-			throw new Exception('Error Processing Request (ID: '.$args['id'].' FROM TABLE: '.$args['edge'].' NOT FOUND', 1);
-		}
-		
-	} catch (Exception $e) {
-		api_error($response, 'READ_FAIL', $e->getMessage());
+		//output response payload
+		$response->withJson($payload);
+	}
+	else{
+		throw new Exception('Error Processing Request (ID: '.$args['id'].' FROM TABLE: '.$args['edge'].' NOT FOUND', 1);
 	}
 };
 
@@ -807,14 +769,6 @@ function api_error($response, $msg, $debug = ''){
 	};	
 
 	return $response->withStatus(400)->withJson($err);
-};
-
-
-// FORBIDDEN OUTPUT
-function api_forbid(){
-	header('HTTP/1.0 400 Bad Request');
-	$res = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
-	api_output($res);
 };
 
 ?>
