@@ -35,52 +35,6 @@ if($config['api']['debug']){
 };
 
 /* ***************************************************************************************************
-** KLEIN ROUTER - PRIVATE ROUTES *********************************************************************
-*************************************************************************************************** */ 
-/*
-$router->respond(function ($request, $response, $service, $app) use ($router) {
-
-// if angular style, like this. If jquery style TODO formdata
-// 	print_r($request->paramsPost());
-
-	$request->formData = array();
-	$decoded = json_decode($request->body(), true);
-	
-	if(!empty($decoded)){
-		$request->formData = $decoded;
-	}
-
-	$service->addValidator('edge', function ($str) {
-		global $api;
-		if (in_array($str, $api['edges'])) {
-			return true;
-		}
-		else{
-			header('HTTP/1.0 404 Not Found');
-			return false;
-		}
-	});
-
-	$router->onError(function ($router, $err_msg, $request, $response) {
-
-		$err = array(
-			'error' => true, 
-			'message' => getMessage($err_msg)
-		);
-		echo json_encode($err);
-
-    });
-
-    $router->onHttpError(function ($code, $request, $response, $router) {
-		header('HTTP/1.0 400 Bad Request');
-		$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
-		echo json_encode($err);
-    });
-
-});
-*/
-
-/* ***************************************************************************************************
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
 
