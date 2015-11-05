@@ -82,28 +82,4 @@ $app->group('/auth', function () use ($api){
 *************************************************************************************************** */ 
 $app->run();
 
-/* ***************************************************************************************************
-** API OUTPUT FUNCTIONS ******************************************************************************
-*************************************************************************************************** */ 
-
-// FORBIDDEN OUTPUT
-function api_forbid(){
-	header('HTTP/1.0 400 Bad Request');
-	$res = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
-	api_output($res);
-};
-
-// ERROR OUTPUT
-function api_error($msg, $debug = ''){
-	global $config;
-
-	$res = array('error' => true, 'message' => getMessage($msg));
-	
-	if($config['api']['debug']){
-		$res['debug'] = $debug;
-	};	
-
-	echo json_encode($res);
-};
-
 ?>	

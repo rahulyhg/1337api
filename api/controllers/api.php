@@ -180,7 +180,7 @@ function api_edges ($request, $response, $args) {
 
 	} 
 	catch (Exception $e) {
-		api_error('EDGES_FAIL', $e->getMessage());
+		api_error($response, 'EDGES_FAIL', $e->getMessage());
 	}
 };
 
@@ -218,7 +218,7 @@ function api_list ($request, $response, $args) {
 		$response->withJson($payload);
 
 	} catch (Exception $e) {
-		api_error('LIST_FAIL', $e->getMessage());
+		api_error($response, 'LIST_FAIL', $e->getMessage());
 	}
 };
 
@@ -241,7 +241,7 @@ function api_count ($request, $response, $args) {
 		$response->withJson($payload);
 		
 	} catch (Exception $e) {
-		api_error('COUNT_FAIL', $e->getMessage());
+		api_error($response, 'COUNT_FAIL', $e->getMessage());
 	}
 };
 
@@ -286,7 +286,7 @@ function api_export ($request, $response, $args) {
 		$outstream = $exporter->export('php://output', $data);
 		
 	} catch (Exception $e) {
-		api_error('EXPORT_FAIL', $e->getMessage());
+		api_error($response, 'EXPORT_FAIL', $e->getMessage());
 	}
 };
 
@@ -449,7 +449,7 @@ function api_schema ($request, $response, $args) {
 		}
 
 	} catch (Exception $e) {
-		api_error('SCHEMA_FAIL', $e->getMessage());
+		api_error($response, 'SCHEMA_FAIL', $e->getMessage());
 	}
 };
 
@@ -497,7 +497,7 @@ function api_read ($request, $response, $args) {
 		}
 		
 	} catch (Exception $e) {
-		api_error('READ_FAIL', $e->getMessage());
+		api_error($response, 'READ_FAIL', $e->getMessage());
 	}
 };
 
@@ -577,7 +577,7 @@ function api_create ($request, $response, $args) {
 	}
 	catch(Exception $e) {
 		R::rollback();
-		api_error('CREATE_FAIL', $e->getMessage());
+		api_error($response, 'CREATE_FAIL', $e->getMessage());
 	}
 };
 
@@ -629,7 +629,7 @@ function api_update ($request, $response, $args) {
 		
 	} catch (Exception $e) {
 		R::rollback();
-		api_error('UPDATE_FAIL', $e->getMessage());
+		api_error($response, 'UPDATE_FAIL', $e->getMessage());
 	}
 };
 
@@ -687,7 +687,7 @@ function api_destroy ($request, $response, $args) {
 
 	} catch (Exception $e) {
 		R::rollback();
-		api_error('DESTROY_FAIL', $e->getMessage());		
+		api_error($response, 'DESTROY_FAIL', $e->getMessage());		
 	}
 };
 
@@ -784,8 +784,37 @@ function api_upload ($request, $response, $args) {
 	}
 	catch(Exception $e) {
 		R::rollback();
-		api_error('UPLOAD_FAIL', $e->getMessage());
+		api_error($response, 'UPLOAD_FAIL', $e->getMessage());
 	}
+};
+
+
+/* ***************************************************************************************************
+** ERROR FUNCTIONS ***********************************************************************************
+*************************************************************************************************** */ 
+
+// ERROR OUTPUT
+function api_error($response, $msg, $debug = ''){
+	global $config;
+
+	$err = array(
+		'error' => true, 
+		'message' => getMessage($msg)
+	);
+	
+	if($config['api']['debug']){
+		$err['debug'] = $debug;
+	};	
+
+	return $response->withStatus(400)->withJson($err);
+};
+
+
+// FORBIDDEN OUTPUT
+function api_forbid(){
+	header('HTTP/1.0 400 Bad Request');
+	$res = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+	api_output($res);
 };
 
 ?>
