@@ -41,22 +41,22 @@ if($config['api']['debug']){
 $app->group('/private', function () use ($api){
 
 	// PRIVATE ROUTES
-	$this->get('/hi', 'api_hi');
-	$this->get('/edges', 'api_edges'); 
+	$this->get('/hi', 													'api_hi'	);
+	$this->get('/edges', 												'api_edges'	); 
 
-	$this->get('/list/{edge}[/{page:[0-9]+}]', 'api_list'); 
-	$this->get('/count/{edge:'.$api['edgesRegex'].'}', 'api_count');
-	$this->get('/export/{edge:'.$api['edgesRegex'].'}', 'api_export'); 
-	$this->get('/schema/{edge:'.$api['edgesRegex'].'}', 'api_schema');
+	$this->get('/list/{edge}[/{page:[0-9]+}]', 							'api_list'	); 
+	$this->get('/count/{edge:'.$api['edgesRegex'].'}', 					'api_count'	);
+	$this->get('/export/{edge:'.$api['edgesRegex'].'}', 				'api_export'); 
+	$this->get('/schema/{edge:'.$api['edgesRegex'].'}', 				'api_schema');
 
-	$this->get('/read/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 'api_read');
-	$this->get('/exists/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 'api_exists'); 
+	$this->get('/read/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
+	$this->get('/exists/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_exists'); 
 
-	$this->post('/create/{edge:'.$api['edgesRegex'].'}', 'api_create');
-	$this->post('/update/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 'api_update');
-	$this->post('/updatePassword/user/{id:[0-9]+}', 'api_updatePassword'); 
-	$this->post('/destroy/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 'api_destroy'); 
-	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 'api_upload');
+	$this->post('/create/{edge:'.$api['edgesRegex'].'}', 				'api_create');
+	$this->post('/update/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_update');
+	$this->post('/updatePassword/user/{id:[0-9]+}', 					'api_updatePassword'); 
+	$this->post('/destroy/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
+	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 				'api_upload');
 
 });
 
