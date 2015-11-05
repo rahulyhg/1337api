@@ -13,31 +13,6 @@ require __DIR__ . '/helpers/shared.php';
 // SLIM ROUTER SETUP
 $app = new \Slim\App;
 
-
-/* ***************************************************************************************************
-** HELLO WORLD ***************************************************************************************
-*************************************************************************************************** */ 
-function helloWorld ($request, $response, $args) {
-
-	$payload = array(
-		'message' => 'Hello',
-		'name' => $args['name']		
-	);
-
-    return $response->withJson($payload);
-}
-
-// TEST
-$app->get('/hello/{name}', 'helloWorld');
-
-// Run app
-$app->run();
-
-die();
-/* ***************************************************************************************************
-** ./end HELLO WORLD *********************************************************************************
-*************************************************************************************************** */ 
-
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 R::setAutoResolve( TRUE );
@@ -61,7 +36,7 @@ if($config['api']['debug']){
 /* ***************************************************************************************************
 ** KLEIN ROUTER - PRIVATE ROUTES *********************************************************************
 *************************************************************************************************** */ 
-
+/*
 $router->respond(function ($request, $response, $service, $app) use ($router) {
 
 // if angular style, like this. If jquery style TODO formdata
@@ -102,48 +77,50 @@ $router->respond(function ($request, $response, $service, $app) use ($router) {
     });
 
 });
+*/
 
-$router->with('/api/private', function () use ($router) {
+/* ***************************************************************************************************
+** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
+*************************************************************************************************** */ 
 
-	// VALIDATE AUTH
-	$router->respond(function ($request, $response, $service) { 
-		$service->validate('teste', 'teste')->isLen(4,16); 
-	});
+$app->group('/private', function () {
 
-	// ROUTES
-	$router->respond('GET', '/hi', 'api_hi');
-	$router->respond('GET', '/edges', 'api_edges'); 
+	// PRIVATE ROUTES
+	$this->get('/hi', 'api_hi');
+	$this->get('/edges', 'api_edges'); 
 
-	$router->respond('GET', '/list/[a:edge]/[i:page]?', 'api_list'); 
-	$router->respond('GET', '/count/[a:edge]', 'api_count');
-	$router->respond('GET', '/export/[a:edge]', 'api_export'); 
-	$router->respond('GET', '/schema/[a:edge]', 'api_schema');
+	$this->get('/list/{edge}[/{page:[0-9]+}]', 'api_list'); 
+	$this->get('/count/{edge}', 'api_count');
+	$this->get('/export/{edge}', 'api_export'); 
+	$this->get('/schema/{edge}', 'api_schema');
 
-	$router->respond('GET', '/read/[a:edge]/[i:id]', 'api_read');
-	$router->respond('GET', '/exists/[a:edge]/[i:id]', 'api_exists'); 
+	$this->get('/read/{edge}/{id:[0-9]+}', 'api_read');
+	$this->get('/exists/{edge}/{id:[0-9]+}', 'api_exists'); 
 
-	$router->respond('POST', '/create/[a:edge]', 'api_create');
-	$router->respond('POST', '/update/[a:edge]/[i:id]', 'api_update');
-	$router->respond('POST', '/updatePassword/user/[i:id]', 'api_updatePassword'); 
-	$router->respond('POST', '/destroy/[a:edge]/[i:id]', 'api_destroy'); 
-	$router->respond('POST', '/upload/[a:edge]', 'api_upload');
-
-	// $klein->respond('POST', '/posts', $callback);
-	// $klein->respond('PUT', '/posts/[i:id]', $callback);
-	// $klein->respond('DELETE', '/posts/[i:id]', $callback);
-	// $klein->respond('OPTIONS', null, $callback);
+	$this->post('/create/{edge}', 'api_create');
+	$this->post('/update/{edge}/{id:[0-9]+}', 'api_update');
+	$this->post('/updatePassword/user/{id:[0-9]+}', 'api_updatePassword'); 
+	$this->post('/destroy/{edge}/{id:[0-9]+}', 'api_destroy'); 
+	$this->post('/upload/{edge}', 'api_upload');
 
 });
 
-$router->with('/api/public', function () use ($router) {
-	$router->respond('GET', '/', 'api_soon');
+$app->group('/public', function () {
+
+	$this->get('/', 'api_soon');
+
 });
 
-$router->with('/api/auth', function () use ($router) {
-	$router->respond('POST', '', 'auth_signin'); 
+$app->group('/auth', function () {
+
+	$this->post('', 'auth_signin');
+
 });
 
-$router->dispatch();
+/* ***************************************************************************************************
+** SLIM RUN! *****************************************************************************************
+*************************************************************************************************** */ 
+$app->run();
 
 /* ***************************************************************************************************
 ** API OUTPUT FUNCTIONS ******************************************************************************

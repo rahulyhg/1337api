@@ -68,7 +68,7 @@ if ( $auth == false || empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GE
 ** GET FUNCTIONS *************************************************************************************
 *************************************************************************************************** */ 
 
-function api_hi ($request, $response) {
+function api_hi ($request, $response, $args) {
 	global $caption;
 
 	try {
@@ -80,7 +80,7 @@ function api_hi ($request, $response) {
 			);
 			
 			// output response payload
-			$response->json($payload);
+			$response->withJson($payload);
 
 		} 
 		else{
@@ -92,7 +92,7 @@ function api_hi ($request, $response) {
 	}
 };
 
-function api_edges ($request, $response) {
+function api_edges ($request, $response, $args) {
 	global $api;
 	global $config;
 
@@ -176,7 +176,7 @@ function api_edges ($request, $response) {
 		);
 
 		// output response playload
-		$response->json($payload);
+		$response->withJson($payload);
 
 	} 
 	catch (Exception $e) {
@@ -184,22 +184,20 @@ function api_edges ($request, $response) {
 	}
 };
 
-function api_list ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
-
+function api_list ($request, $response, $args) {
 	global $config;
 
 	try {
 
 		// check if request is paginated or ALL
-		if(!empty($request->page)){
+		if(!empty($args['page'])){
 			// param page exists, let's get this page 
-			$page 	= $request->page;
+			$page 	= $args['page'];
 			$limit 	= $config['api']['params']['pagination'];
-			$items 	= R::findAll( $request->edge, 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
+			$items 	= R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($page-1)*$limit).', '.$limit);
 		}else{
 			// param page doesn't exist, let's get all
-			$items = R::findAll( $request->edge, 'ORDER BY id DESC' );
+			$items = R::findAll( $args['edge'], 'ORDER BY id DESC' );
 		}
 
 		// check if list is not empty
@@ -217,20 +215,19 @@ function api_list ($request, $response, $service) {
 		}
 
 		// output response
-		$response->json($payload);
+		$response->withJson($payload);
 
 	} catch (Exception $e) {
 		api_error('LIST_FAIL', $e->getMessage());
 	}
 };
 
-function api_count ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+function api_count ($request, $response, $args) {
 	global $config;
 
 	try {
 		// define response vars
-		$count = R::count($request->edge);
+		$count = R::count($args['edge']);
 		$limit = $config['api']['params']['pagination'];
 
 		// build response payload
@@ -241,15 +238,14 @@ function api_count ($request, $response, $service) {
 		);
 
 		// output response payload
-		$response->json($payload);
+		$response->withJson($payload);
 		
 	} catch (Exception $e) {
 		api_error('COUNT_FAIL', $e->getMessage());
 	}
 };
 
-function api_export ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+function api_export ($request, $response, $args) {
 
 	try {
 
@@ -271,7 +267,7 @@ function api_export ($request, $response, $service) {
 		}
 
 		// collect data
-		$rawData = R::findAll($request->edge);
+		$rawData = R::findAll($args['edge']);
 		$data = R::exportAll($rawData, FALSE, array('NULL'));
 
 		// inject field keys to data as csv export table heading
@@ -280,7 +276,7 @@ function api_export ($request, $response, $service) {
 
 		// define outstream
 		$dateHash = str_replace(array(':','-',' '), '', R::isoDateTime());
-		$filename = 'export-'.$request->edge.'-'.$dateHash.'.csv';
+		$filename = 'export-'.$args['edge'].'-'.$dateHash.'.csv';
 
 		//outstream response
 		header('Content-Type: text/csv');
@@ -294,8 +290,7 @@ function api_export ($request, $response, $service) {
 	}
 };
 
-function api_schema ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+function api_schema ($request, $response, $args) {
 
 	global $api;
 	global $config;
@@ -303,16 +298,16 @@ function api_schema ($request, $response, $service) {
 	try {
 
 		// read database schema
-		$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$request->edge);
+		$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
 		// if raw schema found
 		if(!empty($schema['raw'])){
 
 			// define schema response array
 			$payload = array(
-				'bean' 					=> $request->edge,
-				'title' 				=> getCaption('edges', $request->edge, $request->edge),
-				'icon' 					=> getCaption('icon', $request->edge, $request->edge),
+				'bean' 					=> $args['edge'],
+				'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
+				'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
 				'type' 					=> 'object',
 				'required' 				=> true,
 				'additionalProperties' 	=> false,
@@ -379,7 +374,7 @@ function api_schema ($request, $response, $service) {
 						$payload['properties'][$field] = array(
 							'type'			=> $type,
 							'format' 		=> $format,
-							'title' 		=> getCaption('fields', $request->edge, $field),
+							'title' 		=> getCaption('fields', $args['edge'], $field),
 							'required'	 	=> true,
 							'minLength' 	=> $minLength,
 							'maxLength'		=> $maxLength
@@ -422,7 +417,7 @@ function api_schema ($request, $response, $service) {
 			};
 
 			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-			if(in_array($request->edge .'_uploads', $api['edges'])){
+			if(in_array($args['edge'] .'_uploads', $api['edges'])){
 			
 				$payload['properties']['uploads_id'] = 
 					
@@ -446,7 +441,7 @@ function api_schema ($request, $response, $service) {
 			}
 
 			//output response
-			$response->json($payload);
+			$response->withJson($payload);
 		}
 
 		else{
@@ -458,14 +453,12 @@ function api_schema ($request, $response, $service) {
 	}
 };
 
-function api_read ($request, $response, $service) {
+function api_read ($request, $response, $args) {
 	global $config;
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
-	$service->validateParam('id', 'INVALID_REQUEST')->notNull();
 	
 	try {
 		// load item
-		$item = R::load( $request->edge, $request->id );
+		$item = R::load( $args['edge'], $args['id'] );
 
 		// if item retrieved
 		if(!empty($item['id'])){
@@ -497,10 +490,10 @@ function api_read ($request, $response, $service) {
 			};
 
 			//output response payload
-			$response->json($payload);
+			$response->withJson($payload);
 		}
 		else{
-			throw new Exception('Error Processing Request (ID: '.$request->id.' FROM TABLE: '.$request->edge.' NOT FOUND', 1);
+			throw new Exception('Error Processing Request (ID: '.$args['id'].' FROM TABLE: '.$args['edge'].' NOT FOUND', 1);
 		}
 		
 	} catch (Exception $e) {
@@ -508,49 +501,46 @@ function api_read ($request, $response, $service) {
 	}
 };
 
-function api_exists ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
-	$service->validateParam('id', 'INVALID_REQUEST')->notNull();
+function api_exists ($request, $response, $args) {
 
 	// check if item is retrieved from database
-	$item = R::find( $request->edge, ' id = '.$request->id );
+	$item = R::find( $args['edge'], ' id = '.$args['id'] );
 	$exists = !empty($item) ? true : false;
 
 	// build api response payload
 	$payload = array('exists' => $exists);
 	// output response payload
-	$response->json($payload);
+	$response->withJson($payload);
 };
 
-function api_soon ($request, $response) {
+function api_soon ($request, $response, $args) {
 
 	// build api response payload
 	$payload = array('message' => getMessage('COMING_SOON'));
 	// output response payload
-	$response->json($payload);
+	$response->withJson($payload);
 };
 
 /* ***************************************************************************************************
 ** POST FUNCTIONS ************************************************************************************
 *************************************************************************************************** */ 
 
-function api_create ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
-
+function api_create ($request, $response, $args) {
 	global $api;
 
 	R::begin();
 	try{
 	
 		// dispense 'edge'
-		$item = R::dispense( $request->edge );
-		$schema['raw'] = R::getAssoc('DESCRIBE ' . $request->edge);
+		$item = R::dispense( $args['edge'] );
+		$formData = $request->getParsedBody();
+		$schema['raw'] = R::getAssoc('DESCRIBE ' . $args['edge']);
 
 		// foreach $req content, build array to insert
-		foreach ($request->formData as $field => $v) {
+		foreach ($formData as $field => $v) {
 
 			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($request->edge .'_uploads', $api['edges'])){
+			if($field == 'uploads_id' && in_array($args['edge'] .'_uploads', $api['edges'])){
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $v;
 				$item->sharedUploadList[] = $upload;
@@ -583,7 +573,7 @@ function api_create ($request, $response, $service) {
 		);
 		
 		//output response
-		$response->json($payload);
+		$response->withJson($payload);
 	}
 	catch(Exception $e) {
 		R::rollback();
@@ -591,20 +581,19 @@ function api_create ($request, $response, $service) {
 	}
 };
 
-function api_update ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
-
+function api_update ($request, $response, $args) {
 	global $api;
 
 	R::begin();
 	try {
 		// dispense 'edge'
-		$id = $request->id;
-		$item = R::load( $request->edge, $id );
-		$schema['raw'] = R::getAssoc('DESCRIBE '.$request->edge);
+		$id = $args['id'];
+		$item = R::load( $args['edge'], $id );
+		$formData = $request->getParsedBody();
+		$schema['raw'] = R::getAssoc('DESCRIBE '.$args['edge']);
 
 		// foreach $req content, build array to update
-		foreach ($request->formData as $field => $v) {
+		foreach ($formData as $field => $v) {
 			
 			// IF field defines uploads many-to-many relationship
 			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
@@ -636,7 +625,7 @@ function api_update ($request, $response, $service) {
 		);
 
 		//output response
-		$response->json($payload);
+		$response->withJson($payload);
 		
 	} catch (Exception $e) {
 		R::rollback();
@@ -644,21 +633,21 @@ function api_update ($request, $response, $service) {
 	}
 };
 
-function api_updatePassword ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+function api_updatePassword ($request, $response, $args) {
 
 	global $config;
 
-	$item = R::load( 'user', $request->id );
+	$item = R::load( 'user', $args['id'] );
+	$formData = $request->getParsedBody();
 
-	if( $item['password'] == md5($request->formData['password']) ){
+	if( $item['password'] == md5($formData['password']) ){
 		
-		if ($request->formData['new_password'] == $request->formData['confirm_new_password']) {
+		if ($formData['new_password'] == $formData['confirm_new_password']) {
 
-			$item['password'] = md5($request->formData['new_password']);
+			$item['password'] = md5($formData['new_password']);
 			$item['modified'] = R::isoDateTime();
 			R::store( $item );
-			$payload['message'] = 'Atualizado com Sucesso. (id: '.$request->id.')';
+			$payload['message'] = 'Atualizado com Sucesso. (id: '.$args['id'].')';
 
 		} else{
 			$payload['message'] = 'deu ruim. confirmação não bate';
@@ -671,17 +660,17 @@ function api_updatePassword ($request, $response, $service) {
 	}
 
 	//output response
-	$response->json($payload);
+	$response->withJson($payload);
 };
 
-function api_destroy ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+function api_destroy ($request, $response, $args) {
 
 	R::begin();
 	try {
 		// dispense 'edge'
-		$id = $request->id;
-		$item = R::load( $request->edge, $id );
+		$id = $args['id'];
+		$item = R::load( $args['edge'], $id );
+		$formData = $request->getParsedBody();
 
 		// destroy item, commit if success
 	    R::trash($item);
@@ -694,7 +683,7 @@ function api_destroy ($request, $response, $service) {
 		);
 
 		// output response
-		$response->json($payload);
+		$response->withJson($payload);
 
 	} catch (Exception $e) {
 		R::rollback();
@@ -702,34 +691,36 @@ function api_destroy ($request, $response, $service) {
 	}
 };
 
-function api_upload ($request, $response, $service) {
-	$service->validateParam('edge', 'EDGE_NOTFOUND')->isEdge();
+function api_upload ($request, $response, $args) {
 
 	global $config;
 
 	R::begin();
 	try{
 
+		// get parsedbody
+		$formData = $request->getParsedBody();
+
 		// validate content from $req
 			// if blob was sent
-			if (!empty($request->formData['blob'])) {
-				$blob = $request->formData['blob'];
+			if (!empty($formData['blob'])) {
+				$blob = $formData['blob'];
 			} 
 			else{
 				throw new Exception("Error Processing Request (blob not found at request)", 1);
 			}
 
 			// if filesize was sent
-			if (!empty($request->formData['filesize'])) {
-				$filesize = $request->formData['filesize'];
+			if (!empty($formData['filesize'])) {
+				$filesize = $formData['filesize'];
 			} 
 			else{
 				throw new Exception("Error Processing Request (filesize not found at request)", 1);
 			}
 
 			// if filename was sent
-			if (!empty($request->formData['filename'])) {
-				$filename = $request->formData['filename'];
+			if (!empty($formData['filename'])) {
+				$filename = $formData['filename'];
 			} 
 			else{
 				throw new Exception("Error Processing Request (filename not found at request)", 1);
@@ -766,7 +757,7 @@ function api_upload ($request, $response, $service) {
 				'filename' 	=> $hashname,
 				'type' 		=> $type,
 				'size' 		=> $filesize,
-				'edge' 		=> $request->edge,
+				'edge' 		=> $args['edge'],
 				'created' 	=> R::isoDateTime(),
 				'modified' 	=> R::isoDateTime(),
 			);
@@ -789,7 +780,7 @@ function api_upload ($request, $response, $service) {
 			);
 
 		//output response
-			$response->json($payload);
+			$response->withJson($payload);
 	}
 	catch(Exception $e) {
 		R::rollback();
