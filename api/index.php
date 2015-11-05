@@ -62,17 +62,16 @@ $app->group('/private', function () use ($api){
 // $response->getBody()->write('BEFORE');
     $response = $next($request, $response);
 //	$response->getBody()->write('AFTER');
-
     return $response;
 });
 
-$app->group('/public', function () {
+$app->group('/public', function () use ($api){
 
 	$this->get('/', 'api_soon');
 
 });
 
-$app->group('/auth', function () {
+$app->group('/auth', function () use ($api){
 
 	$this->post('', 'auth_signin');
 
