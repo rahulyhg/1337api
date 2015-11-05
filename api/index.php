@@ -58,6 +58,12 @@ $app->group('/private', function () use ($api){
 	$this->post('/destroy/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
 	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 				'api_upload');
 
+})->add(function ($request, $response, $next) {
+// $response->getBody()->write('BEFORE');
+    $response = $next($request, $response);
+//	$response->getBody()->write('AFTER');
+
+    return $response;
 });
 
 $app->group('/public', function () {
