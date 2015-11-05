@@ -10,8 +10,8 @@ require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
 require __DIR__ . '/helpers/shared.php';
 
-// KLEIN ROUTER SETUP
-$router = new \Klein\Klein();
+// SLIM ROUTER SETUP
+$app = new \Slim\App;
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
@@ -27,6 +27,7 @@ if(R::testConnection() == FALSE){
 // INSPECT TABLES
 $api = array();
 $api['edges'] = R::inspect();
+$api['edgesRegex'] = implode('|', $api['edges']);
 
 // REDBEAN ORM DEBUG MODE ON
 if($config['api']['debug']){
@@ -34,91 +35,52 @@ if($config['api']['debug']){
 };
 
 /* ***************************************************************************************************
-** KLEIN ROUTER - PRIVATE ROUTES *********************************************************************
+** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
 
-$router->respond(function ($request, $response, $service, $app) use ($router) {
+$app->group('/private', function () use ($api){
 
-// if angular style, like this. If jquery style TODO formdata
-// 	print_r($request->paramsPost());
+	// PRIVATE ROUTES
+	$this->get('/hi', 													'api_hi'	);
+	$this->get('/edges', 												'api_edges'	); 
 
-	$request->formData = array();
-	$decoded = json_decode($request->body(), true);
-	
-	if(!empty($decoded)){
-		$request->formData = $decoded;
-	}
+	$this->get('/list/{edge}[/{page:[0-9]+}]', 							'api_list'	); 
+	$this->get('/count/{edge:'.$api['edgesRegex'].'}', 					'api_count'	);
+	$this->get('/export/{edge:'.$api['edgesRegex'].'}', 				'api_export'); 
+	$this->get('/schema/{edge:'.$api['edgesRegex'].'}', 				'api_schema');
 
-	$service->addValidator('edge', function ($str) {
-		global $api;
-		if (in_array($str, $api['edges'])) {
-			return true;
-		}
-		else{
-			header('HTTP/1.0 404 Not Found');
-			return false;
-		}
-	});
+	$this->get('/read/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
+	$this->get('/exists/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_exists'); 
 
-	$router->onError(function ($router, $err_msg, $request, $response) {
+	$this->post('/create/{edge:'.$api['edgesRegex'].'}', 				'api_create');
+	$this->post('/update/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_update');
+	$this->post('/updatePassword/user/{id:[0-9]+}', 					'api_updatePassword'); 
+	$this->post('/destroy/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
+	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 				'api_upload');
 
-		$err = array(
-			'error' => true, 
-			'message' => getMessage($err_msg)
-		);
-		echo json_encode($err);
+})->add(function ($request, $response, $next) {
+// $response->getBody()->write('BEFORE');
+    $response = $next($request, $response);
+//	$response->getBody()->write('AFTER');
+    return $response;
+});
 
-    });
+$app->group('/public', function () use ($api){
 
-    $router->onHttpError(function ($code, $request, $response, $router) {
-		header('HTTP/1.0 400 Bad Request');
-		$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
-		echo json_encode($err);
-    });
+	$this->get('/', 'api_soon');
 
 });
 
-$router->with('/api/private', function () use ($router) {
+$app->group('/auth', function () use ($api){
 
-	// VALIDATE AUTH
-	$router->respond(function ($request, $response, $service) { 
-		$service->validate('teste', 'teste')->isLen(4,16); 
-	});
-
-	// ROUTES
-	$router->respond('GET', '/hi', 'api_hi');
-	$router->respond('GET', '/edges', 'api_edges'); 
-
-	$router->respond('GET', '/list/[a:edge]/[i:page]?', 'api_list'); 
-	$router->respond('GET', '/count/[a:edge]', 'api_count');
-	$router->respond('GET', '/export/[a:edge]', 'api_export'); 
-	$router->respond('GET', '/schema/[a:edge]', 'api_schema');
-
-	$router->respond('GET', '/read/[a:edge]/[i:id]', 'api_read');
-	$router->respond('GET', '/exists/[a:edge]/[i:id]', 'api_exists'); 
-
-	$router->respond('POST', '/create/[a:edge]', 'api_create');
-	$router->respond('POST', '/update/[a:edge]/[i:id]', 'api_update');
-	$router->respond('POST', '/updatePassword/user/[i:id]', 'api_updatePassword'); 
-	$router->respond('POST', '/destroy/[a:edge]/[i:id]', 'api_destroy'); 
-	$router->respond('POST', '/upload/[a:edge]', 'api_upload');
-
-	// $klein->respond('POST', '/posts', $callback);
-	// $klein->respond('PUT', '/posts/[i:id]', $callback);
-	// $klein->respond('DELETE', '/posts/[i:id]', $callback);
-	// $klein->respond('OPTIONS', null, $callback);
+	$this->post('', 'auth_signin');
 
 });
 
-$router->with('/api/public', function () use ($router) {
-	$router->respond('GET', '/', 'api_soon');
-});
-
-$router->with('/api/auth', function () use ($router) {
-	$router->respond('POST', '', 'auth_signin'); 
-});
-
-$router->dispatch();
+/* ***************************************************************************************************
+** SLIM RUN! *****************************************************************************************
+*************************************************************************************************** */ 
+$app->run();
 
 /* ***************************************************************************************************
 ** API OUTPUT FUNCTIONS ******************************************************************************

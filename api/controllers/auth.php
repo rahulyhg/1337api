@@ -5,13 +5,11 @@ use \Firebase\JWT\JWT;
 ** AUTH FUNCTIONS ************************************************************************************
 *************************************************************************************************** */ 
 
-function auth_signin ($request, $response, $service) {
+function auth_signin ($request, $response, $args) {
 	global $config;
 
 	// FORM DATA
-	$formData = $request->formData;
-	$service->validate($formData['email'], 'ERRO: email deve ser informado.')->notNull()->isEmail();
-	$service->validate($formData['password'], 'ERRO: password deve ser informado.')->notNull();
+	$formData = $request->getParsedBody();
 
 	// VALIDATE CREDENTIALS
 	$userCredentials = array(
@@ -58,7 +56,7 @@ function auth_signin ($request, $response, $service) {
 
 		// OUTPUT
  		$data['token'] = $jwt;
-		$response->json($data);
+		$response->withJson($data);
 	}
 
 	// IF USER DOES NOT EXIST

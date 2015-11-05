@@ -17,7 +17,7 @@
 			"firebase/php-jwt": "~3.0",
 			"sinergi/dictionary": "*",
 	        "goodby/csv": "*",
-		"klein/klein": "^2.1"
+		"slim/slim": "^3.0@RC"
     	},
 	
 	"autoload": {
