@@ -67,10 +67,12 @@ $app->group('/private', function () use ($api){
 
 	$this->post('/{edge:'.$api['edgesRegex'].'}', 						'api_create');
 	$this->post('/updatePassword/user/{id:[0-9]+}', 					'api_updatePassword'); 
-	$this->post('/destroy/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
 	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 				'api_upload');
 
 	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 			'api_update');
+
+	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 			'api_destroy'); 
+
 })->add('isAuth');
 
 $app->group('/public', function () use ($api){

@@ -141,11 +141,13 @@ AdminApp.controller('ListController',
 				 closeOnConfirm: false 
 				}, 
 				function(){
-					$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
+					$http.delete(config.API_BASE_URL + '/' + $routeParams.edge + '/' + id).then(function(response) {
 						swal("Sucesso", response.data.message, "success"); 
 					});
+					// TODO: list is not updating after delete. Check it.
 					delete $scope.items[id];
-				});
+				}
+			);
 		};
 
 	}]
@@ -296,7 +298,7 @@ AdminApp.controller('FormController',
 				 closeOnConfirm: false 
 				}, 
 				function(){
-					$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
+					$http.delete(config.API_BASE_URL + '/' + $routeParams.edge + '/' + id).then(function(response) {
 						$location.path('/list/' + edge);
 						$log.debug(response.data.message);
 						swal("Sucesso", response.data.message, "success"); 
