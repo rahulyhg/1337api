@@ -255,11 +255,6 @@ AdminApp.factory('apiInterceptor',
 			},
 			'responseError': function(res) {
 
-				if (res.status === 400 || res.status === 405) {
-					$log.error(res.data.message);
-					swal("ERRO", res.data.message, "error");
-				}
-
 				if (res.status === 401 || res.status === 403) {
 					$log.error(res.data.message);
 					
@@ -270,6 +265,19 @@ AdminApp.factory('apiInterceptor',
 						window.location.href = window.location.pathname;
 					}
 				}
+				else {
+
+					if(res.data.message){
+						$log.error(res.data.message);
+						swal("ERRO", res.data.message, "error");						
+					}
+					else {
+						swal("ERRO", "Não foi possível processar sua requisição.", "error");						
+						$log.error('Não foi possível processar sua requisição.');
+					}
+
+				}
+
 				return $q.reject(res);
 			}
 		};
