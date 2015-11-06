@@ -207,7 +207,7 @@ AdminApp.factory('apiService',
 				var edge = $route.current.params.edge;
 				var id = $route.current.params.id;
 
-				read = $http.get(config.API_BASE_URL + '/read/' + edge + '/' + id).then(function(response) {
+				read = $http.get(config.API_BASE_URL + '/' + edge + '/' + id).then(function(response) {
 					deferred.resolve(response.data);
 				});
 

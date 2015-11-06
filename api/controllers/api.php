@@ -456,8 +456,8 @@ function api_read ($request, $response, $args) {
 		// output response payload
 		$response->withJson($payload);
 	}
-	else{
-		throw new Exception('Error Processing Request (ID "'.$args['id'].'" FROM TABLE "'.$args['edge'].'" NOT FOUND)', 1);
+	else {
+		return $response->withStatus(404);
 	}
 };
 
