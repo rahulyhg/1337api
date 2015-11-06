@@ -63,7 +63,7 @@ $app->group('/private', function () use ($api){
 	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 				'api_export'); 
 
 	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 			'api_read'	);
-	$this->get('/exists/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_exists'); 
+	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 	'api_exists'); 
 
 	$this->post('/create/{edge:'.$api['edgesRegex'].'}', 				'api_create');
 	$this->post('/update/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_update');

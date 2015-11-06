@@ -129,7 +129,7 @@ AdminApp.factory('apiService',
 
 						// validate if id param is required
 						if (id !== undefined) {
-							idCheck = $http.get(config.API_BASE_URL + '/exists/' + edge + '/' + id).then(function(response) {
+							idCheck = $http.get(config.API_BASE_URL + '/' + edge + '/' + id + '/exists').then(function(response) {
 
 								// validate if ID exist in database
 								if (response.data.exists === true) {
