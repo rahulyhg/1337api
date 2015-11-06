@@ -267,7 +267,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 			var deferred = $q.defer();
 
-			var update = $http.post(config.API_BASE_URL + '/update/' + edge + '/' + id, item).then(function(res) {
+			var update = $http.put(config.API_BASE_URL + '/' + edge + '/' + id, item).then(function(res) {
 				$location.path('/list/' + edge);
 				deferred.resolve(res.data);
 			});
