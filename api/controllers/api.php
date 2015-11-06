@@ -542,7 +542,7 @@ function api_create ($request, $response, $args) {
 		);
 		
 		//output response
-		$response->withJson($payload);
+		return $response->withJson($payload)->withStatus(201);
 	}
 	catch(Exception $e) {
 		R::rollback();

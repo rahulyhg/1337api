@@ -256,7 +256,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 			var deferred = $q.defer();
 
-			var create = $http.post(config.API_BASE_URL + '/create/' + edge, item).then(function(res) {
+			var create = $http.post(config.API_BASE_URL + '/' + edge, item).then(function(res) {
 				$location.path('/list/' + edge);
 				deferred.resolve(res.data);
 			});
