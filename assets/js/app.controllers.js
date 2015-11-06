@@ -119,7 +119,7 @@ AdminApp.controller('ListController',
 		$scope.onExport = function() {
 			var deferred = $q.defer();
 
-			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge)
+			var onExport = $http.get(config.API_BASE_URL + '/' + $routeParams.edge + '/export')
 				.then(function(res) {
 					var file = new Blob([res.data], { type: 'application/csv' });
 					var expTimestamp = Date.now();

@@ -60,8 +60,7 @@ $app->group('/private', function () use ($api){
 	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 				'api_list'	); 
 	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 					'api_count'	);
 	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 				'api_schema');
-
-	$this->get('/export/{edge:'.$api['edgesRegex'].'}', 				'api_export'); 
+	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 				'api_export'); 
 
 	$this->get('/read/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
 	$this->get('/exists/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_exists'); 
