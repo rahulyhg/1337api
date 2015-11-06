@@ -1,6 +1,6 @@
 <?php
-//error_reporting(-1);
-//ini_set('display_errors', 'On');
+error_reporting(-1);
+ini_set('display_errors', 'On');
 
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
@@ -13,6 +13,7 @@ require __DIR__ . '/helpers/shared.php';
 
 // SLIM ROUTER SETUP
 $app = new \Slim\App;
+require __DIR__ . '/dependencies.php';
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
