@@ -184,7 +184,7 @@ AdminApp.factory('apiService',
 				var edge = $route.current.params.edge;
 				var page = $route.current.params.page;
 
-				list = $http.get(config.API_BASE_URL + '/list/' + edge + '/' + page).then(function(response) {
+				list = $http.get(config.API_BASE_URL + '/' + edge + '?page=' + page).then(function(response) {
 					deferred.resolve(response.data);
 				});
 

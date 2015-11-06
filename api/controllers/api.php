@@ -173,12 +173,19 @@ function api_edges ($request, $response, $args) {
 
 function api_list ($request, $response, $args) {
 	global $config;
+	$args['query'] = $request->getQueryParams();
 
 	// check if request is paginated or ALL
-	if( !empty($args['page']) ){
-		// param page exists, let's get this page 
-		$limit = $config['api']['params']['pagination'];
-		$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['page']-1)*$limit).', '.$limit);
+	if( !empty($args['query']['page']) ){
+		if ( is_numeric($args['query']['page']) ) {
+			// param page exists, let's get this page 
+			$limit = $config['api']['params']['pagination'];
+			$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
+		}
+		else {
+			$errorMessage = getMessage('INVALID_REQUEST');
+			throw new Exception($errorMessage, 1);
+		}
 	} 
 	else {
 		// param page doesn't exist, let's get all
@@ -220,8 +227,6 @@ function api_count ($request, $response, $args) {
 	// output response payload
 	$response->withJson($payload);
 };
-
-
 
 function api_export ($request, $response, $args) {
 
