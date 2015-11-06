@@ -457,7 +457,8 @@ function api_read ($request, $response, $args) {
 		$response->withJson($payload);
 	}
 	else {
-		return $response->withStatus(404);
+		$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+		return $response->withJson($err)->withStatus(404);
 	}
 };
 

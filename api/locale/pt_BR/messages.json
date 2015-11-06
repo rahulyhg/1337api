@@ -13,6 +13,7 @@
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
 	"LIST_FAIL": "Erro na listagem dos registros.",
+	"NOT_FOUND": "Não encontrado (404).",
 	"READ_FAIL": "Erro na leitura do registro.",
 	"SCHEMA_FAIL": "Não foi possível processar sua requisição. (schema inválido)",
 	"UPDATE_FAIL": "Erro na atualização do registro.",
