@@ -249,22 +249,30 @@ function api_export ($request, $response, $args) {
 
 	// collect data
 	$raw = R::findAll( $args['edge'] );
-	$data = R::exportAll( $raw, FALSE, array('NULL') );
 
-	// inject field keys to data as csv export table heading
-	$keys = array_keys($data[0]);
-	array_unshift($data, $keys);
+	if ( !empty($raw) ) {
 
-	// define outstream
-	$hashdate = str_replace(array(':','-',' '), '', R::isoDateTime());
-	$filename = 'export-'.$args['edge'].'-'.$hashdate.'.csv';
+		// export it all
+		$data = R::exportAll( $raw, FALSE, array('NULL') );
 
-	//outstream response
-	header('Content-Type: text/csv');
-	header('Content-Disposition: attachment; filename='. $filename);
+		// inject field keys to data as csv export table heading
+		$keys = array_keys($data[0]);
+		array_unshift($data, $keys);
 
-	// TODO: how to export big tables? memory runs out.
-	$outstream = $exporter->export('php://output', $data);
+		// define outstream
+		$hashdate = str_replace(array(':','-',' '), '', R::isoDateTime());
+		$filename = 'export-'.$args['edge'].'-'.$hashdate.'.csv';
+
+		//outstream response
+		header('Content-Type: text/csv');
+		header('Content-Disposition: attachment; filename='. $filename);
+
+		// TODO: how to export big tables? memory runs out.
+		$outstream = $exporter->export('php://output', $data);
+	}
+	else {
+		throw new Exception("Error Processing Request (edge raw data not found)", 1);
+	}
 };
 
 function api_schema ($request, $response, $args) {
@@ -447,7 +455,7 @@ function api_read ($request, $response, $args) {
 						}
 					}
 					else{
-						throw new Exception('Error Processing Request (ID: "'.$value.'" FROM TABLE: "'.$parentEdge.'" NOT FOUND)', 1);
+						throw new Exception('Error Processing Request (Parent Relationship Broken with Parent ID: "'.$value.'" FROM PARENT TABLE: "'.$parentEdge.'" NOT FOUND)', 1);
 					}
 				}
 			}

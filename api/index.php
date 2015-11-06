@@ -40,9 +40,9 @@ if($config['api']['debug']){
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
 
+// PRIVATE ROUTES - REQUIRE AUTH
 $app->group('/private', function () use ($api){
 
-	// PRIVATE ROUTES
 	$this->get('/hi', 												'api_hi'	);
 	$this->get('/edges', 											'api_edges'	); 
 
@@ -64,12 +64,14 @@ $app->group('/private', function () use ($api){
 
 })->add('auth_check');
 
+// PUBLIC ROUTES
 $app->group('/public', function () use ($api){
 
 	$this->get('/', 'api_soon');
 
 });
 
+// AUTH ROUTES
 $app->group('/auth', function () use ($api){
 
 	$this->post('', 'auth_signin');
