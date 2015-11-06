@@ -172,7 +172,7 @@ AdminApp.factory('apiService',
 				var deferred = $q.defer();
 				var edge = $route.current.params.edge;
 
-				schema = $http.get(config.API_BASE_URL + '/schema/' + edge,{cache: true}).then(function(response) {
+				schema = $http.get(config.API_BASE_URL + '/' + edge + '/schema',{cache: true}).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
