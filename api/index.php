@@ -54,24 +54,24 @@ function isAuth ($request, $response, $next) {
 $app->group('/private', function () use ($api){
 
 	// PRIVATE ROUTES
-	$this->get('/hi', 													'api_hi'	);
-	$this->get('/edges', 												'api_edges'	); 
+	$this->get('/hi', 												'api_hi'	);
+	$this->get('/edges', 											'api_edges'	); 
 
-	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 				'api_list'	); 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 					'api_count'	);
-	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 				'api_schema');
-	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 				'api_export'); 
+	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 			'api_list'	); 
+	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 				'api_count'	);
+	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 			'api_schema');
+	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 			'api_export'); 
 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 			'api_read'	);
-	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 	'api_exists'); 
+	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
+	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 'api_exists'); 
 
-	$this->post('/{edge:'.$api['edgesRegex'].'}', 						'api_create');
-	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 				'api_upload');
+	$this->post('/{edge:'.$api['edgesRegex'].'}', 					'api_create');
+	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 			'api_upload');
 
-	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 			'api_update');
+	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_update');
 	$this->patch('/user/{id:[0-9]+}/password', 						'api_updatePassword'); 
 
-	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 			'api_destroy'); 
+	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
 
 })->add('isAuth');
 
