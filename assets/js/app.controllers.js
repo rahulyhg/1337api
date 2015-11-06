@@ -280,7 +280,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 			var id = $scope.$parent.user.id;
 
-			$http.post(config.API_BASE_URL + '/updatePassword/user/' + id, item).success(function() {
+			$http.patch(config.API_BASE_URL + '/user/' + id + '/password', item).success(function() {
 				//TODO: define what to do after updatePassword success. Should user be logged out?
 				//$location.path('/list/'+edge);
 			});
