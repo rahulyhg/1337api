@@ -79,7 +79,7 @@ function api_hi ($request, $response, $args) {
 		);
 		
 		// output response payload
-		$response->withJson($payload);
+		return $response->withJson($payload);
 	} 
 	else {
 		$errorMessage = 'Arquivo de mensagens não encontrado.';
@@ -168,7 +168,7 @@ function api_edges ($request, $response, $args) {
 	);
 
 	// output response playload
-	$response->withJson($payload);
+	return $response->withJson($payload);
 };
 
 function api_list ($request, $response, $args) {
@@ -207,7 +207,7 @@ function api_list ($request, $response, $args) {
 	}
 
 	// output response
-	$response->withJson($payload);
+	return $response->withJson($payload);
 };
 
 function api_count ($request, $response, $args) {
@@ -225,7 +225,7 @@ function api_count ($request, $response, $args) {
 	);
 
 	// output response payload
-	$response->withJson($payload);
+	return $response->withJson($payload);
 };
 
 function api_export ($request, $response, $args) {
@@ -410,7 +410,7 @@ function api_schema ($request, $response, $args) {
 		}
 
 		// output response payload
-		$response->withJson($payload);
+		return $response->withJson($payload);
 	}
 	else {
 		throw new Exception("Error Processing Request (edge raw schema not found)", 1);
@@ -454,7 +454,7 @@ function api_read ($request, $response, $args) {
 		}
 
 		// output response payload
-		$response->withJson($payload);
+		return $response->withJson($payload);
 	}
 	else {
 		$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
@@ -476,7 +476,7 @@ function api_exists ($request, $response, $args) {
 	);
 	
 	// output response payload
-	$response->withJson($payload);
+	return $response->withJson($payload);
 };
 
 function api_soon ($request, $response, $args) {
@@ -487,7 +487,7 @@ function api_soon ($request, $response, $args) {
 	);
 
 	// output response payload
-	$response->withJson($payload);
+	return $response->withJson($payload);
 };
 
 /* ***************************************************************************************************
@@ -594,7 +594,7 @@ function api_update ($request, $response, $args) {
 		);
 
 		//output response
-		$response->withJson($payload);
+		return $response->withJson($payload);
 		
 	} catch (Exception $e) {
 		R::rollback();
@@ -629,7 +629,7 @@ function api_updatePassword ($request, $response, $args) {
 	}
 
 	//output response
-	$response->withJson($payload);
+	return $response->withJson($payload);
 };
 
 function api_destroy ($request, $response, $args) {
@@ -652,7 +652,7 @@ function api_destroy ($request, $response, $args) {
 		);
 
 		// output response
-		$response->withJson($payload);
+		return $response->withJson($payload);
 
 	} catch (Exception $e) {
 		R::rollback();
@@ -749,7 +749,7 @@ function api_upload ($request, $response, $args) {
 			);
 
 		//output response
-			$response->withJson($payload);
+			return $response->withJson($payload);
 	}
 	catch(Exception $e) {
 		R::rollback();
