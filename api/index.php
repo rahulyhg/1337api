@@ -39,18 +39,6 @@ if($config['api']['debug']){
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
 
-function isAuth ($request, $response, $next) {
-	$auth = true;
-
-	if($auth){
-		$response = $next($request, $response);
-	}
-	else{
-		$response->withJson('not authenticated');
-	}
-    return $response;
-}
-
 $app->group('/private', function () use ($api){
 
 	// PRIVATE ROUTES
@@ -73,7 +61,7 @@ $app->group('/private', function () use ($api){
 
 	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
 
-})->add('isAuth');
+})->add('auth_check');
 
 $app->group('/public', function () use ($api){
 

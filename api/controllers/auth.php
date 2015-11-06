@@ -66,4 +66,16 @@ function auth_signin ($request, $response, $args) {
 
 };
 
+function auth_check ($request, $response, $next) {
+	$auth = true;
+
+	if($auth){
+		return $response = $next($request, $response);
+	}
+	else{
+		return $response->withJson(array('error' => 'true', 'message' => 'not authenticated'))->withStatus(403);
+	}
+    return $response;
+}
+
 ?>
