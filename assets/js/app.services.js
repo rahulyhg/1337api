@@ -195,7 +195,7 @@ AdminApp.factory('apiService',
 				var deferred = $q.defer();
 				var edge = $route.current.params.edge;
 
-				count = $http.get(config.API_BASE_URL + '/count/' + edge).then(function(response) {
+				count = $http.get(config.API_BASE_URL + '/' + edge + '/count' ).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
