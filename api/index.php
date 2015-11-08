@@ -18,7 +18,7 @@ require __DIR__ . '/dependencies.php';
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 R::setAutoResolve( TRUE );
-R::freeze( FALSE );
+R::freeze( TRUE );
 
 // TEST DB CONNECTION
 if(R::testConnection() == FALSE){

@@ -18,6 +18,7 @@
 	"READ_FAIL": "Erro na leitura do registro.",
 	"SCHEMA_FAIL": "Não foi possível processar sua requisição. (schema inválido)",
 	"UPDATE_FAIL": "Erro na atualização do registro.",
+	"UNIQUE_FAIL": "Erro na gravação do registro (Campo UNIQUE com nome repetido)",
 	"UPDATE_SUCCESS": "Atualizado com sucesso.",
 	"UPLOAD_FAIL": "Erro no upload do arquivo.",
 	"UPLOAD_SUCCESS": "Upload realizado com sucesso."	

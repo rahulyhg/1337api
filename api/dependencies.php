@@ -11,12 +11,16 @@ $c = $app->getContainer();
 $c['errorHandler'] = function ($c) {
 	return function ($request, $response, $exception) use ($c) {
 		global $config;
-		
+
 		$err = array(
 			'error' => true, 
 			'code' => 500,
 			'message' => $exception->getMessage()
 		);
+
+		if ( strpos($exception->getMessage(), '1062 Duplicate entry') ) {
+			$err['message'] = getMessage('UNIQUE_FAIL');
+		}
 	
 		if ( $config['api']['debug'] ) {
 			$err['debug'] = array(
