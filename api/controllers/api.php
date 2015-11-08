@@ -562,6 +562,7 @@ function api_create ($request, $response, $args) {
 
 		// if item was insert with success
 		if( $id ) {
+
 			// commit transaction
 			R::commit();
 
@@ -591,53 +592,78 @@ function api_create ($request, $response, $args) {
 function api_update ($request, $response, $args) {
 	global $api;
 
+	// get data from 'body' request payload
+	$data = $request->getParsedBody();
+
+	if ( empty($data) ) {
+		$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+		return $response->withJson($err)->withStatus(400);
+	}
+
+	// get raw data model from redbean describe
+	$schema['raw'] = R::getAssoc('DESCRIBE ' . $args['edge']);
+
+	if ( empty($schema['raw']) ) {
+		throw new Exception("Error Processing Request (edge raw schema not found)", 1);
+	}
+
+	// dispense 'edge'
+	$item = R::load( $args['edge'], $args['id'] );
+
+	// foreach $req content, build array to insert
+	foreach ($data as $field => $value) {
+
+		// IF field is an id, throw exception
+		if ( $field == 'id' && $value != $args['id'] ) {
+			throw new Exception("Error Processing Request (field `id` does not match with request)", 1);
+		}
+
+		// IF field defines uploads many-to-many relationship
+		else if ( $field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges']) ) {
+			$upload = R::dispense( 'uploads' );
+			$upload->id = $value;
+			$item->sharedUploadList[] = $upload;
+		}
+
+		// IF field is a password, hash it up
+		else if ( $field == 'password' ){
+			$item[$field] = md5($value);
+
+		}
+
+		// ELSE field is literal, go on
+		else {
+			$item[$field] = $value;			
+		}
+	}
+
+	// inject modified current time to array to update
+	$item['modified'] = R::isoDateTime();
+
+	// let's start the update transaction
 	R::begin();
 	try {
-		// dispense 'edge'
-		$id = $args['id'];
-		$item = R::load( $args['edge'], $id );
-		$formData = $request->getParsedBody();
-		$schema['raw'] = R::getAssoc('DESCRIBE '.$args['edge']);
 
-		// foreach $req content, build array to update
-		foreach ($formData as $field => $v) {
-			
-			// IF field defines uploads many-to-many relationship
-			if($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $api['edges'])){
-				$upload = R::dispense( 'uploads' );
-				$upload->id = $v;
-				$item->sharedUploadList[] = $upload;
-			}
-			// IF field is a password, hash it up
-			else if ($field == 'password'){
-				$item[$field] = md5($v);
-			}
-			else{
-				$item[$field] = $v;			
-			};
-
-		};
-
-		// inject modified current time to array to update
-		$item['modified'] = R::isoDateTime();
-
-		// update item, commit if success
-		R::store( $item );
+		// update item, returns id if success
+		R::store($item);
+		// commit transaction
 		R::commit();
 
 		// build api response array
 		$payload = array(
-			'id' 		=> $id,
-			'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$id.')',
+			'id' 		=> $args['id'],
+			'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
 		);
 
 		//output response
 		return $response->withJson($payload);
-		
-	} catch (Exception $e) {
-		R::rollback();
-		api_error($response, 'UPDATE_FAIL', $e->getMessage());
 	}
+	catch(Exception $e) {
+		// rollback transaction
+		R::rollback();
+
+		throw $e;
+	}		
 };
 
 function api_updatePassword ($request, $response, $args) {
