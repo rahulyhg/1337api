@@ -1,5 +1,6 @@
 {
 	"AUTH_USERPASS_FAIL": "Login ou senha incorreta, tente novamente.",
+	"AUTH_PASS_FAIL": "Senha incorreta, tente novamente.",
 	"CREATE_FAIL": "Erro na gravação do registro.",
 	"CREATE_SUCCESS": "Criado com sucesso.",
 	"COMING_SOON": "elijah says: still in development.",
@@ -15,6 +16,7 @@
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
 	"LIST_FAIL": "Erro na listagem dos registros.",
 	"NOT_FOUND": "Não encontrado (404).",
+	"PASSWORD_CONFIRM_FAIL": "A nova senha não confere. (Verifique o campo Confirme Nova Senha).",
 	"READ_FAIL": "Erro na leitura do registro.",
 	"SCHEMA_FAIL": "Não foi possível processar sua requisição. (schema inválido)",
 	"UPDATE_FAIL": "Erro na atualização do registro.",
