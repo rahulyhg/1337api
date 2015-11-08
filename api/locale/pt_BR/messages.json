@@ -8,6 +8,7 @@
 	"DATA_MISSING": "Não foi possível processar sua requisição (form data missing).",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
 	"DESTROY_FAIL": "Erro na exclusão do registro.",
+	"DESTROY_FAIL_CHILD_EXISTS": "Erro na exclusão do registro. (Existem registros vinculados)",
 	"DESTROY_SUCCESS": "Excluído com sucesso.",
 	"EXPORT_FAIL": "Não foi possível exportar os registros.",
 	"EDGE_NOTFOUND": "Não encontrado. (edge inválido).",
