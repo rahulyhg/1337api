@@ -747,7 +747,6 @@ function api_destroy ($request, $response, $args) {
 	}
 
 	// no relationship? let's go on:
-
 	// dispense 'edge'
 	$item = R::load( $args['edge'], $args['id'] );
 
@@ -778,102 +777,107 @@ function api_destroy ($request, $response, $args) {
 };
 
 function api_upload ($request, $response, $args) {
-
 	global $config;
 
+	// get data from 'body' request payload
+	$data = $request->getParsedBody();
+
+	// check if data was sent
+	if ( empty($data) ) {
+			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+			return $response->withJson($err)->withStatus(400);			
+	}
+	elseif ( empty($data['blob']) ) {
+		$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_BLOB_MISSING'));
+		return $response->withJson($err)->withStatus(400);
+	}
+	elseif ( empty($data['filesize']) ) {
+		$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILESIZE_MISSING'));
+		return $response->withJson($err)->withStatus(400);
+	}
+	elseif ( empty($data['filename']) ) {
+		$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILENAME_MISSING'));
+		return $response->withJson($err)->withStatus(400);
+	}
+
+	// explode $data['blob']
+		// TODO: this procedure can be done in one line if I use regex. verify correct expression.
+		list($type, $data['blob']) = explode(';', $data['blob']);
+		list(,$type) = explode(':', $type);
+		list(,$data['blob']) = explode(',', $data['blob']);
+
+		// decode blob data
+		$content = base64_decode($data['blob']);
+
+	// define path and new filename
+		$dateTime 	= R::isoDateTime();
+		$date 		= R::isoDate();
+		$basepath 	= $config['api']['uploads']['basepath'];
+		$datepath 	= str_replace('-', '/', $date) . '/';
+		$fullpath 	= $basepath . $datepath;
+		$hashname 	= md5($data['filename'].'-'.$dateTime) . '.' . end(explode('.', $data['filename']));
+
+	// build insert upload array
+	$upload = array(
+		'path' 		=> $datepath . $hashname,
+		'filename' 	=> $hashname,
+		'type' 		=> $type,
+		'size' 		=> $data['filesize'],
+		'edge' 		=> $args['edge'],
+		'created' 	=> R::isoDateTime(),
+		'modified' 	=> R::isoDateTime(),
+	);
+
+	// write file
+		// TODO: we should validate if the file was actually saved at disk.
+		// if folder doesn't exist, mkdir 
+		if (!file_exists($fullpath)) {
+			mkdir( $fullpath, 0777, true );
+		};
+		file_put_contents($fullpath . $hashname, $content);
+	
+	// dispense uploads edge
+	$item = R::dispense('uploads');
+
+	foreach ($upload as $k => $v) {
+		$item[$k] = $v;
+	}		
+
+	// let's start the insert transaction
 	R::begin();
-	try{
+	try {
+		// insert item, returns id if success
+		R::store($item);
+		$id = R::getInsertID();
 
-		// get parsedbody
-		$formData = $request->getParsedBody();
+		// if item was insert with success
+		if( $id ) {
 
-		// validate content from $req
-			// if blob was sent
-			if (!empty($formData['blob'])) {
-				$blob = $formData['blob'];
-			} 
-			else{
-				throw new Exception("Error Processing Request (blob not found at request)", 1);
-			}
-
-			// if filesize was sent
-			if (!empty($formData['filesize'])) {
-				$filesize = $formData['filesize'];
-			} 
-			else{
-				throw new Exception("Error Processing Request (filesize not found at request)", 1);
-			}
-
-			// if filename was sent
-			if (!empty($formData['filename'])) {
-				$filename = $formData['filename'];
-			} 
-			else{
-				throw new Exception("Error Processing Request (filename not found at request)", 1);
-			}
-
-		// explode $blob
-			// TODO: this procedure can be done in one line if I use regex. verify correct expression.
-			list($type, $blob) = explode(';', $blob);
-			list(,$type) = explode(':', $type);
-			list(,$blob) = explode(',', $blob);
-
-			// decode blob data
-			$data = base64_decode($blob);
-
-		// define path and new filename
-			$basepath 	= $config['api']['uploads']['basepath'];
-			$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
-			$fullpath 	= $basepath . $datepath;
-			$hashname 	= md5($filename.'-'.R::isoDateTime()) . '.' . end(explode('.', $filename));
-
-		// write file
-			// TODO: we should validate if the file was actually saved at disk.
-			// if folder doesn't exist, mkdir 
-			if (!file_exists($fullpath)) {
-				mkdir( $fullpath, 0777, true );
-			};
-			file_put_contents($fullpath . $hashname, $data);
-
-		// insert at database
-			
-			// build insert upload array
-			$upload = array(
-				'path' 		=> $datepath . $hashname,
-				'filename' 	=> $hashname,
-				'type' 		=> $type,
-				'size' 		=> $filesize,
-				'edge' 		=> $args['edge'],
-				'created' 	=> R::isoDateTime(),
-				'modified' 	=> R::isoDateTime(),
-			);
-
-			// dispense uploads edge
-			$file = R::dispense('uploads');
-
-			foreach ($upload as $k => $v) {
-				$file[$k] = $v;
-			}			
-
-			R::store($file);
-			$id = R::getInsertID();
+			// commit transaction
 			R::commit();
 
-		// build api response array
+			// build api response array
 			$payload = array(
 				'id' 		=> $id,
 				'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: '.$id.')',
 			);
-
-		//output response
-			return $response->withJson($payload);
+			
+			//output response
+			return $response->withJson($payload)->withStatus(201);
+		}
+		// else something happened, throw error
+		else {
+			$errorMessage = getMessage('UPLOAD_FAIL');
+			throw new Exception($errorMessage, 1);
+		}
 	}
 	catch(Exception $e) {
+		// rollback transaction
 		R::rollback();
-	//	api_error($response, 'UPLOAD_FAIL', $e->getMessage());
+
+		throw $e;
 	}
 };
-
 
 /* ***************************************************************************************************
 ** ./end *********************************************************************************************

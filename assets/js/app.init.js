@@ -207,7 +207,7 @@ var jeUploadFunction = function(type, file, cbs) {
 										},										
 										type: 'POST',
 										// TODO: need to pass "edge" at upload url.
-										url: 'api/private/upload/page',
+										url: 'api/private/page/upload',
 										headers: {'Authorization':'Bearer ' + token},
 										contentType: 'application/json; charset=utf-8',
 										dataType: 'json',

@@ -1,6 +1,6 @@
 <?php
-error_reporting(-1);
-ini_set('display_errors', 'On');
+//error_reporting(-1);
+//ini_set('display_errors', 'On');
 
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
@@ -55,7 +55,7 @@ $app->group('/private', function () use ($api){
 	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 'api_exists'); 
 
 	$this->post('/{edge:'.$api['edgesRegex'].'}', 					'api_create');
-	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 			'api_upload');
+	$this->post('/{edge:'.$api['edgesRegex'].'}/upload', 			'api_upload');
 
 	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_update');
 	$this->patch('/user/{id:[0-9]+}/password', 						'api_updatePassword'); 
