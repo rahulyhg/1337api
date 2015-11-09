@@ -1,6 +1,7 @@
 <?php
-error_reporting(-1);
-ini_set('display_errors', 'On');
+//error_reporting(-1);
+//ini_set('display_errors', 'On');
+
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
@@ -12,11 +13,12 @@ require __DIR__ . '/helpers/shared.php';
 
 // SLIM ROUTER SETUP
 $app = new \Slim\App;
+require __DIR__ . '/dependencies.php';
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 R::setAutoResolve( TRUE );
-R::freeze( FALSE );
+R::freeze( TRUE );
 
 // TEST DB CONNECTION
 if(R::testConnection() == FALSE){
@@ -38,39 +40,38 @@ if($config['api']['debug']){
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
 
+// PRIVATE ROUTES - REQUIRE AUTH
 $app->group('/private', function () use ($api){
 
-	// PRIVATE ROUTES
-	$this->get('/hi', 													'api_hi'	);
-	$this->get('/edges', 												'api_edges'	); 
+	$this->get('/hi', 												'api_hi'	);
+	$this->get('/edges', 											'api_edges'	); 
 
-	$this->get('/list/{edge}[/{page:[0-9]+}]', 							'api_list'	); 
-	$this->get('/count/{edge:'.$api['edgesRegex'].'}', 					'api_count'	);
-	$this->get('/export/{edge:'.$api['edgesRegex'].'}', 				'api_export'); 
-	$this->get('/schema/{edge:'.$api['edgesRegex'].'}', 				'api_schema');
+	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 			'api_list'	); 
+	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 				'api_count'	);
+	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 			'api_schema');
+	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 			'api_export'); 
 
-	$this->get('/read/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
-	$this->get('/exists/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_exists'); 
+	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
+	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 'api_exists'); 
 
-	$this->post('/create/{edge:'.$api['edgesRegex'].'}', 				'api_create');
-	$this->post('/update/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_update');
-	$this->post('/updatePassword/user/{id:[0-9]+}', 					'api_updatePassword'); 
-	$this->post('/destroy/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
-	$this->post('/upload/{edge:'.$api['edgesRegex'].'}', 				'api_upload');
+	$this->post('/{edge:'.$api['edgesRegex'].'}', 					'api_create');
+	$this->post('/{edge:'.$api['edgesRegex'].'}/upload', 			'api_upload');
 
-})->add(function ($request, $response, $next) {
-// $response->getBody()->write('BEFORE');
-    $response = $next($request, $response);
-//	$response->getBody()->write('AFTER');
-    return $response;
-});
+	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_update');
+	$this->patch('/user/{id:[0-9]+}/password', 						'api_updatePassword'); 
 
+	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
+
+})->add('auth_check');
+
+// PUBLIC ROUTES
 $app->group('/public', function () use ($api){
 
 	$this->get('/', 'api_soon');
 
 });
 
+// AUTH ROUTES
 $app->group('/auth', function () use ($api){
 
 	$this->post('', 'auth_signin');
@@ -81,29 +82,5 @@ $app->group('/auth', function () use ($api){
 ** SLIM RUN! *****************************************************************************************
 *************************************************************************************************** */ 
 $app->run();
-
-/* ***************************************************************************************************
-** API OUTPUT FUNCTIONS ******************************************************************************
-*************************************************************************************************** */ 
-
-// FORBIDDEN OUTPUT
-function api_forbid(){
-	header('HTTP/1.0 400 Bad Request');
-	$res = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
-	api_output($res);
-};
-
-// ERROR OUTPUT
-function api_error($msg, $debug = ''){
-	global $config;
-
-	$res = array('error' => true, 'message' => getMessage($msg));
-	
-	if($config['api']['debug']){
-		$res['debug'] = $debug;
-	};	
-
-	echo json_encode($res);
-};
 
 ?>	
