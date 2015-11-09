@@ -14,7 +14,7 @@ $config = require __DIR__ . '/config.php';
 
 require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
-require __DIR__ . '/helpers/shared.php';
+require __DIR__ . '/app/helpers.php';
 
 // SLIM ROUTER SETUP
 $app = new \Slim\App;
