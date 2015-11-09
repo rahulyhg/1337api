@@ -1,8 +1,5 @@
 <?php
 
-	/* CONFIG PHP - GLOBALS */
-	date_default_timezone_set('America/Sao_Paulo');
-
 	/* CONFIG DB - MySQL */
 	$config['db'] = array(
 		'host' => 'mysql:host=186.202.152.193; dbname=umstudiohomolo12',
@@ -77,10 +74,5 @@
 			),
 		),
 	);
-
-	/* CONFIG LOCALE */
-	use Sinergi\Dictionary\Dictionary;
-	$locale_dir = __DIR__ . '/locale';
-	$caption = new Dictionary($config['api']['locale'], $locale_dir );
 
 ?>
