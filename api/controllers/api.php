@@ -1,68 +1,6 @@
 <?php
-use \Firebase\JWT\JWT;
 use Goodby\CSV\Export\Standard\Exporter;
 use Goodby\CSV\Export\Standard\ExporterConfig;
-
-/* ***************************************************************************************************
-** PRIVATE API VALIDATE REQUEST FUNCTIONS ************************************************************
-*************************************************************************************************** */ 
-/*
-// CHECK AUTHORIZATION HEADER
-if(function_exists('apache_request_headers')){
-	$headers = apache_request_headers();
-	if(array_key_exists('Authorization', $headers)){
-		$authHeader = $headers['Authorization'];
-	}
-} 
-else {
-	$headers = $_SERVER;
-	if(array_key_exists('HTTP_AUTHORIZATION', $headers)){
-		$authHeader = $headers['HTTP_AUTHORIZATION'];
-	}
-}
-// VALIDATE AUTHORIZATION HEADER
-$auth = false;
-try {
-	if(!empty($authHeader)){
-		// Extract the jwt from the Bearer
-		list($jwt) = sscanf( $authHeader, 'Bearer %s');
-
-		if($jwt) {
-			// decode the jwt using the key from config
-			$secretKey 	= base64_decode($config['auth']['jwtKey']);
-			$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
-
-			if($token){
-				$auth = true;
-			}
-
-			else {
-				throw new Exception('Invalid token found at Authorization Header.', 1);
-			}
-
-		} 
-		else {
-			throw new Exception('Token not found at Authorization Header.', 1);
-		}
-	} 
-	else{
-		throw new Exception('Authorization Header not found.', 1);
-	}
-	
-} catch (Exception $e) {
-	header('HTTP/1.0 401 Unauthorized');
-	echo $e->getMessage();
-	die();
-};
-
-// CHECK REQUEST_METHOD HEADER
-if ( $auth == false || empty($req) || !in_array($_SERVER['REQUEST_METHOD'], ['GET','POST']) ) {
-	header('HTTP/1.0 405 Method Not Allowed');
-	$res = array('error' => true, 'message' => 'HTTP/1.0 405 Method Not Allowed');
-	echo json_encode($res);
-	die();
-}
-*/
 
 /* ***************************************************************************************************
 ** GET FUNCTIONS *************************************************************************************
