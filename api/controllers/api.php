@@ -870,29 +870,13 @@ function api_upload ($request, $response, $args) {
 	}
 	catch(Exception $e) {
 		R::rollback();
-		api_error($response, 'UPLOAD_FAIL', $e->getMessage());
+	//	api_error($response, 'UPLOAD_FAIL', $e->getMessage());
 	}
 };
 
 
 /* ***************************************************************************************************
-** ERROR FUNCTIONS ***********************************************************************************
+** ./end *********************************************************************************************
 *************************************************************************************************** */ 
-
-// ERROR OUTPUT
-function api_error($response, $msg, $debug = ''){
-	global $config;
-
-	$err = array(
-		'error' => true, 
-		'message' => getMessage($msg)
-	);
-	
-	if($config['api']['debug']){
-		$err['debug'] = $debug;
-	};	
-
-	return $response->withStatus(400)->withJson($err);
-};
 
 ?>
