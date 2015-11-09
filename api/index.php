@@ -20,6 +20,7 @@ require __DIR__ . '/controllers/auth.php';
 $app = new \Slim\App;
 require __DIR__ . '/app/helpers.php';
 require __DIR__ . '/dependencies.php';
+require __DIR__ . '/app/middleware.php';
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
