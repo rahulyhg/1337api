@@ -1,16 +1,17 @@
 <?php
-//error_reporting(-1);
-//ini_set('display_errors', 'On');
+error_reporting(-1);
+ini_set('display_errors', 'On');
 
 /* CONFIG PHP - GLOBALS */
 date_default_timezone_set('America/Sao_Paulo');
-
 
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
 require __DIR__ . '/vendor/autoload.php';
+
 $config = require __DIR__ . '/config.php';
+
 require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
 require __DIR__ . '/helpers/shared.php';
@@ -72,6 +73,8 @@ $app->group('/private', function () use ($api){
 $app->group('/public', function () use ($api){
 
 	$this->get('/', 'api_soon');
+	$this->get('/test', 'SlimBean\Api:test');
+
 
 });
 

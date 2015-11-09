@@ -1,5 +1,14 @@
 <?php 
 
+// TEST FUNCTION TO LOAD MY CLASS
+$container = $app->getContainer();
+$container['SlimBean\Api'] = function ($c) {
+	return new SlimBean\Api();
+};
+// END TEST FUNCTION TO LOAD MY CLASS
+
+
+
 // DIC configuration
 $c = $app->getContainer();
 

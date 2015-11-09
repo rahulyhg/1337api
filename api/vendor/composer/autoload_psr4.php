@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Slim\\' => array($vendorDir . '/slim/slim/Slim'),
+    'SlimBean\\' => array($baseDir . '/app/src'),
     'Sinergi\\Dictionary\\' => array($vendorDir . '/sinergi/dictionary/src/Dictionary'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
     'Interop\\Container\\' => array($vendorDir . '/container-interop/container-interop/src/Interop/Container'),
