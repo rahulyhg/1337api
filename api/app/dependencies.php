@@ -3,7 +3,8 @@
 // TEST FUNCTION TO LOAD MY CLASS
 $container = $app->getContainer();
 $container['SlimBean\Api'] = function ($c) {
-	return new SlimBean\Api();
+	global $config;
+	return new SlimBean\Api($config);
 };
 // END TEST FUNCTION TO LOAD MY CLASS
 

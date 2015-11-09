@@ -3,14 +3,16 @@ namespace SlimBean;
 
 class Api {
 
-    public function __construct()
-    {
+	private $config;
 
+    public function __construct($config)
+    {
+    	$this->config = $config;
     }
 
     public function test($request, $response, $args)
 	{
-		return $response->withJson(array("message" => "teste"));
+		return $response->withJson(array("message" => "teste", "config" => $this->config));
 	}
 
 }
