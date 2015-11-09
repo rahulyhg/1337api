@@ -12,6 +12,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 $config = require __DIR__ . '/app/config.php';
 
+// TODO: Convert require functions controllers to PSR-4 compliant class SlimBean\\.
 require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
 require __DIR__ . '/app/helpers.php';
