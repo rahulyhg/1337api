@@ -10,7 +10,7 @@ date_default_timezone_set('America/Sao_Paulo');
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/config.php';
+$config = require __DIR__ . '/config.php';
 require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
 require __DIR__ . '/helpers/shared.php';
