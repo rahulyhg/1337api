@@ -15,10 +15,10 @@ $config = require __DIR__ . '/app/config.php';
 // TODO: Convert require functions controllers to PSR-4 compliant class SlimBean\\.
 require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
-require __DIR__ . '/app/helpers.php';
 
 // SLIM ROUTER SETUP
 $app = new \Slim\App;
+require __DIR__ . '/app/helpers.php';
 require __DIR__ . '/dependencies.php';
 
 // REDBEAN ORM SETUP
