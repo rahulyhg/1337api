@@ -148,23 +148,101 @@ class AppTest extends \PHPUnit_Framework_TestCase
         $this->assertAttributeContains('POST', 'methods', $route);
     }
 
-    public function testGroup()
+    /********************************************************************************
+     * Route Patterns
+     *******************************************************************************/
+    public function testSegmentRouteThatDoesNotEndInASlash()
     {
         $app = new App();
-        $app->group('/foo', function () use ($app) {
-            $route = $app->get('/bar', function ($req, $res) {
-                // Do something
-            });
-
+        $app->get('/foo', function ($req, $res) {
+            // Do something
         });
-
         /** @var \Slim\Router $router */
         $router = $app->router;
         $router->finalize();
-        $this->assertAttributeEquals('/foo/bar', 'pattern', $router->getRoutes()[0]);
+        $this->assertAttributeEquals('/foo', 'pattern', $router->lookupRoute('route0'));
     }
 
-    public function testGroupDefaultSlash()
+    public function testSegmentRouteThatEndsInASlash()
+    {
+        $app = new App();
+        $app->get('/foo/', function ($req, $res) {
+            // Do something
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testSegmentRouteThatDoesNotStartWithASlash()
+    {
+        $app = new App();
+        $app->get('foo', function ($req, $res) {
+            // Do something
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testSingleSlashRoute()
+    {
+        $app = new App();
+        $app->get('/', function ($req, $res) {
+            // Do something
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyRoute()
+    {
+        $app = new App();
+        $app->get('', function ($req, $res) {
+            // Do something
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    /********************************************************************************
+     * Route Groups
+     *******************************************************************************/
+    public function testGroupSegmentWithSegmentRouteThatDoesNotEndInASlash()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->get('/bar', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSegmentWithSegmentRouteThatEndsInASlash()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->get('/bar/', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/bar/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSegmentWithSingleSlashRoute()
     {
         $app = new App();
         $app->group('/foo', function () use ($app) {
@@ -175,19 +253,25 @@ class AppTest extends \PHPUnit_Framework_TestCase
         /** @var \Slim\Router $router */
         $router = $app->router;
         $router->finalize();
-        $this->assertAttributeEquals('/foo', 'pattern', $router->getRoutes()[0]);
-        
+        $this->assertAttributeEquals('/foo/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSegmentWithEmptyRoute()
+    {
         $app = new App();
         $app->group('/foo', function () use ($app) {
-            $app->get('/bar', function ($req, $res) {
+            $app->get('', function ($req, $res) {
                 // Do something
             });
         });
         /** @var \Slim\Router $router */
         $router = $app->router;
         $router->finalize();
-        $this->assertAttributeEquals('/foo/bar', 'pattern', $router->getRoutes()[0]);
-        
+        $this->assertAttributeEquals('/foo', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testTwoGroupSegmentsWithSingleSlashRoute()
+    {
         $app = new App();
         $app->group('/foo', function () use ($app) {
             $app->group('/baz', function () use ($app) {
@@ -199,10 +283,139 @@ class AppTest extends \PHPUnit_Framework_TestCase
         /** @var \Slim\Router $router */
         $router = $app->router;
         $router->finalize();
-        $this->assertAttributeEquals('/foo/baz', 'pattern', $router->getRoutes()[0]);
-        
+        $this->assertAttributeEquals('/foo/baz/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testTwoGroupSegmentsWithAnEmptyRoute()
+    {
         $app = new App();
         $app->group('/foo', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/baz', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testTwoGroupSegmentsWithSegmentRoute()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/baz/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testTwoGroupSegmentsWithSegmentRouteThatHasATrailingSlash()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/bar/', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/baz/bar/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSegmentWithSingleSlashNestedGroupAndSegmentRoute()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->group('/', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSegmentWithSingleSlashGroupAndSegmentRouteWithoutLeadingSlash()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->group('/', function () use ($app) {
+                $app->get('bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSegmentWithEmptyNestedGroupAndSegmentRoute()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->group('', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSegmentWithEmptyNestedGroupAndSegmentRouteWithoutLeadingSlash()
+    {
+        $app = new App();
+        $app->group('/foo', function () use ($app) {
+            $app->group('', function () use ($app) {
+                $app->get('bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/foo/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithSegmentRouteThatDoesNotEndInASlash()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->get('/bar', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithSegmentRouteThatEndsInASlash()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
             $app->get('/bar/', function ($req, $res) {
                 // Do something
             });
@@ -210,7 +423,347 @@ class AppTest extends \PHPUnit_Framework_TestCase
         /** @var \Slim\Router $router */
         $router = $app->router;
         $router->finalize();
-        $this->assertAttributeEquals('/foo/bar/', 'pattern', $router->getRoutes()[0]);
+        $this->assertAttributeEquals('/bar/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithSingleSlashRoute()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->get('/', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithEmptyRoute()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->get('', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithNestedGroupSegmentWithSingleSlashRoute()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithNestedGroupSegmentWithAnEmptyRoute()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithNestedGroupSegmentWithSegmentRoute()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithNestedGroupSegmentWithSegmentRouteThatHasATrailingSlash()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/bar/', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz/bar/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithSingleSlashNestedGroupAndSegmentRoute()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('/', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithSingleSlashGroupAndSegmentRouteWithoutLeadingSlash()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('/', function () use ($app) {
+                $app->get('bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithEmptyNestedGroupAndSegmentRoute()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testGroupSingleSlashWithEmptyNestedGroupAndSegmentRouteWithoutLeadingSlash()
+    {
+        $app = new App();
+        $app->group('/', function () use ($app) {
+            $app->group('', function () use ($app) {
+                $app->get('bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithSegmentRouteThatDoesNotEndInASlash()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->get('/bar', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithSegmentRouteThatEndsInASlash()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->get('/bar/', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithSingleSlashRoute()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->get('/', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithEmptyRoute()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->get('', function ($req, $res) {
+                // Do something
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithNestedGroupSegmentWithSingleSlashRoute()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithNestedGroupSegmentWithAnEmptyRoute()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithNestedGroupSegmentWithSegmentRoute()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithNestedGroupSegmentWithSegmentRouteThatHasATrailingSlash()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('/baz', function () use ($app) {
+                $app->get('/bar/', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/baz/bar/', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithSingleSlashNestedGroupAndSegmentRoute()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('/', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithSingleSlashGroupAndSegmentRouteWithoutLeadingSlash()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('/', function () use ($app) {
+                $app->get('bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithEmptyNestedGroupAndSegmentRoute()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('', function () use ($app) {
+                $app->get('/bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
+    }
+
+    public function testEmptyGroupWithEmptyNestedGroupAndSegmentRouteWithoutLeadingSlash()
+    {
+        $app = new App();
+        $app->group('', function () use ($app) {
+            $app->group('', function () use ($app) {
+                $app->get('bar', function ($req, $res) {
+                    // Do something
+                });
+            });
+        });
+        /** @var \Slim\Router $router */
+        $router = $app->router;
+        $router->finalize();
+        $this->assertAttributeEquals('/bar', 'pattern', $router->lookupRoute('route0'));
     }
 
     /********************************************************************************
@@ -280,6 +833,11 @@ class AppTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(405, (string)$resOut->getStatusCode());
         $this->assertEquals(['GET'], $resOut->getHeader('Allow'));
         $this->assertContains('<p>Method not allowed. Must be one of: <strong>GET</strong></p>', (string)$resOut->getBody());
+
+        // now test that exception is raised if the handler isn't registered
+        unset($app->getContainer()['notAllowedHandler']);
+        $this->setExpectedException('Slim\Exception\MethodNotAllowedException');
+        $app($req, $res);
     }
 
     public function testInvokeWithMatchingRoute()
@@ -485,6 +1043,11 @@ class AppTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('\Psr\Http\Message\ResponseInterface', $resOut);
         $this->assertAttributeEquals(404, 'status', $resOut);
+
+        // now test that exception is raised if the handler isn't registered
+        unset($app->getContainer()['notFoundHandler']);
+        $this->setExpectedException('Slim\Exception\NotFoundException');
+        $app($req, $res);
     }
 
     public function testInvokeWithPimpleCallable()
@@ -805,9 +1368,111 @@ class AppTest extends \PHPUnit_Framework_TestCase
     /**
      * @runInSeparateProcess
      */
-    public function testExceptionErrorHandler()
+    public function testRespondWithPaddedStreamFilterOutput()
+    {
+        $availableFilter = stream_get_filters();
+        if (in_array('mcrypt.*', $availableFilter) && in_array('mdecrypt.*', $availableFilter)) {
+            $app = new App();
+            $app->get('/foo', function ($req, $res) {
+                $key = base64_decode('xxxxxxxxxxxxxxxx');
+                $iv = base64_decode('Z6wNDk9LogWI4HYlRu0mng==');
+
+                $data = 'Hello';
+                $length = strlen($data);
+
+                $stream = fopen('php://temp', 'r+');
+
+                $filter = stream_filter_append($stream, 'mcrypt.rijndael-128', STREAM_FILTER_WRITE, [
+                    'key' => $key,
+                    'iv' => $iv
+                ]);
+
+                fwrite($stream, $data);
+                rewind($stream);
+                stream_filter_remove($filter);
+
+                stream_filter_append($stream, 'mdecrypt.rijndael-128', STREAM_FILTER_READ, [
+                    'key' => $key,
+                    'iv' => $iv
+                ]);
+
+                return $res->withHeader('Content-Length', $length)->withBody(new Body($stream));
+            });
+
+            // Prepare request and response objects
+            $env = Environment::mock([
+                'SCRIPT_NAME' => '/index.php',
+                'REQUEST_URI' => '/foo',
+                'REQUEST_METHOD' => 'GET',
+            ]);
+            $uri = Uri::createFromEnvironment($env);
+            $headers = Headers::createFromEnvironment($env);
+            $cookies = [];
+            $serverParams = $env->all();
+            $body = new RequestBody();
+            $req = new Request('GET', $uri, $headers, $cookies, $serverParams, $body);
+            $res = new Response();
+
+            // Invoke app
+            $resOut = $app($req, $res);
+            $app->respond($resOut);
+
+            $this->assertInstanceOf('\Psr\Http\Message\ResponseInterface', $resOut);
+            $this->expectOutputString('Hello');
+        } else {
+            $this->assertTrue(true);
+        }
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testExceptionErrorHandlerDoesNotDisplayErrorDetails()
     {
         $app = new App();
+
+        // Prepare request and response objects
+        $env = Environment::mock([
+            'SCRIPT_NAME' => '/index.php',
+            'REQUEST_URI' => '/foo',
+            'REQUEST_METHOD' => 'GET',
+        ]);
+        $uri = Uri::createFromEnvironment($env);
+        $headers = Headers::createFromEnvironment($env);
+        $cookies = [];
+        $serverParams = $env->all();
+        $body = new Body(fopen('php://temp', 'r+'));
+        $req = new Request('GET', $uri, $headers, $cookies, $serverParams, $body);
+        $res = new Response();
+        $app->getContainer()['request'] = $req;
+        $app->getContainer()['response'] = $res;
+
+        $mw = function ($req, $res, $next) {
+            throw new \Exception('middleware exception');
+        };
+
+        $app->add($mw);
+
+        $app->get('/foo', function ($req, $res) {
+            return $res;
+        });
+
+        $resOut = $app->run();
+
+        $this->assertEquals(500, $resOut->getStatusCode());
+        $this->expectOutputRegex('/(?!.*middleware exception.*).*/');
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testExceptionErrorHandlerDisplaysErrorDetails()
+    {
+        $app = new App([
+            'settings' => [
+                'displayErrorDetails' => true
+            ],
+        ]);
 
         // Prepare request and response objects
         $env = Environment::mock([
@@ -847,7 +1512,7 @@ class AppTest extends \PHPUnit_Framework_TestCase
         $method->setAccessible(true);
 
         $response = new Response();
-        $response->write('foo');
+        $response->getBody()->write('foo');
 
         $response = $method->invoke(new App(), $response);
 
@@ -864,5 +1529,29 @@ class AppTest extends \PHPUnit_Framework_TestCase
 
         $this->assertFalse($response->hasHeader('Content-Length'));
         $this->assertFalse($response->hasHeader('Content-Type'));
+    }
+
+    public function testCallingAContainerCallable()
+    {
+        $settings = [
+            'foo' => function ($c) {
+                return function ($a) {
+                    return $a;
+                };
+            }
+        ];
+        $app = new App($settings);
+
+        $result = $app->foo('bar');
+        $this->assertSame('bar', $result);
+
+        $headers = new Headers();
+        $body = new Body(fopen('php://temp', 'r+'));
+        $request = new Request('GET', Uri::createFromString(''), $headers, [], [], $body);
+        $response = new Response();
+
+        $response = $app->notFoundHandler($request, $response);
+
+        $this->assertSame(404, $response->getStatusCode());
     }
 }
