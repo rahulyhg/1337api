@@ -7,12 +7,10 @@ use \Firebase\JWT\JWT;
 class Auth {
 
 	private $config;
-	private $caption;
 
-	public function __construct($config, $caption)
+	public function __construct($config)
 	{
 		$this->config = $config;
-		$this->caption = $caption;
 	}
 
 	public function signin ($request, $response, $args) {

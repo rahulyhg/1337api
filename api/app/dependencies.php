@@ -41,8 +41,7 @@ $c['SlimBean\Api'] = function ($c) {
 
 $c['SlimBean\Auth'] = function ($c) {
 	global $config;
-	global $caption;
-	return new SlimBean\Auth($config, $caption);
+	return new SlimBean\Auth($config);
 };
 
 // Error Handler Classes
