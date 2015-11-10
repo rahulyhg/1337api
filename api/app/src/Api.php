@@ -613,5 +613,58 @@ class Api {
 		}
 	}
 
+	public function destroy ($request, $response, $args) {
+
+		// check relationships, if exists
+		$hierarchyArr = R::getAll('
+			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
+			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+			WHERE REFERENCED_TABLE_NAME = "'.$args['edge'].'"
+		');
+
+		if( !empty($hierarchyArr) ) {
+
+			foreach ($hierarchyArr as $k => $v) {
+				
+				$childs = R::getAll('
+					SELECT * FROM '.$v['child'].' WHERE `'.$v['parent'].'_id` = '.$args['id'].'
+				');
+				if ( !empty($childs) ) {
+					$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
+					return $response->withJson($err)->withStatus(400);
+				}	
+			}
+		}
+
+		// no relationship? let's go on:
+		// dispense 'edge'
+		$item = R::load( $args['edge'], $args['id'] );
+
+		// let's start the delete transaction
+		R::begin();
+		try {
+
+			// destroy item, commit if success
+		    R::trash($item);
+			R::commit();
+
+			// build api response array
+			$payload = array(
+				'id' 		=> $args['id'],
+				'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$args['id'].')',
+			);
+
+			// output response
+			return $response->withJson($payload);
+
+		} catch (\Exception $e) {
+
+			// rollback transaction
+			R::rollback();
+
+			throw $e;
+		}
+	}
+
 }
 /* .end api.php */

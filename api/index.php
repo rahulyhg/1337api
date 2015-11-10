@@ -71,7 +71,7 @@ $app->group('/private', function () use ($api){
 	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'SlimBean\Api:update');
 	$this->patch('/user/{id:[0-9]+}/password', 						'SlimBean\Api:updatePassword'); 
 
-	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
+	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
 
 })->add('auth_check');
 
