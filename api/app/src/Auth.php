@@ -6,13 +6,11 @@ use \Firebase\JWT\JWT;
 
 class Auth {
 
-	private $api;
 	private $config;
 	private $caption;
 
-	public function __construct($api, $config, $caption)
+	public function __construct($config, $caption)
 	{
-		$this->api = $api;
 		$this->config = $config;
 		$this->caption = $caption;
 	}

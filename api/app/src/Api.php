@@ -7,13 +7,11 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 
 class Api {
 
-	private $api;
 	private $config;
 	private $caption;
 
-	public function __construct($api, $config, $caption)
+	public function __construct($config, $caption)
 	{
-		$this->api = $api;
 		$this->config = $config;
 		$this->caption = $caption;
 	}
@@ -42,10 +40,10 @@ class Api {
 	public function edges($request, $response, $args) {
 
 		// build edges list
-		if ( !empty($this->api['edges']) ) {
+		if ( !empty($this->config['api']['edges']) ) {
 			$edges = array();
-			foreach ($this->api['edges'] as $k => $edge) {
-				if( !in_array($edge, $this->config['api']['edges']['blacklist']) ) {
+			foreach ($this->config['api']['edges'] as $k => $edge) {
+				if( !in_array($edge, $this->config['api']['blacklist']) ) {
 
 					$edges[$edge] = array(
 						'name' 			=> $edge,
@@ -296,7 +294,7 @@ class Api {
 			}
 
 			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-			if( in_array($args['edge'] .'_uploads', $this->api['edges']) ) {
+			if( in_array($args['edge'] .'_uploads', $this->config['api']['edges']) ) {
 			
 				$payload['properties']['uploads_id'] = array(
 					'title' 	=> 'Imagem',
@@ -473,7 +471,7 @@ class Api {
 			}
 
 			// IF field defines uploads many-to-many relationship
-			else if ( $field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->api['edges']) ) {
+			else if ( $field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->config['api']['edges']) ) {
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $value;
 				$item->sharedUploadList[] = $upload;
@@ -558,7 +556,7 @@ class Api {
 			}
 
 			// IF field defines uploads many-to-many relationship
-			else if ( $field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->api['edges']) ) {
+			else if ( $field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['api']['edges']) ) {
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $value;
 				$item->sharedUploadList[] = $upload;

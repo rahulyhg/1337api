@@ -38,9 +38,8 @@ return array(
 			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists', 'export'),
 			'post' 	=> array('create', 'update','updatePassword', 'upload', 'destroy'),
 		),
-		'edges'		=> array(
-			'blacklist' 	=> array('uploads','page_uploads'),
-			),
+		'edges'		=> array(),
+		'blacklist' => array('uploads','page_uploads'),
 		'params' => array(
 			'pagination' => 5,
 		),

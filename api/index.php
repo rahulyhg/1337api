@@ -26,34 +26,37 @@ require __DIR__ . '/app/middleware.php';
 /* ***************************************************************************************************
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
+$validate = array(
+	'edges' => implode('|', $config['api']['edges'])
+);
 
 // PRIVATE ROUTES - REQUIRE AUTH
-$app->group('/private', function () use ($api){
+$app->group('/private', function () use ($validate){
 
 	$this->get('/hi', 												'SlimBean\Api:hi');
 	$this->get('/edges', 											'SlimBean\Api:edges'); 
 
-	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 			'SlimBean\Api:retrieve'); 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 				'SlimBean\Api:count'	);
-	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 			'SlimBean\Api:schema');
-	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 			'SlimBean\Api:export'); 
+	$this->get('/{edge:'.$validate['edges'].'}[/list]', 			'SlimBean\Api:retrieve'); 
+	$this->get('/{edge:'.$validate['edges'].'}/count', 				'SlimBean\Api:count'	);
+	$this->get('/{edge:'.$validate['edges'].'}/schema', 			'SlimBean\Api:schema');
+	$this->get('/{edge:'.$validate['edges'].'}/export', 			'SlimBean\Api:export'); 
 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'SlimBean\Api:read'	);
-	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 'SlimBean\Api:exists'); 
+	$this->get('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 		'SlimBean\Api:read'	);
+	$this->get('/{edge:'.$validate['edges'].'}/{id:[0-9]+}/exists', 'SlimBean\Api:exists'); 
 
-	$this->post('/{edge:'.$api['edgesRegex'].'}', 					'SlimBean\Api:create');
-	$this->post('/{edge:'.$api['edgesRegex'].'}/upload', 			'SlimBean\Api:upload');
+	$this->post('/{edge:'.$validate['edges'].'}', 					'SlimBean\Api:create');
+	$this->post('/{edge:'.$validate['edges'].'}/upload', 			'SlimBean\Api:upload');
 
-	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'SlimBean\Api:update');
+	$this->put('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 		'SlimBean\Api:update');
 	$this->patch('/user/{id:[0-9]+}/password', 						'SlimBean\Api:updatePassword'); 
 
-	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
+	$this->delete('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
 
 })->add('SlimBean\Auth:isAuth');
 
 
 // PUBLIC ROUTES
-$app->group('/public', function () use ($api){
+$app->group('/public', function () use ($validate){
 
 	$this->get('/', 'SlimBean\Api:soon');
 	$this->get('/test', 'SlimBean\Api:test');
@@ -62,7 +65,7 @@ $app->group('/public', function () use ($api){
 });
 
 // AUTH ROUTES
-$app->group('/auth', function () use ($api){
+$app->group('/auth', function () use ($validate){
 
 	$this->post('', 'SlimBean\Auth:signin');
 
