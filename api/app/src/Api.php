@@ -31,7 +31,7 @@ class Api {
 		} 
 		else {
 			$errorMessage = 'Arquivo de mensagens não encontrado.';
-			throw new Exception($errorMessage, 1);
+			throw new \Exception($errorMessage, 1);
 		}
 	}
 
