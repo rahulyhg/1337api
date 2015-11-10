@@ -132,7 +132,7 @@ class Api {
 			}
 			else {
 				$errorMessage = getMessage('INVALID_REQUEST');
-				throw new Exception($errorMessage, 1);
+				throw new \Exception($errorMessage, 1);
 			}
 		} 
 		else {
@@ -319,7 +319,7 @@ class Api {
 			return $response->withJson($payload);
 		}
 		else {
-			throw new Exception("Error Processing Request (edge raw schema not found)", 1);
+			throw new \Exception("Error Processing Request (edge raw schema not found)", 1);
 		}
 	}
 
