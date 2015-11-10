@@ -8,11 +8,6 @@ ini_set('display_errors', 'On');
 require __DIR__ . '/vendor/autoload.php';
 $config = require __DIR__ . '/app/config.php';
 
-/* CONFIG LOCALE */
-use Sinergi\Dictionary\Dictionary;
-$locale_dir = __DIR__ . '/locale';
-$caption = new Dictionary($config['api']['locale'], $locale_dir );
-
 // SLIM ROUTER SETUP
 $app = new \Slim\App;
 require __DIR__ . '/app/dependencies.php';

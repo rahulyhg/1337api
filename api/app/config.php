@@ -25,10 +25,15 @@ return array(
 		'jwtExpire' => 3600,	
 	],
 
+	// $config LOCALE
+	'locale' => [
+		'code' 		=> 'pt_BR',
+		'basepath' 	=> __DIR__ . '/locale',
+	],
+
 	// CONFIG API (Global Values)
 	'api' => [
 		'debug' 	=> TRUE,
-		'locale' 	=> 'pt_BR',
 		'actions' 	=> array(
 			'get' 	=> array('hi', 'edges', 'search', 'list', 'read', 'count', 'schema', 'exists', 'export'),
 			'post' 	=> array('create', 'update','updatePassword', 'upload', 'destroy'),
