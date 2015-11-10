@@ -384,6 +384,16 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	public function soon ($request, $response, $args) {
+
+		// build api response payload
+		$payload = array(
+			'message' => getMessage('COMING_SOON')
+		);
+
+		// output response payload
+		return $response->withJson($payload);
+	}
 
 }
 /* .end api.php */

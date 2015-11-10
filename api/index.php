@@ -78,7 +78,7 @@ $app->group('/private', function () use ($api){
 // PUBLIC ROUTES
 $app->group('/public', function () use ($api){
 
-	$this->get('/', 'api_soon');
+	$this->get('/', 'SlimBean\Api:soon');
 	$this->get('/test', 'SlimBean\Api:test');
 
 
