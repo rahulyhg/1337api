@@ -13,7 +13,6 @@ $app->add(function ($request, $response, $next) {
 		$err = array('error' => true, 'message' => getMessage('DB_CONN_FAIL'));
 		return $response->withJson($err)->withStatus(400);
 	}
-})
-
+});
 
 ?>
