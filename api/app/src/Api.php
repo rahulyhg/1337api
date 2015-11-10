@@ -19,7 +19,7 @@ class Api {
 
 	public function hi($request, $response, $args) 
 	{
-		if( empty($this->caption['messages']) ) {
+		if( !empty($this->caption['messages']) ) {
 
 			// build api response payload
 			$payload = array(
