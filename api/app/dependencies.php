@@ -12,6 +12,12 @@ $container['SlimBean\Api'] = function ($c) {
 	global $caption;
 	return new SlimBean\Api($api, $config, $caption);
 };
+$container['SlimBean\Auth'] = function ($c) {
+	global $api;
+	global $config;
+	global $caption;
+	return new SlimBean\Auth($api, $config, $caption);
+};
 // END TEST FUNCTION TO LOAD MY CLASS
 
 // -----------------------------------------------------------------------------
