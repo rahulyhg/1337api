@@ -12,14 +12,19 @@ require __DIR__ . '/vendor/autoload.php';
 
 $config = require __DIR__ . '/app/config.php';
 
+/* CONFIG LOCALE */
+use Sinergi\Dictionary\Dictionary;
+$locale_dir = __DIR__ . '/locale';
+$caption = new Dictionary($config['api']['locale'], $locale_dir );
+
 // TODO: Convert require functions controllers to PSR-4 compliant class SlimBean\\.
 require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
 
 // SLIM ROUTER SETUP
 $app = new \Slim\App;
-require __DIR__ . '/app/helpers.php';
 require __DIR__ . '/app/dependencies.php';
+require __DIR__ . '/app/helpers.php';
 require __DIR__ . '/app/middleware.php';
 
 // REDBEAN ORM SETUP
