@@ -158,6 +158,22 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	public function count ($request, $response, $args) {
+
+		// define response vars
+		$count = R::count( $args['edge'] );
+		$limit = $this->config['api']['params']['pagination'];
+
+		// build response payload
+		$payload = array(
+			'sum' 			=> $count,
+			'pages' 		=> ceil($count/$limit),
+			'itemsPerPage' 	=> $limit
+		);
+
+		// output response payload
+		return $response->withJson($payload);
+	}
 
 
 }

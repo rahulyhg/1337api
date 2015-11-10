@@ -6,24 +6,6 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 ** GET FUNCTIONS *************************************************************************************
 *************************************************************************************************** */ 
 
-function api_count ($request, $response, $args) {
-	global $config;
-
-	// define response vars
-	$count = R::count( $args['edge'] );
-	$limit = $config['api']['params']['pagination'];
-
-	// build response payload
-	$payload = array(
-		'sum' 			=> $count,
-		'pages' 		=> ceil($count/$limit),
-		'itemsPerPage' 	=> $limit
-	);
-
-	// output response payload
-	return $response->withJson($payload);
-};
-
 function api_export ($request, $response, $args) {
 
 	// TODO: <b>Strict Standards</b>:  Declaration of Goodby\CSV\Export\Standard\CsvFileObject::fputcsv() should be compatible with SplFileObject::fputcsv($fields, $delimiter = NULL, $enclosure = NULL, $escape = NULL) in <b>/Volumes/DATA/Dev/umstudio/ums_redbean/api/vendor/goodby/csv/src/Goodby/CSV/Export/Standard/CsvFileObject.php</b> on line <b>84</b><br />

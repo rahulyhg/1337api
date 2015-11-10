@@ -58,7 +58,7 @@ $app->group('/private', function () use ($api){
 	$this->get('/edges', 											'SlimBean\Api:edges'); 
 
 	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 			'SlimBean\Api:retrieve'); 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 				'api_count'	);
+	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 				'SlimBean\Api:count'	);
 	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 			'api_schema');
 	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 			'api_export'); 
 
