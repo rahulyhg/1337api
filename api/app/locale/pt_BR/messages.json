@@ -1,6 +1,10 @@
 {
 	"AUTH_USERPASS_FAIL": "Login ou senha incorreta, tente novamente.",
 	"AUTH_PASS_FAIL": "Senha incorreta, tente novamente.",
+	"AUTH_FAIL": "Falha na Autenticação (401)",
+	"AUTH_FAIL_HEADER_MISSING": "Falha na Autenticação (401: Authorization Header not found)",
+	"AUTH_FAIL_TOKEN_INVALID": "Falha na Autenticação (401: Invalid Token)",
+	"AUTH_FAIL_TOKEN_EXPIRED": "Falha na Autenticação (401: Expired Token)",
 	"CREATE_FAIL": "Erro na gravação do registro.",
 	"CREATE_SUCCESS": "Criado com sucesso.",
 	"COMING_SOON": "elijah says: still in development.",

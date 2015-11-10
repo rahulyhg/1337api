@@ -61,7 +61,7 @@ $app->group('/public', function () use ($validate){
 
 // AUTH ROUTES
 $app->group('/auth', function () use ($validate){
-	$this->post('', 'SlimBean\Auth:signin');
+	$this->post('/signin', 'SlimBean\Auth:signin');
 });
 
 /* ***************************************************************************************************
