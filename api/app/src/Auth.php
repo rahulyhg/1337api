@@ -115,6 +115,11 @@ class Auth {
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_EXPIRED'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
 				return $response->withJson($err)->withStatus(401);				
 			}
+			catch (Exception $e) {
+				// @throws Exception :: Generic try catch Exception
+				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL'));
+				return $response->withJson($err)->withStatus(401);
+			}
 		}
 		else {
 			$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_HEADER_MISSING'));
