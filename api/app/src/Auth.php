@@ -75,42 +75,50 @@ class Auth {
 	public function isAuth($request, $response, $next) {
 
 		// CHECK AUTHORIZATION HEADER
-		if ( !empty($request->getHeader('Authorization')) ) {
+		if ( !empty($request->getHeader('Authorization')[0]) ) {
 
-				$authHeader = $request->getHeader('Authorization')[0];
+			try {
+				
+				// extract the JWT from the Bearer
+				list($jwt) 	= sscanf( $request->getHeader('Authorization')[0], 'Bearer %s');
+				$secretKey 	= base64_decode($this->config['auth']['jwtKey']);
+				$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
 
-				// Extract the jwt from the Bearer
-				list($jwt) = sscanf( $authHeader, 'Bearer %s');
-
-				if($jwt) {
-					// decode the jwt using the key from config
-					$secretKey 	= base64_decode($this->config['auth']['jwtKey']);
-					$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
-
-					if($token){
-						$auth = true;
-					}
-
-					else {
-						throw new \Exception('Invalid token found at Authorization Header.', 1);
-					}
-
-				} 
-				else {
-					throw new \Exception('Token not found at Authorization Header.', 1);
+				// if token is valid, go on
+				if($token){
+					return $response = $next($request, $response);
 				}
+
+			} 
+			catch (\UnexpectedValueException $e) {
+				// @throws UnexpectedValueException :: Provided JWT was invalid
+				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				return $response->withJson($err)->withStatus(401);
+			}
+			catch (\DomainException $e) {
+				// @throws DomainException :: Algorithm was not provided
+				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				return $response->withJson($err)->withStatus(401);				
+			}
+			catch (\SignatureInvalidException $e) {
+				// @throws SignatureInvalidException :: Provided JWT was invalid because the signature verification failed
+				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				return $response->withJson($err)->withStatus(401);				
+			}
+			catch (\BeforeValidException $e) {
+				// @throws BeforeValidException :: Provided JWT is trying to be used before it's eligible as defined by 'nbf'
+				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				return $response->withJson($err)->withStatus(401);				
+			}
+			catch (\ExpiredException $e) {
+				// @throws ExpiredException :: Provided JWT has since expired, as defined by the 'exp' claim
+				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_EXPIRED'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				return $response->withJson($err)->withStatus(401);				
+			}
 		}
 		else {
-			$auth = false;
-			throw new \Exception('Authorization Header not found.', 1);
-		}
-
-		// IF AUTH PASS
-		if($auth){
-			return $response = $next($request, $response);
-		}
-		else{
-			return $response->withJson(array('error' => 'true', 'message' => 'not authenticated'))->withStatus(403);
+			$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_HEADER_MISSING'));
+			return $response->withJson($err)->withStatus(401);
 		}
 	}
 
