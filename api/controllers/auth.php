@@ -69,7 +69,7 @@ function auth_signin ($request, $response, $args) {
 function auth_check ($request, $response, $next) {
 	global $config;
 
-	// CHECK AUTHORIZATION HEADER
+/*	// CHECK AUTHORIZATION HEADER
 	if ( !empty($request->getHeader('Authorization')) ) {
 
 			$authHeader = $request->getHeader('Authorization')[0];
@@ -99,6 +99,10 @@ function auth_check ($request, $response, $next) {
 		$auth = false;
 		throw new Exception('Authorization Header not found.', 1);
 	}
+*/
+
+	// AUTH OVERRIDE FOR REFACTOR DEV PURPOSES
+	$auth = true;
 
 	// IF AUTH PASS
 	if($auth){
