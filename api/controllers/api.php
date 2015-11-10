@@ -53,23 +53,6 @@ function api_export ($request, $response, $args) {
 	}
 };
 
-function api_exists ($request, $response, $args) {
-
-	// check if item is retrieved from database
-	$item = R::find( $args['edge'], ' id = '.$args['id'] );
-	$exists = !empty($item) ? true : false;
-
-	// build api response payload
-	$payload = array(
-		'edge' 		=> $args['edge'],
-		'id' 		=> $args['id'],
-		'exists' 	=> $exists
-	);
-	
-	// output response payload
-	return $response->withJson($payload);
-};
-
 function api_soon ($request, $response, $args) {
 
 	// build api response payload

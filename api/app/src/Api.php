@@ -367,6 +367,22 @@ class Api {
 		}
 	}
 
+	public function exists ($request, $response, $args) {
+
+		// check if item is retrieved from database
+		$item = R::find( $args['edge'], ' id = '.$args['id'] );
+		$exists = !empty($item) ? true : false;
+
+		// build api response payload
+		$payload = array(
+			'edge' 		=> $args['edge'],
+			'id' 		=> $args['id'],
+			'exists' 	=> $exists
+		);
+		
+		// output response payload
+		return $response->withJson($payload);
+	}
 
 
 }
