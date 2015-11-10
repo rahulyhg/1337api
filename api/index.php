@@ -72,7 +72,8 @@ $app->group('/private', function () use ($api){
 
 	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
 
-})->add('auth_check');
+})->add('SlimBean\Auth:isAuth');
+
 
 // PUBLIC ROUTES
 $app->group('/public', function () use ($api){
