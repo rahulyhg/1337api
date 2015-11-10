@@ -86,7 +86,7 @@ $app->group('/public', function () use ($api){
 // AUTH ROUTES
 $app->group('/auth', function () use ($api){
 
-	$this->post('', 'auth_signin');
+	$this->post('', 'SlimBean\Auth:signin');
 
 });
 
