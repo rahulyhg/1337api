@@ -54,21 +54,14 @@ $app->group('/private', function () use ($validate){
 
 })->add('SlimBean\Auth:isAuth');
 
-
 // PUBLIC ROUTES
 $app->group('/public', function () use ($validate){
-
 	$this->get('/', 'SlimBean\Api:soon');
-	$this->get('/test', 'SlimBean\Api:test');
-
-
 });
 
 // AUTH ROUTES
 $app->group('/auth', function () use ($validate){
-
 	$this->post('', 'SlimBean\Auth:signin');
-
 });
 
 /* ***************************************************************************************************

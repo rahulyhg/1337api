@@ -76,7 +76,6 @@ class Auth {
 
 	public function isAuth($request, $response, $next) {
 
-/*
 		// CHECK AUTHORIZATION HEADER
 		if ( !empty($request->getHeader('Authorization')) ) {
 
@@ -107,10 +106,6 @@ class Auth {
 			$auth = false;
 			throw new \Exception('Authorization Header not found.', 1);
 		}
-*/	
-
-		// AUTH OVERRIDE FOR REFACTOR DEV PURPOSES
-		$auth = true;
 
 		// IF AUTH PASS
 		if($auth){
