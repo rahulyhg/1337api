@@ -395,5 +395,90 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	public function create ($request, $response, $args) {
+
+		// get data from 'body' request payload
+		$data = $request->getParsedBody();
+
+		if ( empty($data) ) {
+			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+			return $response->withJson($err)->withStatus(400);
+		}
+
+		// get raw data model from redbean describe
+		$schema['raw'] = R::getAssoc('DESCRIBE ' . $args['edge']);
+
+		if ( empty($schema['raw']) ) {
+			throw new \Exception("Error Processing Request (edge raw schema not found)", 1);
+		}
+
+		// dispense 'edge'
+		$item = R::dispense( $args['edge'] );
+
+		// foreach $req content, build array to insert
+		foreach ($data as $field => $value) {
+
+			// IF field is an id, throw exception
+			if ( $field == 'id' ) {
+				throw new \Exception("Error Processing Request (field `id` is not allowed when creating a resource)", 1);
+			}
+
+			// IF field defines uploads many-to-many relationship
+			else if ( $field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->api['edges']) ) {
+				$upload = R::dispense( 'uploads' );
+				$upload->id = $value;
+				$item->sharedUploadList[] = $upload;
+			}
+
+			// IF field is a password, hash it up
+			else if ( $field == 'password' ){
+				$item[$field] = md5($value);
+			}
+
+			// ELSE field is literal, go on
+			else {
+				$item[$field] = $value;
+			}
+		}
+		
+		// inject created and modified current time to array to insert
+		$item['created'] 	= R::isoDateTime();
+		$item['modified'] 	= R::isoDateTime();
+
+		// let's start the insert transaction
+		R::begin();
+		try {
+			// insert item, returns id if success
+			R::store($item);
+			$id = R::getInsertID();
+
+			// if item was insert with success
+			if( $id ) {
+
+				// commit transaction
+				R::commit();
+
+				// build api response array
+				$payload = array(
+					'id' 		=> $id,
+					'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
+				);
+				
+				//output response
+				return $response->withJson($payload)->withStatus(201);
+			}
+			// else something happened, throw error
+			else {
+				$errorMessage = getMessage('CREATE_FAIL');
+				throw new \Exception($errorMessage, 1);
+			}
+		}
+		catch(\Exception $e) {
+			// rollback transaction
+			R::rollback();
+			throw $e;
+		}
+	}
+
 }
 /* .end api.php */
