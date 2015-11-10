@@ -3,22 +3,22 @@ namespace SlimBean;
 
 class Api {
 
+	private $api;
 	private $config;
 	private $caption;
 
-	public function __construct($config, $caption)
+	public function __construct($api, $config, $caption)
 	{
+		$this->api = $api;
 		$this->config = $config;
 		$this->caption = $caption;
 	}
 
-	public function test($request, $response, $args)
-	{
+	public function test($request, $response, $args) {
 		return $response->withJson(array("message" => "teste", "config" => $this->config));
 	}
 
-	public function hi($request, $response, $args) 
-	{
+	public function hi($request, $response, $args) {
 		if( !empty($this->caption['messages']) ) {
 
 			// build api response payload
