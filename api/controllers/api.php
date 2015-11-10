@@ -6,45 +6,6 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 ** GET FUNCTIONS *************************************************************************************
 *************************************************************************************************** */ 
 
-function api_list ($request, $response, $args) {
-	global $config;
-	$args['query'] = $request->getQueryParams();
-
-	// check if request is paginated or ALL
-	if( !empty($args['query']['page']) ){
-		if ( is_numeric($args['query']['page']) ) {
-			// param page exists, let's get this page 
-			$limit = $config['api']['params']['pagination'];
-			$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
-		}
-		else {
-			$errorMessage = getMessage('INVALID_REQUEST');
-			throw new Exception($errorMessage, 1);
-		}
-	} 
-	else {
-		// param page doesn't exist, let's get all
-		$items = R::findAll( $args['edge'], 'ORDER BY id DESC' );
-	}
-
-	// check if list is not empty
-	if( !empty($items) ){
-		// list is not empty, let's foreach and build response array
-		foreach ($items as $item => $content) {
-			foreach ($content as $field => $value) {
-				$payload[$item][$field] = $value;
-			}
-		}
-	}
-	else {
-		// list is empty, let's return empty array
-		$payload = array();
-	}
-
-	// output response
-	return $response->withJson($payload);
-};
-
 function api_count ($request, $response, $args) {
 	global $config;
 
