@@ -1,10 +1,51 @@
 <?php 
 
-// DIC configuration
+/* ***************************************************************************************************
+** ORM REDBEAN - INIT ********************************************************************************
+*************************************************************************************************** */ 
+
+// DEBUG MODE ON
+if($config['api']['debug']){
+	R::debug( TRUE, 1 );
+};
+
+if(R::testConnection() == TRUE){
+
+	// INIT REDBEANPHP
+	R::setAutoResolve( TRUE );
+	R::freeze( TRUE );
+
+	// INSPECT TABLES
+	$config['api']['edges'] = R::inspect();
+}
+
+/* ***************************************************************************************************
+** LOCALE $CAPTION - INIT ****************************************************************************
+*************************************************************************************************** */ 
+use Sinergi\Dictionary\Dictionary;
+
+$caption = new Dictionary( $config['locale']['code'], $config['locale']['basepath'] );
+
+/* ***************************************************************************************************
+** SLIM CONTAINER INTEROP - INIT *********************************************************************
+*************************************************************************************************** */ 
 $c = $app->getContainer();
 
+// \SlimBean\ Classes
 // -----------------------------------------------------------------------------
-// Error handlers
+$c['SlimBean\Api'] = function ($c) {
+	global $config;
+	global $caption;
+	return new SlimBean\Api($config, $caption);
+};
+
+$c['SlimBean\Auth'] = function ($c) {
+	global $config;
+	global $caption;
+	return new SlimBean\Auth($config, $caption);
+};
+
+// Error Handler Classes
 // -----------------------------------------------------------------------------
 
 // Override the default Error Handler

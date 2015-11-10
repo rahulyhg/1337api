@@ -1,81 +1,67 @@
 <?php
-//error_reporting(-1);
-//ini_set('display_errors', 'On');
+error_reporting(-1);
+ini_set('display_errors', 'On');
 
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
-require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/config.php';
-require __DIR__ . '/controllers/api.php';
-require __DIR__ . '/controllers/auth.php';
-require __DIR__ . '/helpers/shared.php';
 
-// SLIM ROUTER SETUP
-$app = new \Slim\App;
-require __DIR__ . '/dependencies.php';
+// COMPOSER VENDOR AUTOLOAD
+require __DIR__ . '/vendor/autoload.php';
+
+// CONFIG SETTINGS
+$config = require __DIR__ . '/app/config.php';
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
-R::setAutoResolve( TRUE );
-R::freeze( TRUE );
 
-// TEST DB CONNECTION
-if(R::testConnection() == FALSE){
-	api_error('DB_CONN_FAIL');
-	exit();
-};
+// SLIM ROUTER SETUP
+$app = new \Slim\App;
 
-// INSPECT TABLES
-$api = array();
-$api['edges'] = R::inspect();
-$api['edgesRegex'] = implode('|', $api['edges']);
-
-// REDBEAN ORM DEBUG MODE ON
-if($config['api']['debug']){
-	R::debug( TRUE, 1 );
-};
+// SLIMBEAN APP SETUP
+require __DIR__ . '/app/helpers.php';
+require __DIR__ . '/app/dependencies.php';
+require __DIR__ . '/app/middleware.php';
 
 /* ***************************************************************************************************
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
+$validate = array(
+	'edges' => implode('|', $config['api']['edges'])
+);
 
 // PRIVATE ROUTES - REQUIRE AUTH
-$app->group('/private', function () use ($api){
+$app->group('/private', function () use ($validate){
 
-	$this->get('/hi', 												'api_hi'	);
-	$this->get('/edges', 											'api_edges'	); 
+	$this->get('/hi', 												'SlimBean\Api:hi');
+	$this->get('/edges', 											'SlimBean\Api:edges'); 
 
-	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 			'api_list'	); 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 				'api_count'	);
-	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 			'api_schema');
-	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 			'api_export'); 
+	$this->get('/{edge:'.$validate['edges'].'}[/list]', 			'SlimBean\Api:retrieve'); 
+	$this->get('/{edge:'.$validate['edges'].'}/count', 				'SlimBean\Api:count'	);
+	$this->get('/{edge:'.$validate['edges'].'}/schema', 			'SlimBean\Api:schema');
+	$this->get('/{edge:'.$validate['edges'].'}/export', 			'SlimBean\Api:export'); 
 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
-	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 'api_exists'); 
+	$this->get('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 		'SlimBean\Api:read'	);
+	$this->get('/{edge:'.$validate['edges'].'}/{id:[0-9]+}/exists', 'SlimBean\Api:exists'); 
 
-	$this->post('/{edge:'.$api['edgesRegex'].'}', 					'api_create');
-	$this->post('/{edge:'.$api['edgesRegex'].'}/upload', 			'api_upload');
+	$this->post('/{edge:'.$validate['edges'].'}', 					'SlimBean\Api:create');
+	$this->post('/{edge:'.$validate['edges'].'}/upload', 			'SlimBean\Api:upload');
 
-	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_update');
-	$this->patch('/user/{id:[0-9]+}/password', 						'api_updatePassword'); 
+	$this->put('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 		'SlimBean\Api:update');
+	$this->patch('/user/{id:[0-9]+}/password', 						'SlimBean\Api:updatePassword'); 
 
-	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
+	$this->delete('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
 
-})->add('auth_check');
+})->add('SlimBean\Auth:isAuth');
 
 // PUBLIC ROUTES
-$app->group('/public', function () use ($api){
-
-	$this->get('/', 'api_soon');
-
+$app->group('/public', function () use ($validate){
+	$this->get('/', 'SlimBean\Api:soon');
 });
 
 // AUTH ROUTES
-$app->group('/auth', function () use ($api){
-
-	$this->post('', 'auth_signin');
-
+$app->group('/auth', function () use ($validate){
+	$this->post('', 'SlimBean\Auth:signin');
 });
 
 /* ***************************************************************************************************

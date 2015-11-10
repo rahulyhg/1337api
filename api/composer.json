@@ -1,28 +1,41 @@
 {
-	"repositories": [{
-	"type": "package",
-	"package": {
-		"name": "redbeanphp",
-		"version": "master",
-		"dist": {
-			"url": "http://www.redbeanphp.com/downloadredbean.php",
-			"type": "tar"
+	"name": "elijahvsjesus/ums_redbean",
+	"description": "RESTFul API using Slim Framework 3 with RedBean PHP & Monolog.",
+	"license": "MIT",
+	"keywords": ["slim-framework", "redbean-php", "monolog"],
+	"authors": [
+		{
+			"name": "Elijah Hatem",
+			"email": "elias.hatem@gmail.com",
+			"homepage": "http://www.facebook.com/elijahvsjesus"
 		}
-	}
-}
 	],
-
+	"repositories": [
+		{
+			"type": "package",
+			"package": {
+				"name": "redbeanphp",
+				"version": "master",
+				"dist": {
+					"url": "http://www.redbeanphp.com/downloadredbean.php",
+					"type": "tar"
+				}
+			}
+		}
+	],
 	"require": {
 			"redbeanphp": "master@dev",
 			"firebase/php-jwt": "~3.0",
 			"sinergi/dictionary": "*",
-	        "goodby/csv": "*",
-		"slim/slim": "^3.0@RC"
-    	},
-	
+			"goodby/csv": "*",
+			"slim/slim": "^3.0@RC"
+	},
 	"autoload": {
 		"files": [
 			"vendor/redbeanphp/rb.php"
-		]
+		],
+		"psr-4": {
+			"SlimBean\\": "app/src"
+		}
 	}
 }

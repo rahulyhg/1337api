@@ -1,11 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f429d933c2e481493f22c1565a867bc0",
-    "content-hash": "37fe76b59d203a315963e91ddd3e20b1",
+    "hash": "2e8a73ecc525ba26eed76101818dff58",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -330,16 +329,16 @@
         },
         {
             "name": "slim/slim",
-            "version": "3.0.0-RC1",
+            "version": "3.0.0-RC2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/slimphp/Slim.git",
-                "reference": "d4ac4db27348eea2c3ba305c8b49028583600d3a"
+                "reference": "c181a3a7666677fcf5dee2c03c504d5731262745"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slimphp/Slim/zipball/d4ac4db27348eea2c3ba305c8b49028583600d3a",
-                "reference": "d4ac4db27348eea2c3ba305c8b49028583600d3a",
+                "url": "https://api.github.com/repos/slimphp/Slim/zipball/c181a3a7666677fcf5dee2c03c504d5731262745",
+                "reference": "c181a3a7666677fcf5dee2c03c504d5731262745",
                 "shasum": ""
             },
             "require": {
@@ -392,7 +391,7 @@
                 "micro",
                 "router"
             ],
-            "time": "2015-09-07 20:13:22"
+            "time": "2015-11-09 10:57:43"
         }
     ],
     "packages-dev": [],
