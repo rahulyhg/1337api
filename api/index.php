@@ -62,7 +62,7 @@ $app->group('/private', function () use ($api){
 	$this->get('/{edge:'.$api['edgesRegex'].'}/schema', 			'SlimBean\Api:schema');
 	$this->get('/{edge:'.$api['edgesRegex'].'}/export', 			'api_export'); 
 
-	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'api_read'	);
+	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'SlimBean\Api:read'	);
 	$this->get('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}/exists', 'api_exists'); 
 
 	$this->post('/{edge:'.$api['edgesRegex'].'}', 					'api_create');

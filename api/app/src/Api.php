@@ -323,6 +323,51 @@ class Api {
 		}
 	}
 
+	public function read ($request, $response, $args) {
+		
+		// load item
+		$item = R::load( $args['edge'], $args['id'] );
+
+		// if item retrieved
+		if( !empty($item['id']) ) {
+
+			// foreach $item field, build response payload array
+			foreach ($item as $field => $value) {
+				if( !in_array($field, $this->config['schema']['default']['blacklist']) ) {
+
+					// add to payload response
+					$payload[$field] = $value;
+
+					// IF field represents one-to-many relationship
+					if(substr($field, -3, 3) == '_id'){
+						$parentEdge = substr($field, 0, -3);
+						$parent = R::load( $parentEdge, $value );
+
+						// IF parent is retrieved
+						if(!empty($parent['id'])){						
+							// foreach $parent field, add to response payload array
+							foreach ($parent as $parentField => $parentValue) {
+								// add to payload response
+								$payload[$parentEdge][$value][$parentField] = $parentValue;
+							}
+						}
+						else{
+							throw new \Exception('Error Processing Request (Parent Relationship Broken with Parent ID: "'.$value.'" FROM PARENT TABLE: "'.$parentEdge.'" NOT FOUND)', 1);
+						}
+					}
+				}
+			}
+
+			// output response payload
+			return $response->withJson($payload);
+		}
+		else {
+			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			return $response->withJson($err)->withStatus(404);
+		}
+	}
+
+
 
 }
 /* .end api.php */
