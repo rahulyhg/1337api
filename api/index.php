@@ -5,34 +5,23 @@ ini_set('display_errors', 'On');
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
-require __DIR__ . '/vendor/autoload.php';
-$config = require __DIR__ . '/app/config.php';
 
-// SLIM ROUTER SETUP
-$app = new \Slim\App;
-require __DIR__ . '/app/dependencies.php';
-require __DIR__ . '/app/helpers.php';
-require __DIR__ . '/app/middleware.php';
+// COMPOSER VENDOR AUTOLOAD
+require __DIR__ . '/vendor/autoload.php';
+
+// CONFIG SETTINGS
+$config = require __DIR__ . '/app/config.php';
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
-R::setAutoResolve( TRUE );
-R::freeze( TRUE );
 
-// TEST DB CONNECTION
-if(R::testConnection() == FALSE){
-	$response->withJson(getMessage('DB_CONN_FAIL'));
-};
+// SLIM ROUTER SETUP
+$app = new \Slim\App;
 
-// INSPECT TABLES
-$api = array();
-$api['edges'] = R::inspect();
-$api['edgesRegex'] = implode('|', $api['edges']);
-
-// REDBEAN ORM DEBUG MODE ON
-if($config['api']['debug']){
-	R::debug( TRUE, 1 );
-};
+// SLIMBEAN APP SETUP
+require __DIR__ . '/app/helpers.php';
+require __DIR__ . '/app/dependencies.php';
+require __DIR__ . '/app/middleware.php';
 
 /* ***************************************************************************************************
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
