@@ -29,8 +29,7 @@ R::freeze( TRUE );
 
 // TEST DB CONNECTION
 if(R::testConnection() == FALSE){
-	api_error('DB_CONN_FAIL');
-	exit();
+	$response->withJson(getMessage('DB_CONN_FAIL'));
 };
 
 // INSPECT TABLES
