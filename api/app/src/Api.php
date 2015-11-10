@@ -1,6 +1,8 @@
 <?php 
 namespace SlimBean;
 
+use \RedBeanPHP\Facade as R;
+
 class Api {
 
 	private $api;
