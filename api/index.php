@@ -18,7 +18,6 @@ $locale_dir = __DIR__ . '/locale';
 $caption = new Dictionary($config['api']['locale'], $locale_dir );
 
 // TODO: Convert require functions controllers to PSR-4 compliant class SlimBean\\.
-require __DIR__ . '/controllers/api.php';
 require __DIR__ . '/controllers/auth.php';
 
 // SLIM ROUTER SETUP
