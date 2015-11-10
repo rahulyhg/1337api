@@ -556,5 +556,62 @@ class Api {
 		}
 	}
 
+	public function updatePassword ($request, $response, $args) {
+
+		// get data from 'body' request payload
+		$data = $request->getParsedBody();
+
+		if ( empty($data) ) {
+			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+			return $response->withJson($err)->withStatus(400);
+		}
+
+		// dispense 'edge'
+		$item = R::load( 'user', $args['id'] );
+
+		// verify if password is valid
+		if ( $item['password'] == md5($data['password']) ) {
+			// verify if new password matches
+			if ($data['new_password'] == $data['confirm_new_password']) {
+
+				// build array to update
+				$item['password'] = md5($data['new_password']);
+				$item['modified'] = R::isoDateTime();
+
+				// let's start the update transaction
+				R::begin();
+				try {
+			
+					// update item, commit if success
+					R::store( $item );
+					// commit transaction
+					R::commit();
+
+					// build api response array
+					$payload = array(
+						'id' 		=> $args['id'],
+						'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
+					);
+					
+					//output response
+					return $response->withJson($payload);
+				}
+				catch(\Exception $e) {
+					// rollback transaction
+					R::rollback();
+					throw $e;
+				}
+			} 
+			else {
+				$err = array('error' => true, 'message' => getMessage('PASSWORD_CONFIRM_FAIL'));
+				return $response->withJson($err)->withStatus(400);
+			}
+		} 
+		else {
+			$err = array('error' => true, 'message' => getMessage('AUTH_PASS_FAIL'));
+			return $response->withJson($err)->withStatus(400);
+		}
+	}
+
 }
 /* .end api.php */

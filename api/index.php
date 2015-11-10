@@ -69,7 +69,7 @@ $app->group('/private', function () use ($api){
 	$this->post('/{edge:'.$api['edgesRegex'].'}/upload', 			'api_upload');
 
 	$this->put('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 		'SlimBean\Api:update');
-	$this->patch('/user/{id:[0-9]+}/password', 						'api_updatePassword'); 
+	$this->patch('/user/{id:[0-9]+}/password', 						'SlimBean\Api:updatePassword'); 
 
 	$this->delete('/{edge:'.$api['edgesRegex'].'}/{id:[0-9]+}', 	'api_destroy'); 
 
