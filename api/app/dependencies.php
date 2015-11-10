@@ -1,37 +1,35 @@
 <?php 
 
-// -----------------------------------------------------------------------------
-// Sinergi Dictionary Instantiation
-// -----------------------------------------------------------------------------
+/* ***************************************************************************************************
+** LOCALE $CAPTION - INIT ****************************************************************************
+*************************************************************************************************** */ 
 use Sinergi\Dictionary\Dictionary;
-$caption = new Dictionary($config['locale']['code'], $config['locale']['basepath'] );
 
-// -----------------------------------------------------------------------------
-// SlimBean Instantiation
-// -----------------------------------------------------------------------------
+$caption = new Dictionary( $config['locale']['code'], $config['locale']['basepath'] );
 
-// TEST FUNCTION TO LOAD MY CLASS
-$container = $app->getContainer();
-$container['SlimBean\Api'] = function ($c) {
+/* ***************************************************************************************************
+** SLIM CONTAINER INTEROP - INIT *********************************************************************
+*************************************************************************************************** */ 
+$c = $app->getContainer();
+
+// \SlimBean\ Classes
+// -----------------------------------------------------------------------------
+$c['SlimBean\Api'] = function ($c) {
 	global $api;
 	global $config;
 	global $caption;
 	return new SlimBean\Api($api, $config, $caption);
 };
-$container['SlimBean\Auth'] = function ($c) {
+
+$c['SlimBean\Auth'] = function ($c) {
 	global $api;
 	global $config;
 	global $caption;
 	return new SlimBean\Auth($api, $config, $caption);
 };
-// END TEST FUNCTION TO LOAD MY CLASS
 
+// Error Handler Classes
 // -----------------------------------------------------------------------------
-// Error handlers
-// -----------------------------------------------------------------------------
-
-// DIC configuration
-$c = $app->getContainer();
 
 // Override the default Error Handler
 $c['errorHandler'] = function ($c) {
