@@ -1,33 +1,33 @@
 <?php 
 
-// TEST FUNCTION TO LOAD MY CLASS
-$container = $app->getContainer();
-$container['SlimBean\Api'] = function ($c) {
-	global $config;
-	return new SlimBean\Api($config);
-};
-// END TEST FUNCTION TO LOAD MY CLASS
-
-
-
-// DIC configuration
-$c = $app->getContainer();
-
 // -----------------------------------------------------------------------------
 // Locale Instantiation
 // -----------------------------------------------------------------------------
 
+/* CONFIG LOCALE */
+use Sinergi\Dictionary\Dictionary;
+$locale_dir = __DIR__ . '/locale';
+$caption = new Dictionary($config['api']['locale'], $locale_dir );
 
-	/* CONFIG LOCALE */
-	use Sinergi\Dictionary\Dictionary;
-	$locale_dir = __DIR__ . '/locale';
-	$caption = new Dictionary($config['api']['locale'], $locale_dir );
+// -----------------------------------------------------------------------------
+// SlimBean Instantiation
+// -----------------------------------------------------------------------------
 
-
+// TEST FUNCTION TO LOAD MY CLASS
+$container = $app->getContainer();
+$container['SlimBean\Api'] = function ($c) {
+	global $config;
+	global $caption;
+	return new SlimBean\Api($config, $caption);
+};
+// END TEST FUNCTION TO LOAD MY CLASS
 
 // -----------------------------------------------------------------------------
 // Error handlers
 // -----------------------------------------------------------------------------
+
+// DIC configuration
+$c = $app->getContainer();
 
 // Override the default Error Handler
 $c['errorHandler'] = function ($c) {
