@@ -54,8 +54,8 @@ if($config['api']['debug']){
 // PRIVATE ROUTES - REQUIRE AUTH
 $app->group('/private', function () use ($api){
 
-	$this->get('/hi', 												'SlimBean\Api:hi'	);
-	$this->get('/edges', 											'api_edges'	); 
+	$this->get('/hi', 												'SlimBean\Api:hi');
+	$this->get('/edges', 											'SlimBean\Api:edges'); 
 
 	$this->get('/{edge:'.$api['edgesRegex'].'}[/list]', 			'api_list'	); 
 	$this->get('/{edge:'.$api['edgesRegex'].'}/count', 				'api_count'	);
