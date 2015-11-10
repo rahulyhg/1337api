@@ -7,9 +7,10 @@
 // TEST FUNCTION TO LOAD MY CLASS
 $container = $app->getContainer();
 $container['SlimBean\Api'] = function ($c) {
+	global $api;
 	global $config;
 	global $caption;
-	return new SlimBean\Api($config, $caption);
+	return new SlimBean\Api($api, $config, $caption);
 };
 // END TEST FUNCTION TO LOAD MY CLASS
 
