@@ -6,25 +6,6 @@ use Goodby\CSV\Export\Standard\ExporterConfig;
 ** GET FUNCTIONS *************************************************************************************
 *************************************************************************************************** */ 
 
-function api_hi ($request, $response, $args) {
-	global $caption;
-
-	if( !empty($caption['messages']) ) {
-
-		// build api response payload
-		$payload = array(
-			'message' => getMessage('HI')
-		);
-		
-		// output response payload
-		return $response->withJson($payload);
-	} 
-	else {
-		$errorMessage = 'Arquivo de mensagens não encontrado.';
-		throw new Exception($errorMessage, 1);
-	}
-};
-
 function api_edges ($request, $response, $args) {
 	global $api;
 	global $config;
