@@ -21,6 +21,15 @@ class Api {
 		return $response->withJson(array("message" => "Hello, tested!"));
 	}
 
+	/**
+	  * Returns API welcome message.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function hi($request, $response, $args) {
 
 		// build api response payload
@@ -31,6 +40,15 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	/**
+	  * Returns all API edges dynamically from database table schema and properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function edges($request, $response, $args) {
 
 		// build edges list
