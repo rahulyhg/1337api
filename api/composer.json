@@ -24,11 +24,12 @@
 		}
 	],
 	"require": {
-			"redbeanphp": "master@dev",
-			"firebase/php-jwt": "~3.0",
-			"sinergi/dictionary": "*",
-			"goodby/csv": "*",
-			"slim/slim": "^3.0@RC"
+		"redbeanphp": "master@dev",
+		"firebase/php-jwt": "~3.0",
+		"sinergi/dictionary": "*",
+		"goodby/csv": "*",
+		"slim/slim": "^3.0@RC",
+		"monolog/monolog": "^1.17"
 	},
 	"autoload": {
 		"files": [

@@ -10,6 +10,7 @@ return array(
     'SlimBean\\' => array($baseDir . '/app/src'),
     'Sinergi\\Dictionary\\' => array($vendorDir . '/sinergi/dictionary/src/Dictionary'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
+    'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'Interop\\Container\\' => array($vendorDir . '/container-interop/container-interop/src/Interop/Container'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
     'FastRoute\\' => array($vendorDir . '/nikic/fast-route/src'),

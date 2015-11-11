@@ -7,7 +7,7 @@
 // DEBUG MODE ON
 if($config['api']['debug']){
 	R::debug( TRUE, 1 );
-};
+}
 
 if(R::testConnection() == TRUE){
 
