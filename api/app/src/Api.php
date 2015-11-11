@@ -51,10 +51,12 @@ class Api {
 	  */
 	public function edges($request, $response, $args) {
 
-		// build edges list
+		// initialize edges array
 		$edges = array();
 		
 		if (!empty($this->config['edges']['list'])) {
+
+			// build $edges array and properties
 			foreach ($this->config['edges']['list'] as $k => $edge) {
 				if (!in_array($edge, $this->config['edges']['blacklist'])) {
 					$edges[$edge] = array(
@@ -67,28 +69,29 @@ class Api {
 					);
 				}
 			}
-		}
 
-		if (!empty($this->getEdgesHierarchy())) {
-			$hierarchy = $this->getEdgesHierarchy();
+			// if hierarchy exists, iterates parent and child properties to $edges array
+			if (!empty($this->getEdgesHierarchy())) {
+				$hierarchy = $this->getEdgesHierarchy();
 
-			// build hierarchy list - depth 1
-			foreach ($edges as $edge => $obj) {
-				if (array_key_exists($edge, $hierarchy)) {
-					$edges[$edge]['has_parent'] = true;
+				// build hierarchy list - depth 1
+				foreach ($edges as $edge => $obj) {
+					if (array_key_exists($edge, $hierarchy)) {
+						$edges[$edge]['has_parent'] = true;
 
-					foreach ($hierarchy[$edge] as $y => $z) {
-						$edges[$z]['has_child'] = true;
-						$edges[$edge]['parent'][$z] = $edges[$z];
-					}
+						foreach ($hierarchy[$edge] as $y => $z) {
+							$edges[$z]['has_child'] = true;
+							$edges[$edge]['parent'][$z] = $edges[$z];
+						}
 
-					// build hierarchy list - depth 2
-					if ($edges[$edge]['has_parent']) {
-						foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
-							if (array_key_exists($parentBean, $hierarchy)) {
-								$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
-								foreach ($hierarchy[$parentBean] as $y => $z) {
-									$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
+						// build hierarchy list - depth 2
+						if ($edges[$edge]['has_parent']) {
+							foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
+								if (array_key_exists($parentBean, $hierarchy)) {
+									$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
+									foreach ($hierarchy[$parentBean] as $y => $z) {
+										$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
+									}
 								}
 							}
 						}
