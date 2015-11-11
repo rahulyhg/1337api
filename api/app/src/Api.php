@@ -52,11 +52,11 @@ class Api {
 	public function edges($request, $response, $args) {
 
 		// build edges list
-		if ( !empty($this->config['api']['edges']) ) {
-			$edges = array();
-			foreach ($this->config['api']['edges'] as $k => $edge) {
-				if( !in_array($edge, $this->config['api']['blacklist']) ) {
-
+		$edges = array();
+		
+		if (!empty($this->config['edges']['list'])) {
+			foreach ($this->config['edges']['list'] as $k => $edge) {
+				if (!in_array($edge, $this->config['edges']['blacklist'])) {
 					$edges[$edge] = array(
 						'name' 			=> $edge,
 						'title' 		=> getCaption('edges', $edge, $edge),
@@ -65,40 +65,16 @@ class Api {
 						'has_parent' 	=> false,
 						'has_child' 	=> false,
 					);
-
-				};
-			};
-		}
-		else {
-			$errorMessage = getMessage('EDGES_FAIL');
-			throw new \Exception($errorMessage, 1);
-		}
-
-		// build hierarchy array, if exists		
-		$hierarchyArr = R::getAll('
-			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
-			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE REFERENCED_TABLE_NAME IS NOT NULL
-		');
-
-		if( !empty($hierarchyArr) ) {
-			foreach ($hierarchyArr as $k => $v) {
-				if(empty($hierarchy[$v['child']])){
-					$hierarchy[$v['child']] = array();
-				} 
-				array_push($hierarchy[$v['child']], $v['parent']);
+				}
 			}
 		}
-		else{
-			$hierarchy = array();
-		}
 
-		// if not empty hierarchy, build depth
-		if( !empty($hierarchy) ) {
+		if (!empty($this->getEdgesHierarchy())) {
+			$hierarchy = $this->getEdgesHierarchy();
 
 			// build hierarchy list - depth 1
 			foreach ($edges as $edge => $obj) {
-				if( array_key_exists($edge, $hierarchy) ){
+				if (array_key_exists($edge, $hierarchy)) {
 					$edges[$edge]['has_parent'] = true;
 
 					foreach ($hierarchy[$edge] as $y => $z) {
@@ -107,9 +83,9 @@ class Api {
 					}
 
 					// build hierarchy list - depth 2
-					if( $edges[$edge]['has_parent'] ) {
+					if ($edges[$edge]['has_parent']) {
 						foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
-							if(array_key_exists($parentBean, $hierarchy)){
+							if (array_key_exists($parentBean, $hierarchy)) {
 								$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
 								foreach ($hierarchy[$parentBean] as $y => $z) {
 									$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
@@ -833,6 +809,30 @@ class Api {
 
 			throw $e;
 		}
+	}
+
+	private function getEdgesHierarchy() {
+
+		$hierarchy = array();
+
+		// build hierarchy array, if exists		
+		$hierarchyArr = R::getAll('
+			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
+			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+			WHERE REFERENCED_TABLE_NAME IS NOT NULL
+		');
+
+		if (!empty($hierarchyArr)) {
+			// if not empty hierarchy, iterate
+			foreach ($hierarchyArr as $k => $v) {
+				if (empty($hierarchy[$v['child']])) {
+					$hierarchy[$v['child']] = array();
+				}
+				array_push($hierarchy[$v['child']], $v['parent']);
+			}
+		}
+		
+		return $hierarchy;
 	}
 
 }
