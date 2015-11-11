@@ -16,7 +16,7 @@ $config = require __DIR__ . '/app/config.php';
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 
 // SLIM ROUTER SETUP
-$app = new \Slim\App;
+$app = new \Slim\App($config['slim']);
 
 // SLIMBEAN APP SETUP
 require __DIR__ . '/app/helpers.php';
@@ -59,6 +59,7 @@ $app->group('/private', function () use ($validate){
 // PUBLIC ROUTES
 $app->group('/public', function () use ($validate){
 	$this->get('/', 'SlimBean\Api:soon');
+	$this->get('/test', 'SlimBean\Api:test');
 });
 
 // AUTH ROUTES

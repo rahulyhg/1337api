@@ -3,14 +3,17 @@ namespace SlimBean;
 
 use \RedBeanPHP\Facade as R;
 use \Firebase\JWT\JWT;
+use Psr\Log\LoggerInterface;
 
 class Auth {
 
 	private $config;
+	private $logger;
 
-	public function __construct($config)
+	public function __construct($config, LoggerInterface $logger)
 	{
 		$this->config = $config;
+		$this->logger = $logger;
 	}
 
 	public function signin ($request, $response, $args) {

@@ -4,20 +4,24 @@ namespace SlimBean;
 use \RedBeanPHP\Facade as R;
 use Goodby\CSV\Export\Standard\Exporter;
 use Goodby\CSV\Export\Standard\ExporterConfig;
+use Psr\Log\LoggerInterface;
 
 class Api {
 
 	private $config;
 	private $caption;
+	private $logger;
 
-	public function __construct($config, $caption)
+	public function __construct($config, $caption, LoggerInterface $logger)
 	{
-		$this->config = $config;
-		$this->caption = $caption;
+		$this->config 	= $config;
+		$this->caption 	= $caption;
+		$this->logger 	= $logger;
 	}
 
 	public function test($request, $response, $args) {
-		return $response->withJson(array("message" => "teste", "config" => $this->config));
+		$this->logger->info('Elijah says: hey mom, I\'m being logged!' );
+		return $response->withJson(array("message" => "Hello, tested!"));
 	}
 
 	public function hi($request, $response, $args) {

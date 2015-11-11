@@ -86,6 +86,14 @@ return array(
 				),
 			),
 		)
+	],
+
+	// $config SLIM (Router)
+	'slim' => [
+		'settings' => array(
+			// monolog settings
+			'logger' => array('name' => 'app','path' => __DIR__ . '/../logs/app.log'),
+		),
 	]
 	
 );
