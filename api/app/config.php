@@ -36,14 +36,18 @@ return array(
 	// $config API (Global Values)
 	'api' => [
 		'debug' 	=> TRUE,
-		'edges'		=> array(),
-		'blacklist' => array('uploads','page_uploads'),
 		'params' => array(
 			'pagination' => 5,
 		),
 		'uploads' => array(
 			'basepath' => '../uploads/',
 		),
+	],
+
+	// $config EDGES (Default Values)
+	'edges' => [
+		'list'		=> array(),
+		'blacklist' => array('uploads','page_uploads'),
 	],
 
 	// $config SCHEMA (Form Builder)

@@ -305,7 +305,7 @@ class Api {
 			}
 
 			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-			if( in_array($args['edge'] .'_uploads', $this->config['api']['edges']) ) {
+			if( in_array($args['edge'] .'_uploads', $this->config['edges']['list']) ) {
 			
 				$payload['properties']['uploads_id'] = array(
 					'title' 	=> 'Imagem',
@@ -491,7 +491,7 @@ class Api {
 			}
 
 			// IF field defines uploads many-to-many relationship
-			else if ( $field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->config['api']['edges']) ) {
+			else if ( $field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->config['edges']['list']) ) {
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $value;
 				$item->sharedUploadList[] = $upload;
@@ -576,7 +576,7 @@ class Api {
 			}
 
 			// IF field defines uploads many-to-many relationship
-			else if ( $field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['api']['edges']) ) {
+			else if ( $field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['edges']['list']) ) {
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $value;
 				$item->sharedUploadList[] = $upload;

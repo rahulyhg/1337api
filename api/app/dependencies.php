@@ -16,7 +16,7 @@ if(R::testConnection() == TRUE){
 	R::freeze( TRUE );
 
 	// INSPECT TABLES
-	$config['api']['edges'] = R::inspect();
+	$config['edges']['list'] = R::inspect();
 }
 
 /* ***************************************************************************************************
