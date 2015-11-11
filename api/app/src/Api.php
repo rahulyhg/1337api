@@ -112,7 +112,6 @@ class Api {
 		// build api response payload
 		$payload = array(
 			'edges' 	=> $edges,
-			'actions' 	=> $this->config['api']['actions']
 		);
 
 		// output response playload
