@@ -816,22 +816,18 @@ class Api {
 
 	private function getEdgesHierarchy() {
 
-		$hierarchy = array();
-
 		// build hierarchy array, if exists		
-		$hierarchyArr = R::getAll('
-			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
+		$hierarchy = R::getAssoc('
+			SELECT TABLE_NAME as child, GROUP_CONCAT(REFERENCED_TABLE_NAME) as parent
 			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
 			WHERE REFERENCED_TABLE_NAME IS NOT NULL
+			GROUP BY child
 		');
 
-		if (!empty($hierarchyArr)) {
-			// if not empty hierarchy, iterate
-			foreach ($hierarchyArr as $k => $v) {
-				if (empty($hierarchy[$v['child']])) {
-					$hierarchy[$v['child']] = array();
-				}
-				array_push($hierarchy[$v['child']], $v['parent']);
+		// if not empty hierarchy, iterate
+		if (!empty($hierarchy)) {
+			foreach ($hierarchy as $child => $parent) {
+				$hierarchy[$child] = explode(',', $parent);
 			}
 		}
 		
