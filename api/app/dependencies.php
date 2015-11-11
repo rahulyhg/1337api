@@ -4,12 +4,12 @@
 ** ORM REDBEAN - INIT ********************************************************************************
 *************************************************************************************************** */ 
 
-// DEBUG MODE ON
-if($config['api']['debug']){
-	R::debug( TRUE, 1 );
-}
-
 if(R::testConnection() == TRUE){
+
+	// DEBUG MODE
+	if($config['api']['debug']){
+		R::debug( TRUE, 1 );
+	}
 
 	// INIT REDBEANPHP
 	R::setAutoResolve( TRUE );

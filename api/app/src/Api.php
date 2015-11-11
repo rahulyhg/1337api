@@ -11,9 +11,8 @@ class Api {
 	private $config;
 	private $logger;
 
-	public function __construct($config, LoggerInterface $logger)
-	{
-		$this->config 	= $config;
+	public function __construct($config, LoggerInterface $logger) {
+		$this->config 	= $config;		
 		$this->logger 	= $logger;
 	}
 
@@ -23,12 +22,13 @@ class Api {
 	}
 
 	public function hi($request, $response, $args) {
-			// build api response payload
-			$payload = array(
-				'message' => getMessage('HI')
-			);
-			// output response payload
-			return $response->withJson($payload);
+
+		// build api response payload
+		$payload = array(
+			'message' => getMessage('HI')
+		);
+		// output response payload
+		return $response->withJson($payload);
 	}
 
 	public function edges($request, $response, $args) {
