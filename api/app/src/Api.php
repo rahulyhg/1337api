@@ -360,6 +360,15 @@ class Api {
 		}
 	}
 
+	/**
+	  * Verifies if an entry exists on database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function exists ($request, $response, $args) {
 
 		// check if item is retrieved from database
