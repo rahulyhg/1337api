@@ -58,8 +58,9 @@ $app->group('/private', function () use ($validate){
 
 // PUBLIC ROUTES
 $app->group('/public', function () use ($validate){
-	$this->get('/', 'SlimBean\Api:soon');
-	$this->get('/test', 'SlimBean\Api:test');
+	$this->get('/', 												'SlimBean\Api:soon');
+	$this->get('/hi', 												'SlimBean\Api:hi');
+	$this->get('/test', 											'SlimBean\Api:test');
 });
 
 // AUTH ROUTES

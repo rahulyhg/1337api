@@ -107,8 +107,7 @@ $c['notAllowedHandler'] = function ($c) {
 // -----------------------------------------------------------------------------
 $c['SlimBean\Api'] = function ($c) {
 	global $config;
-	global $caption;
-	return new SlimBean\Api($config, $caption, $c->get('logger'));
+	return new SlimBean\Api($config, $c->get('logger'));
 };
 
 $c['SlimBean\Auth'] = function ($c) {

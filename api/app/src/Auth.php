@@ -136,4 +136,4 @@ class Auth {
 	}
 
 }
-/* .end api.php */
+/* .end Auth.php */

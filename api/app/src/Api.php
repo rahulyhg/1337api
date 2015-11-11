@@ -9,13 +9,11 @@ use Psr\Log\LoggerInterface;
 class Api {
 
 	private $config;
-	private $caption;
 	private $logger;
 
-	public function __construct($config, $caption, LoggerInterface $logger)
+	public function __construct($config, LoggerInterface $logger)
 	{
 		$this->config 	= $config;
-		$this->caption 	= $caption;
 		$this->logger 	= $logger;
 	}
 
@@ -25,20 +23,12 @@ class Api {
 	}
 
 	public function hi($request, $response, $args) {
-		if( !empty($this->caption['messages']) ) {
-
 			// build api response payload
 			$payload = array(
 				'message' => getMessage('HI')
 			);
-			
 			// output response payload
 			return $response->withJson($payload);
-		} 
-		else {
-			$errorMessage = 'Arquivo de mensagens não encontrado.';
-			throw new \Exception($errorMessage, 1);
-		}
 	}
 
 	public function edges($request, $response, $args) {
@@ -819,4 +809,4 @@ class Api {
 	}
 
 }
-/* .end api.php */
+/* .end Api.php */
