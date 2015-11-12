@@ -119,7 +119,7 @@ class Api {
 	}
 
 	/**
-	  * Retrieves a list of items from database and properties related.
+	  * Retrieves a list of items from database edge and properties related.
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
 	  * @param Psr\Http\Message\ResponseInterface $response Response Object
@@ -168,6 +168,15 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	/**
+	  * Counts items from database edge and properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function count ($request, $response, $args) {
 
 		// define response vars
