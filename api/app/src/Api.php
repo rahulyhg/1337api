@@ -480,43 +480,46 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	/**
+	  * Inserts new item at database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function create ($request, $response, $args) {
 
 		// get data from 'body' request payload
 		$data = $request->getParsedBody();
 
-		if ( empty($data) ) {
+		// if no data was sent, return bad request response
+		if (empty($data)) {
 			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
 			return $response->withJson($err)->withStatus(400);
-		}
-
-		// get raw data model from redbean describe
-		$schema['raw'] = R::getAssoc('DESCRIBE ' . $args['edge']);
-
-		if ( empty($schema['raw']) ) {
-			throw new \Exception("Error Processing Request (edge raw schema not found)", 1);
 		}
 
 		// dispense 'edge'
 		$item = R::dispense( $args['edge'] );
 
-		// foreach $req content, build array to insert
+		// foreach $data request payload, build array to insert
 		foreach ($data as $field => $value) {
 
 			// IF field is an id, throw exception
-			if ( $field == 'id' ) {
+			if ($field == 'id') {
 				throw new \Exception("Error Processing Request (field `id` is not allowed when creating a resource)", 1);
 			}
 
 			// IF field defines uploads many-to-many relationship
-			else if ( $field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->config['edges']['list']) ) {
+			else if ($field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
 				$upload = R::dispense( 'uploads' );
 				$upload->id = $value;
 				$item->sharedUploadList[] = $upload;
 			}
 
 			// IF field is a password, hash it up
-			else if ( $field == 'password' ){
+			else if ($field == 'password') {
 				$item[$field] = md5($value);
 			}
 
@@ -526,19 +529,20 @@ class Api {
 			}
 		}
 		
-		// inject created and modified current time to array to insert
+		// inject created and modified current time
 		$item['created'] 	= R::isoDateTime();
 		$item['modified'] 	= R::isoDateTime();
 
 		// let's start the insert transaction
 		R::begin();
+
 		try {
 			// insert item, returns id if success
 			R::store($item);
 			$id = R::getInsertID();
 
 			// if item was insert with success
-			if( $id ) {
+			if ($id) {
 
 				// commit transaction
 				R::commit();
@@ -552,6 +556,7 @@ class Api {
 				//output response
 				return $response->withJson($payload)->withStatus(201);
 			}
+
 			// else something happened, throw error
 			else {
 				$errorMessage = getMessage('CREATE_FAIL');
@@ -559,6 +564,7 @@ class Api {
 			}
 		}
 		catch(\Exception $e) {
+
 			// rollback transaction
 			R::rollback();
 			throw $e;
