@@ -413,6 +413,15 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	/**
+	  * Exports to CSV file all entries from a edge database table.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return string CSV file output
+	  */
 	public function export ($request, $response, $args) {
 
 		// collect data
