@@ -24,6 +24,7 @@
 	"PASSWORD_CONFIRM_FAIL": "A nova senha não confere. (Verifique o campo Confirme Nova Senha).",
 	"READ_FAIL": "Erro na leitura do registro.",
 	"SCHEMA_FAIL": "Não foi possível processar sua requisição. (schema inválido)",
+	"SCHEMA_NOTFOUND": "Não foi possível processar sua requisição. (404: schema não encontrado)",
 	"UPDATE_FAIL": "Erro na atualização do registro.",
 	"UNIQUE_FAIL": "Erro na gravação do registro (Campo UNIQUE com nome repetido)",
 	"UPDATE_SUCCESS": "Atualizado com sucesso.",

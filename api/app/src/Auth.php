@@ -3,14 +3,17 @@ namespace SlimBean;
 
 use \RedBeanPHP\Facade as R;
 use \Firebase\JWT\JWT;
+use Psr\Log\LoggerInterface;
 
 class Auth {
 
 	private $config;
+	private $logger;
 
-	public function __construct($config)
+	public function __construct($config, LoggerInterface $logger)
 	{
 		$this->config = $config;
+		$this->logger = $logger;
 	}
 
 	public function signin ($request, $response, $args) {
@@ -33,8 +36,8 @@ class Auth {
 			$tokenId    = base64_encode(mcrypt_create_iv(32));
 			$issuedAt   = strtotime(R::isoDateTime());						// Right Now
 			$notBefore  = $issuedAt; 										// Instant. Right Now
-			$expire     = $notBefore + $this->config['auth']['jwtExpire']; 	// Retrieve the expiration time from config file
-			$serverName = $this->config['auth']['jwtIssuer']; 				// Retrieve the server name from config file
+			$expire     = $notBefore + $this->config['auth']['jwt']['expire']; 	// Retrieve the expiration time from config file
+			$serverName = $this->config['auth']['jwt']['issuer']; 			// Retrieve the server name from config file
 		
 			// create the token as an array
 			$token = [
@@ -51,7 +54,7 @@ class Auth {
 			];
 
 			// extract the secret key from the config file. 
-			$secretKey = base64_decode($this->config['auth']['jwtKey']);
+			$secretKey = base64_decode($this->config['auth']['jwt']['key']);
 		
 			// encode the array to a JWT string.
 			// the output string can be validated at http://jwt.io/
@@ -86,7 +89,7 @@ class Auth {
 				
 				// extract the JWT from the Bearer
 				list($jwt) 	= sscanf( $request->getHeader('Authorization')[0], 'Bearer %s');
-				$secretKey 	= base64_decode($this->config['auth']['jwtKey']);
+				$secretKey 	= base64_decode($this->config['auth']['jwt']['key']);
 				$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
 
 				// if token is valid, go on
@@ -133,4 +136,4 @@ class Auth {
 	}
 
 }
-/* .end api.php */
+/* .end Auth.php */

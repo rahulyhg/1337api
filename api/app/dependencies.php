@@ -4,19 +4,19 @@
 ** ORM REDBEAN - INIT ********************************************************************************
 *************************************************************************************************** */ 
 
-// DEBUG MODE ON
-if($config['api']['debug']){
-	R::debug( TRUE, 1 );
-};
-
 if(R::testConnection() == TRUE){
+
+	// DEBUG MODE
+	if($config['api']['debug']){
+		R::debug( TRUE, 1 );
+	}
 
 	// INIT REDBEANPHP
 	R::setAutoResolve( TRUE );
 	R::freeze( TRUE );
 
 	// INSPECT TABLES
-	$config['api']['edges'] = R::inspect();
+	$config['edges']['list'] = R::inspect();
 }
 
 /* ***************************************************************************************************
@@ -31,17 +31,14 @@ $caption = new Dictionary( $config['locale']['code'], $config['locale']['basepat
 *************************************************************************************************** */ 
 $c = $app->getContainer();
 
-// \SlimBean\ Classes
+// Log Handler - Monolog Factory
 // -----------------------------------------------------------------------------
-$c['SlimBean\Api'] = function ($c) {
-	global $config;
-	global $caption;
-	return new SlimBean\Api($config, $caption);
-};
-
-$c['SlimBean\Auth'] = function ($c) {
-	global $config;
-	return new SlimBean\Auth($config);
+$c['logger'] = function ($c) {
+	$settings = $c->get('settings');
+	$logger = new \Monolog\Logger($settings['logger']['name']);
+	$logger->pushProcessor(new \Monolog\Processor\UidProcessor());
+	$logger->pushHandler(new \Monolog\Handler\StreamHandler($settings['logger']['path'], \Monolog\Logger::DEBUG));
+	return $logger;
 };
 
 // Error Handler Classes
@@ -51,6 +48,9 @@ $c['SlimBean\Auth'] = function ($c) {
 $c['errorHandler'] = function ($c) {
 	return function ($request, $response, $exception) use ($c) {
 		global $config;
+
+        $c['logger']->error($exception->getMessage());
+        $c['logger']->debug($exception->getTraceAsString());
 
 		$err = array(
 			'error' => true, 
@@ -101,6 +101,18 @@ $c['notAllowedHandler'] = function ($c) {
 
 		return $c['response']->withJson($err)->withStatus(405)->withHeader('Allow', implode(', ', $methods));
 	};
+};
+
+// \SlimBean\ Classes
+// -----------------------------------------------------------------------------
+$c['SlimBean\Api'] = function ($c) {
+	global $config;
+	return new SlimBean\Api($config, $c->get('logger'));
+};
+
+$c['SlimBean\Auth'] = function ($c) {
+	global $config;
+	return new SlimBean\Auth($config, $c->get('logger'));
 };
 
 ?>

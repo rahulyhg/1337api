@@ -16,19 +16,21 @@ $config = require __DIR__ . '/app/config.php';
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 
 // SLIM ROUTER SETUP
-$app = new \Slim\App;
+$app = new \Slim\App($config['slim']);
 
 // SLIMBEAN APP SETUP
 require __DIR__ . '/app/helpers.php';
 require __DIR__ . '/app/dependencies.php';
 require __DIR__ . '/app/middleware.php';
 
+// SLIM ROUTER VALIDATE REGEX ARRAY
+$validate = array(
+	'edges' => implode('|', $config['edges']['list'])
+);
+
 /* ***************************************************************************************************
 ** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
-$validate = array(
-	'edges' => implode('|', $config['api']['edges'])
-);
 
 // PRIVATE ROUTES - REQUIRE AUTH
 $app->group('/private', function () use ($validate){
@@ -56,7 +58,9 @@ $app->group('/private', function () use ($validate){
 
 // PUBLIC ROUTES
 $app->group('/public', function () use ($validate){
-	$this->get('/', 'SlimBean\Api:soon');
+	$this->get('/', 												'SlimBean\Api:soon');
+	$this->get('/hi', 												'SlimBean\Api:hi');
+	$this->get('/test', 											'SlimBean\Api:test');
 });
 
 // AUTH ROUTES
