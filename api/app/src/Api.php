@@ -729,12 +729,39 @@ class Api {
 	  */
 	public function destroy ($request, $response, $args) {
 
-		// check relationships, if exists
-		$hierarchyArr = R::getAll('
-			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
-			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE REFERENCED_TABLE_NAME = "'.$args['edge'].'"
-		');
+
+		echo $args['edge'] . '->' . $args['id'];
+		echo '<hr />';
+
+		// dispense 'edge'
+		$item = R::load( $args['edge'], $args['id'] );
+
+		if (!empty($item->id)) {
+
+
+			print_r($this->getHierarchy($args['edge']));
+				die();
+
+			// check relationships, if exists
+			if (!empty($this->getHierarchy())) {
+				# code...
+			}
+
+			
+
+
+
+
+
+		}
+		else{
+			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			return $response->withJson($err)->withStatus(404);
+		}
+
+
+		die();
+
 
 		if( !empty($hierarchyArr) ) {
 
@@ -751,8 +778,6 @@ class Api {
 		}
 
 		// no relationship? let's go on:
-		// dispense 'edge'
-		$item = R::load( $args['edge'], $args['id'] );
 
 		// let's start the delete transaction
 		R::begin();
@@ -925,22 +950,25 @@ class Api {
 		return $hierarchy;
 	}
 
+	private function getChildren($parentedge, $parentid) {
+
 		// build hierarchy array, if exists		
-		$hierarchy = R::getAssoc('
-			SELECT TABLE_NAME as child, GROUP_CONCAT(REFERENCED_TABLE_NAME) as parent
+		$childedge = R::getAssoc('
+			SELECT TABLE_NAME as child
 			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE REFERENCED_TABLE_NAME IS NOT NULL
-			GROUP BY child
+			WHERE (REFERENCED_TABLE_NAME = \''.$parentedge.'\');
 		');
 
 		// if not empty hierarchy, iterate
-		if (!empty($hierarchy)) {
-			foreach ($hierarchy as $child => $parent) {
-				$hierarchy[$child] = explode(',', $parent);
-			}
+		if (!empty($childedge)) {
+
+			$children  = R::find( 'product', 'category_id = 28');
+
+
+//			$children = R::getAssoc( 'SELECT id FROM ' . $childedge[0] . ' WHERE ' . $parentedge . '_id = ' . $parentid );
 		}
 		
-		return $hierarchy;
+		return $children;
 	}
 
 }
