@@ -650,12 +650,22 @@ class Api {
 		}
 	}
 
+	/**
+	  * Updates user password.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function updatePassword ($request, $response, $args) {
 
 		// get data from 'body' request payload
 		$data = $request->getParsedBody();
 
-		if ( empty($data) ) {
+		// if no data was sent, return bad request response
+		if (empty($data)) {
 			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
 			return $response->withJson($err)->withStatus(400);
 		}
@@ -664,7 +674,8 @@ class Api {
 		$item = R::load( 'user', $args['id'] );
 
 		// verify if password is valid
-		if ( $item['password'] == md5($data['password']) ) {
+		if ($item['password'] == md5($data['password'])) {
+			
 			// verify if new password matches
 			if ($data['new_password'] == $data['confirm_new_password']) {
 
@@ -675,7 +686,6 @@ class Api {
 				// let's start the update transaction
 				R::begin();
 				try {
-			
 					// update item, commit if success
 					R::store( $item );
 					// commit transaction
