@@ -118,14 +118,25 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	/**
+	  * Retrieves a list of items from database and properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  * @param int $query['page'] Query String parameter for paginated results
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function retrieve($request, $response, $args) {
 
+		// get query string parameters
 		$args['query'] = $request->getQueryParams();
 
 		// check if request is paginated or ALL
-		if( !empty($args['query']['page']) ){
-			if ( is_numeric($args['query']['page']) ) {
-				// param page exists, let's get this page 
+		if (!empty($args['query']['page'])) {
+			if (is_numeric($args['query']['page'])) {
+				// param page exists, let's get this page
 				$limit = $this->config['api']['params']['pagination'];
 				$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
 			}
@@ -140,7 +151,7 @@ class Api {
 		}
 
 		// check if list is not empty
-		if( !empty($items) ){
+		if (!empty($items)) {
 			// list is not empty, let's foreach and build response array
 			foreach ($items as $item => $content) {
 				foreach ($content as $field => $value) {
