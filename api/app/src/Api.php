@@ -717,6 +717,16 @@ class Api {
 		}
 	}
 
+
+	/**
+	  * Deletes existing item at database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function destroy ($request, $response, $args) {
 
 		// check relationships, if exists
