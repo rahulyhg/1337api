@@ -15,7 +15,7 @@
 	"DESTROY_FAIL_CHILD_EXISTS": "Erro na exclusão do registro. (Existem registros vinculados)",
 	"DESTROY_SUCCESS": "Excluído com sucesso.",
 	"EXPORT_FAIL": "Não foi possível exportar os registros.",
-	"EDGE_NOTFOUND": "Não encontrado. (edge inválido).",
+	"EDGE_NOTFOUND": "Não foi possível processar sua requisição. (404: edge não encontrado)",
 	"EDGES_FAIL": "Não foi possível recuperar edges da API.",
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
