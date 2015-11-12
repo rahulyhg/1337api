@@ -8,5 +8,4 @@ $baseDir = dirname($vendorDir);
 return array(
     'Psr\\Log\\' => array($vendorDir . '/psr/log'),
     'Pimple' => array($vendorDir . '/pimple/pimple/src'),
-    'Goodby\\CSV' => array($vendorDir . '/goodby/csv/src'),
 );
