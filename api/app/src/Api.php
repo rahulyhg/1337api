@@ -78,8 +78,8 @@ class Api {
 			}
 
 			// if hierarchy exists, iterates parent and child properties to $edges array
-			if (!empty($this->getEdgesHierarchy())) {
-				$hierarchy = $this->getEdgesHierarchy();
+			if (!empty($this->getHierarchy())) {
+				$hierarchy = $this->getHierarchy();
 
 				// build hierarchy list - depth 1
 				foreach ($edges as $edge => $obj) {
@@ -872,7 +872,48 @@ class Api {
 		}
 	}
 
-	private function getEdgesHierarchy() {
+	private function getHierarchy($edge = null) {
+
+		// if param edge was passed, then
+		if($edge) {
+
+			// build hierarchy array, if exists
+			$hierarchy = R::getAssoc('
+				SELECT REFERENCED_TABLE_NAME as parent, TABLE_NAME as child
+				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+				WHERE (REFERENCED_TABLE_NAME IS NOT NULL AND REFERENCED_TABLE_NAME = \''.$edge.'\');
+			');
+
+			// if not empty hierarchy, iterate
+			if (!empty($hierarchy)) {
+				foreach ($hierarchy as $child => $parent) {
+					$hierarchy[$child] = explode(',', $parent);
+				}
+			}
+
+		}
+
+		// else, just return full hierarchy
+		else {
+
+			// build hierarchy array, if exists
+			$hierarchy = R::getAssoc('
+				SELECT TABLE_NAME as child, GROUP_CONCAT(REFERENCED_TABLE_NAME) as parent
+				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+				WHERE REFERENCED_TABLE_NAME IS NOT NULL
+				GROUP BY child
+			');
+
+			// if not empty hierarchy, iterate
+			if (!empty($hierarchy)) {
+				foreach ($hierarchy as $child => $parent) {
+					$hierarchy[$child] = explode(',', $parent);
+				}
+			}
+		}		
+
+		return $hierarchy;
+	}
 
 		// build hierarchy array, if exists		
 		$hierarchy = R::getAssoc('
