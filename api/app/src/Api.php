@@ -206,24 +206,25 @@ class Api {
 	public function schema ($request, $response, $args) {
 
 		// get database schema
-		$schema = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
+		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
 		// if raw schema found
-		if (!empty($schema)) {
+		if (!empty($raw)) {
 
-			// define schema response payload array
-			$payload = array(
+			// define default schema array
+			$schema = array(
 				'bean' 					=> $args['edge'],
 				'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
 				'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
 				'type' 					=> 'object',
 				'required' 				=> true,
 				'additionalProperties' 	=> false,
-				'properties' 			=> array()
+				'properties' 			=> array(),
+				'raw' 					=> $raw
 			);
 
 			// fill properties node into schema response array
-			foreach ($schema as $field => $properties) {
+			foreach ($schema['raw'] as $field => $properties) {
 
 				// check if field is not at config blacklist
 				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
@@ -232,9 +233,9 @@ class Api {
 					if (substr($field, -3, 3) == '_id') {
 						$parent = substr($field, 0, -3);
 
-						$payload['properties'][$field] = array(
+						$schema['properties'][$field] = array(
 							'type' 				=> 'integer',
-							'title' 			=> getCaption('fields', $payload['bean'], $parent),
+							'title' 			=> getCaption('fields', $schema['bean'], $parent),
 							'required'	 		=> true,
 							'minLength'	 		=> 1,
 							'enum' 				=> array(),
@@ -246,19 +247,19 @@ class Api {
 						$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
 
 						foreach ($parentOptions as $key => $value) {
-							$payload['properties'][$field]['enum'][] = $key;
-							$payload['properties'][$field]['options']['enum_titles'][] = $value;
+							$schema['properties'][$field]['enum'][] = $key;
+							$schema['properties'][$field]['options']['enum_titles'][] = $value;
 						}
 					}
 					// else, field is literal and we can go on
 					else {
 
 						// prepare data
-						$dbType 	= preg_split("/[()]+/", $schema[$field]['Type']);
+						$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
 						$type 		= $dbType[0];
 						$format 	= $dbType[0];
 						$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-						$minLength 	= ($schema[$field]['Null'] == 'YES' ? 0 : 1);
+						$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
 
 						// converts db type to json-editor expected type
 						if (array_key_exists($type, $this->config['schema']['default']['type'])) {
@@ -276,7 +277,7 @@ class Api {
 						}
 
 						// builds default properties array to json-editor
-						$payload['properties'][$field] = array(
+						$schema['properties'][$field] = array(
 							'type'			=> $type,
 							'format' 		=> $format,
 							'title' 		=> getCaption('fields', $args['edge'], $field),
@@ -287,42 +288,21 @@ class Api {
 
 						// array merge to custom properties defined at config
 						if (isset($this->config['schema']['custom']['fields'][$field])) {
-							$payload['properties'][$field] = array_merge($payload['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
+							$schema['properties'][$field] = array_merge($schema['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
 						}
 
 						// add '*' to field title if required.
-						if( $payload['properties'][$field]['minLength'] > 0 ) {
-							$payload['properties'][$field]['title'] = $payload['properties'][$field]['title'] . '*';
+						if ($schema['properties'][$field]['minLength'] > 0) {
+							$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
 						}
 					}
-				}
-
-				// ADD RAW STRUCTURE NODE TO SCHEMA
-				// IF FIELD DEFINES ONE-TO-MANY RELATIONSHIP
-				if (substr($field, -3, 3) == '_id') {
-					$parentBean = substr($field, 0, -3);
-					$parent = R::getAssoc('DESCRIBE '. $parentBean);
-
-					foreach ($parent as $field => $properties) {
-						$payload['structure'][$parentBean] = array(
-							'field' 		=> $field,
-							'properties' 	=> $properties,
-						);
-					}
-				}
-				// ELSE, FIELD DEFINES
-				else {
-					$payload['structure'][$field] = array(
-						'field' 		=> $field,
-						'properties' 	=> $properties,
-					);
 				}
 			}
 
 			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
 			if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
 			
-				$payload['properties']['uploads_id'] = array(
+				$schema['properties']['uploads_id'] = array(
 					'title' 	=> 'Imagem',
 					'type'		=> 'string',
 					'format' 	=> 'url',
@@ -341,11 +321,15 @@ class Api {
 				);
 			}
 
+			// build api response payload
+			$payload = $schema;
+
 			// output response payload
 			return $response->withJson($payload);
 		}
 		else {
-			throw new \Exception("Error Processing Request (edge raw schema not found)", 1);
+			$err = array('error' => true, 'message' => getMessage('SCHEMA_NOTFOUND'));
+			return $response->withJson($err)->withStatus(404);
 		}
 	}
 
