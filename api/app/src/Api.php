@@ -194,13 +194,22 @@ class Api {
 		return $response->withJson($payload);
 	}
 
+	/**
+	  * Returns edge database table schema and properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function schema ($request, $response, $args) {
 
-		// read database schema
-		$schema['raw'] = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
+		// get database schema
+		$schema = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
 		// if raw schema found
-		if( !empty($schema['raw']) ) {
+		if (!empty($schema)) {
 
 			// define schema response payload array
 			$payload = array(
@@ -214,13 +223,13 @@ class Api {
 			);
 
 			// fill properties node into schema response array
-			foreach ($schema['raw'] as $field => $properties) {
+			foreach ($schema as $field => $properties) {
 
 				// check if field is not at config blacklist
-				if( !in_array($field, $this->config['schema']['default']['blacklist']) ){
+				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
 
 					// check if field defines one-to-many relationship
-					if( substr($field, -3, 3) == '_id' ){
+					if (substr($field, -3, 3) == '_id') {
 						$parent = substr($field, 0, -3);
 
 						$payload['properties'][$field] = array(
@@ -240,27 +249,25 @@ class Api {
 							$payload['properties'][$field]['enum'][] = $key;
 							$payload['properties'][$field]['options']['enum_titles'][] = $value;
 						}
-
 					}
-					else {
 					// else, field is literal and we can go on
+					else {
 
 						// prepare data
-						$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
+						$dbType 	= preg_split("/[()]+/", $schema[$field]['Type']);
 						$type 		= $dbType[0];
 						$format 	= $dbType[0];
 						$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-						$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+						$minLength 	= ($schema[$field]['Null'] == 'YES' ? 0 : 1);
 
 						// converts db type to json-editor expected type
-						if( array_key_exists($type, $this->config['schema']['default']['type']) ) {
+						if (array_key_exists($type, $this->config['schema']['default']['type'])) {
 							$type = $this->config['schema']['default']['type'][$type];
 						}
 
-						// converts db type to json-editor expected format
-						if( array_key_exists($format, $this->config['schema']['default']['format']) ) {
-
-							if($format == 'varchar' && $maxLength > 256){
+						// converts db format to json-editor expected format
+						if (array_key_exists($format, $this->config['schema']['default']['format'])) {
+							if ($format == 'varchar' && $maxLength > 256) {
 								$format = 'textarea';
 							}
 							else {
@@ -279,7 +286,7 @@ class Api {
 						);
 
 						// array merge to custom properties defined at config
-						if( isset($this->config['schema']['custom']['fields'][$field]) ) {
+						if (isset($this->config['schema']['custom']['fields'][$field])) {
 							$payload['properties'][$field] = array_merge($payload['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
 						}
 
@@ -292,7 +299,7 @@ class Api {
 
 				// ADD RAW STRUCTURE NODE TO SCHEMA
 				// IF FIELD DEFINES ONE-TO-MANY RELATIONSHIP
-				if( substr($field, -3, 3) == '_id' ) {
+				if (substr($field, -3, 3) == '_id') {
 					$parentBean = substr($field, 0, -3);
 					$parent = R::getAssoc('DESCRIBE '. $parentBean);
 
@@ -313,7 +320,7 @@ class Api {
 			}
 
 			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-			if( in_array($args['edge'] .'_uploads', $this->config['edges']['list']) ) {
+			if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
 			
 				$payload['properties']['uploads_id'] = array(
 					'title' 	=> 'Imagem',
