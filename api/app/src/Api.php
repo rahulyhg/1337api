@@ -460,6 +460,15 @@ class Api {
 		}
 	}
 
+	/**
+	  * Returns API coming soon message.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function soon ($request, $response, $args) {
 
 		// build api response payload
