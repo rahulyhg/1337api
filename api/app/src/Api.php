@@ -16,6 +16,15 @@ class Api {
 		$this->logger 	= $logger;
 	}
 
+	/**
+	  * API test method.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function test($request, $response, $args) {
 		$this->logger->info('Elijah says: hey mom, I\'m being logged!' );
 		return $response->withJson(array("message" => "Hello, tested!"));
