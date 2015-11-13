@@ -78,8 +78,8 @@ class Api {
 			}
 
 			// if hierarchy exists, iterates parent and child properties to $edges array
-			if (!empty($this->getEdgesHierarchy())) {
-				$hierarchy = $this->getEdgesHierarchy();
+			if (!empty($this->getHierarchy())) {
+				$hierarchy = $this->getHierarchy();
 
 				// build hierarchy list - depth 1
 				foreach ($edges as $edge => $obj) {
@@ -717,56 +717,65 @@ class Api {
 		}
 	}
 
+	/**
+	  * Deletes existing item at database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function destroy ($request, $response, $args) {
 
-		// check relationships, if exists
-		$hierarchyArr = R::getAll('
-			SELECT TABLE_NAME as child, REFERENCED_TABLE_NAME as parent
-			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE REFERENCED_TABLE_NAME = "'.$args['edge'].'"
-		');
-
-		if( !empty($hierarchyArr) ) {
-
-			foreach ($hierarchyArr as $k => $v) {
-				
-				$childs = R::getAll('
-					SELECT * FROM '.$v['child'].' WHERE `'.$v['parent'].'_id` = '.$args['id'].'
-				');
-				if ( !empty($childs) ) {
-					$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
-					return $response->withJson($err)->withStatus(400);
-				}	
-			}
-		}
-
-		// no relationship? let's go on:
 		// dispense 'edge'
 		$item = R::load( $args['edge'], $args['id'] );
 
-		// let's start the delete transaction
-		R::begin();
-		try {
+		// if $item exists
+		if (!empty($item->id)) {
 
-			// destroy item, commit if success
-		    R::trash($item);
-			R::commit();
+			// check if edge has one-to-many relationship hierarchy
+			$hierarchy = $this->getHierarchy($args['edge']);
+			if (!empty($hierarchy[$args['edge']])) {
+				foreach ($hierarchy[$args['edge']] as $k => $child) {
+					${'ownList'} = 'own' . ucfirst($child) . 'List';
+					$childs = $item->${'ownList'};
+					if (!empty($childs)) {
+						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
+						return $response->withJson($err)->withStatus(400);
+					}
+				}
+			}
+			
+			// no relationship? let's go on:
+			// let's start the delete transaction
+			R::begin();
+			try {
 
-			// build api response array
-			$payload = array(
-				'id' 		=> $args['id'],
-				'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$args['id'].')',
-			);
+				// destroy item, commit if success
+			    R::trash($item);
+				R::commit();
 
-			// output response
-			return $response->withJson($payload);
+				// build api response array
+				$payload = array(
+					'id' 		=> $args['id'],
+					'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$args['id'].')',
+				);
 
-		} catch (\Exception $e) {
+				// output response
+				return $response->withJson($payload);
 
-			// rollback transaction
-			R::rollback();
+			} catch (\Exception $e) {
 
-			throw $e;
+				// rollback transaction
+				R::rollback();
+
+				throw $e;
+			}
+		}
+		else {
+			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			return $response->withJson($err)->withStatus(404);
 		}
 	}
 
@@ -872,23 +881,47 @@ class Api {
 		}
 	}
 
-	private function getEdgesHierarchy() {
+	private function getHierarchy($edge = null) {
 
-		// build hierarchy array, if exists		
-		$hierarchy = R::getAssoc('
-			SELECT TABLE_NAME as child, GROUP_CONCAT(REFERENCED_TABLE_NAME) as parent
-			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE REFERENCED_TABLE_NAME IS NOT NULL
-			GROUP BY child
-		');
+		// if param edge was passed, then
+		if($edge) {
 
-		// if not empty hierarchy, iterate
-		if (!empty($hierarchy)) {
-			foreach ($hierarchy as $child => $parent) {
-				$hierarchy[$child] = explode(',', $parent);
+			// build hierarchy array, if exists
+			$hierarchy = R::getAssoc('
+				SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
+				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+				WHERE (REFERENCED_TABLE_NAME IS NOT NULL AND REFERENCED_TABLE_NAME = \''.$edge.'\')
+				GROUP BY parent'
+			);
+
+			// if not empty hierarchy, iterate
+			if (!empty($hierarchy)) {
+				foreach ($hierarchy as $child => $parent) {
+					$hierarchy[$child] = explode(',', $parent);
+				}
 			}
+
 		}
-		
+
+		// else, just return full hierarchy
+		else {
+
+			// build hierarchy array, if exists
+			$hierarchy = R::getAssoc('
+				SELECT TABLE_NAME as child, GROUP_CONCAT(REFERENCED_TABLE_NAME) as parent
+				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+				WHERE REFERENCED_TABLE_NAME IS NOT NULL
+				GROUP BY child
+			');
+
+			// if not empty hierarchy, iterate
+			if (!empty($hierarchy)) {
+				foreach ($hierarchy as $child => $parent) {
+					$hierarchy[$child] = explode(',', $parent);
+				}
+			}
+		}		
+
 		return $hierarchy;
 	}
 
