@@ -52,10 +52,9 @@ $app->group('/private', function () use ($validate){
 	$this->put('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 		'SlimBean\Api:update');
 	$this->patch('/user/{id:[0-9]+}/password', 						'SlimBean\Api:updatePassword'); 
 
-	$this->get('/delete/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
 	$this->delete('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
 
-});//->add('SlimBean\Auth:isAuth');
+});->add('SlimBean\Auth:isAuth');
 
 // PUBLIC ROUTES
 $app->group('/public', function () use ($validate){

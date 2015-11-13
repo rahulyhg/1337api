@@ -717,7 +717,6 @@ class Api {
 		}
 	}
 
-
 	/**
 	  * Deletes existing item at database.
 	  *
@@ -729,79 +728,54 @@ class Api {
 	  */
 	public function destroy ($request, $response, $args) {
 
-
-		echo $args['edge'] . '->' . $args['id'];
-		echo '<hr />';
-
 		// dispense 'edge'
 		$item = R::load( $args['edge'], $args['id'] );
 
+		// if $item exists
 		if (!empty($item->id)) {
 
-
-			print_r($this->getHierarchy($args['edge']));
-				die();
-
-			// check relationships, if exists
-			if (!empty($this->getHierarchy())) {
-				# code...
+			// check if edge has one-to-many relationship hierarchy
+			$hierarchy = $this->getHierarchy($args['edge']);
+			if (!empty($hierarchy[$args['edge']])) {
+				foreach ($hierarchy[$args['edge']] as $k => $child) {
+					${'ownList'} = 'own' . ucfirst($child) . 'List';
+					$childs = $item->${'ownList'};
+					if (!empty($childs)) {
+						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
+						return $response->withJson($err)->withStatus(400);
+					}
+				}
 			}
-
 			
+			// no relationship? let's go on:
+			// let's start the delete transaction
+			R::begin();
+			try {
 
+				// destroy item, commit if success
+			    R::trash($item);
+				R::commit();
 
+				// build api response array
+				$payload = array(
+					'id' 		=> $args['id'],
+					'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$args['id'].')',
+				);
 
+				// output response
+				return $response->withJson($payload);
 
+			} catch (\Exception $e) {
 
+				// rollback transaction
+				R::rollback();
+
+				throw $e;
+			}
 		}
-		else{
+		else {
 			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
 			return $response->withJson($err)->withStatus(404);
-		}
-
-
-		die();
-
-
-		if( !empty($hierarchyArr) ) {
-
-			foreach ($hierarchyArr as $k => $v) {
-				
-				$childs = R::getAll('
-					SELECT * FROM '.$v['child'].' WHERE `'.$v['parent'].'_id` = '.$args['id'].'
-				');
-				if ( !empty($childs) ) {
-					$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
-					return $response->withJson($err)->withStatus(400);
-				}	
-			}
-		}
-
-		// no relationship? let's go on:
-
-		// let's start the delete transaction
-		R::begin();
-		try {
-
-			// destroy item, commit if success
-		    R::trash($item);
-			R::commit();
-
-			// build api response array
-			$payload = array(
-				'id' 		=> $args['id'],
-				'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$args['id'].')',
-			);
-
-			// output response
-			return $response->withJson($payload);
-
-		} catch (\Exception $e) {
-
-			// rollback transaction
-			R::rollback();
-
-			throw $e;
 		}
 	}
 
@@ -914,10 +888,11 @@ class Api {
 
 			// build hierarchy array, if exists
 			$hierarchy = R::getAssoc('
-				SELECT REFERENCED_TABLE_NAME as parent, TABLE_NAME as child
+				SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
 				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-				WHERE (REFERENCED_TABLE_NAME IS NOT NULL AND REFERENCED_TABLE_NAME = \''.$edge.'\');
-			');
+				WHERE (REFERENCED_TABLE_NAME IS NOT NULL AND REFERENCED_TABLE_NAME = \''.$edge.'\')
+				GROUP BY parent'
+			);
 
 			// if not empty hierarchy, iterate
 			if (!empty($hierarchy)) {
@@ -948,27 +923,6 @@ class Api {
 		}		
 
 		return $hierarchy;
-	}
-
-	private function getChildren($parentedge, $parentid) {
-
-		// build hierarchy array, if exists		
-		$childedge = R::getAssoc('
-			SELECT TABLE_NAME as child
-			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE (REFERENCED_TABLE_NAME = \''.$parentedge.'\');
-		');
-
-		// if not empty hierarchy, iterate
-		if (!empty($childedge)) {
-
-			$children  = R::find( 'product', 'category_id = 28');
-
-
-//			$children = R::getAssoc( 'SELECT id FROM ' . $childedge[0] . ' WHERE ' . $parentedge . '_id = ' . $parentid );
-		}
-		
-		return $children;
 	}
 
 }
