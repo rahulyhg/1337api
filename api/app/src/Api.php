@@ -779,6 +779,15 @@ class Api {
 		}
 	}
 
+	/**
+	  * Receives uploaded files and insert upload entry at database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function upload ($request, $response, $args) {
 
 		// get data from 'body' request payload
