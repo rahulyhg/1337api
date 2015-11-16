@@ -169,7 +169,7 @@ class Api {
 
 		// define response vars
 		$count = R::count( $args['edge'] );
-		$limit = $this->config['api']['params']['pagination'];
+		$limit = ( !empty($this->config['api']['params']['pagination']) ? $this->config['api']['params']['pagination'] : 10 );
 
 		// build response payload
 		$payload = array(

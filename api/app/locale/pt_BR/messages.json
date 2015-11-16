@@ -8,7 +8,6 @@
 	"CREATE_FAIL": "Erro na gravação do registro.",
 	"CREATE_SUCCESS": "Criado com sucesso.",
 	"COMING_SOON": "elijah says: still in development.",
-	"COUNT_FAIL": "Erro na contagem dos registros.",
 	"DATA_MISSING": "Não foi possível processar sua requisição (form data missing).",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
 	"DESTROY_FAIL": "Erro na exclusão do registro.",
