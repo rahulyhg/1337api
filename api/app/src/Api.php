@@ -888,47 +888,40 @@ class Api {
 		}
 	}
 
+	/**
+	  * Checks Hierarchy and relationships between edges at database tables.
+	  *
+	  * @param string $edge Optional parameter to filter results by only one edge.
+	  *
+	  * @return array Hierarchy array with Parent Key and Children Values.
+	  */
 	private function getHierarchy($edge = null) {
 
-		// if param edge was passed, then
+		// if param edge was passed, filter
 		if (!empty($edge)) {
-
-			// build hierarchy array, if exists
-			$hierarchy = R::getAssoc('
-				SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
-				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-				WHERE (REFERENCED_TABLE_NAME IS NOT NULL AND REFERENCED_TABLE_NAME = \''.$edge.'\')
-				GROUP BY parent'
-			);
-
-			// if not empty hierarchy, iterate
-			if (!empty($hierarchy)) {
-				foreach ($hierarchy as $parent => $child) {
-					$hierarchy[$parent] = explode(',', $child);
-				}
-			}
-
+			$where_clause = 'REFERENCED_TABLE_NAME = \''.$edge.'\'';
+		}
+		// else, just give me all
+		else {
+			$where_clause = 'REFERENCED_TABLE_NAME IS NOT NULL';
 		}
 
-		// else, just return full hierarchy
-		else {
+		// build hierarchy array, if exists
+		$hierarchy = R::getAssoc('
+			SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
+			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+			WHERE (' . $where_clause . ')
+			GROUP BY parent'
+		);
 
-			// build hierarchy array, if exists
-			$hierarchy = R::getAssoc('
-				SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
-				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-				WHERE REFERENCED_TABLE_NAME IS NOT NULL
-				GROUP BY parent
-			');
-
-			// if not empty hierarchy, iterate
-			if (!empty($hierarchy)) {
-				foreach ($hierarchy as $parent => $child) {
-					$hierarchy[$parent] = explode(',', $child);
-				}
+		// if not empty hierarchy, iterate
+		if (!empty($hierarchy)) {
+			foreach ($hierarchy as $parent => $child) {
+				$hierarchy[$parent] = explode(',', $child);
 			}
-		}		
+		}
 
+		// and return array
 		return $hierarchy;
 	}
 
