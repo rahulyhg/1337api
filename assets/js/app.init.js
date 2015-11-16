@@ -14,8 +14,8 @@ ANGULAR CONSTANTS
 AdminApp.constant(
 	'config',
 		{
-			API_BASE_URL: 'api/private',
-			API_SIGNIN_URL: 'api/auth/signin',
+			API_BASE_URL: 'api/v1/private',
+			API_SIGNIN_URL: 'api/v1/auth/signin',
 		}
 );
 
@@ -207,7 +207,7 @@ var jeUploadFunction = function(type, file, cbs) {
 										},										
 										type: 'POST',
 										// TODO: need to pass "edge" at upload url.
-										url: 'api/private/page/upload',
+										url: 'api/v1/private/pages/upload',
 										headers: {'Authorization':'Bearer ' + token},
 										contentType: 'application/json; charset=utf-8',
 										dataType: 'json',
