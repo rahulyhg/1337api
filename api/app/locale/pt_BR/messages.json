@@ -16,7 +16,6 @@
 	"DESTROY_SUCCESS": "Excluído com sucesso.",
 	"EXPORT_FAIL": "Não foi possível exportar os registros.",
 	"EDGE_NOTFOUND": "Não foi possível processar sua requisição. (404: edge não encontrado)",
-	"EDGES_FAIL": "Não foi possível recuperar edges da API.",
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
 	"LIST_FAIL": "Erro na listagem dos registros.",

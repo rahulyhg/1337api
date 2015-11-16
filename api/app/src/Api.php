@@ -78,31 +78,20 @@ class Api {
 			}
 
 			// if hierarchy exists, iterates parent and child properties to $edges array
-			if (!empty($this->getHierarchy())) {
-				$hierarchy = $this->getHierarchy();
-
-				// build hierarchy list - depth 1
+			$hierarchy = $this->getHierarchy();	
+			if (!empty($hierarchy)) {
+				// build hierarchy list - only 1 depth
+				// TODO: we should support more than 1 depth into the recursion
 				foreach ($edges as $edge => $obj) {
 					if (array_key_exists($edge, $hierarchy)) {
-						$edges[$edge]['has_parent'] = true;
-
-						foreach ($hierarchy[$edge] as $y => $z) {
-							$edges[$z]['has_child'] = true;
-							$edges[$edge]['parent'][$z] = $edges[$z];
-						}
-
-						// build hierarchy list - depth 2
-						if ($edges[$edge]['has_parent']) {
-							foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
-								if (array_key_exists($parentBean, $hierarchy)) {
-									$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
-									foreach ($hierarchy[$parentBean] as $y => $z) {
-										$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
-									}
-								}
+						$edges[$edge]['has_child'] = true;
+						foreach ($hierarchy[$edge] as $k => $child) {
+							if (!in_array($child, $this->config['edges']['blacklist'])) {
+								$edges[$child]['has_parent'] = true;
+								$edges[$child]['parent'][$edge] = $edges[$edge];								
 							}
 						}
-					}
+					} 
 				}
 			}
 		}
@@ -917,16 +906,16 @@ class Api {
 
 			// build hierarchy array, if exists
 			$hierarchy = R::getAssoc('
-				SELECT TABLE_NAME as child, GROUP_CONCAT(REFERENCED_TABLE_NAME) as parent
+				SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
 				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
 				WHERE REFERENCED_TABLE_NAME IS NOT NULL
-				GROUP BY child
+				GROUP BY parent
 			');
 
 			// if not empty hierarchy, iterate
 			if (!empty($hierarchy)) {
-				foreach ($hierarchy as $child => $parent) {
-					$hierarchy[$child] = explode(',', $parent);
+				foreach ($hierarchy as $parent => $child) {
+					$hierarchy[$parent] = explode(',', $child);
 				}
 			}
 		}		
