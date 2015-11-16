@@ -423,7 +423,6 @@ class Api {
 			//outstream response
 			header('Content-Type: text/csv');
 			header('Content-Disposition: attachment; filename='. $filename);
-
 			$outstream = fopen('php://output', 'w');
 
 				// inject field keys to data as csv export table heading
@@ -480,7 +479,8 @@ class Api {
 
 		// if no data was sent, return bad request response
 		if (empty($data)) {
-			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));
 			return $response->withJson($err)->withStatus(400);
 		}
 
@@ -490,9 +490,11 @@ class Api {
 		// foreach $data request payload, build array to insert
 		foreach ($data as $field => $value) {
 
-			// IF field is an id, throw exception
+			// IF field is an id, returns bad request response
 			if ($field == 'id') {
-				throw new \Exception("Error Processing Request (field `id` is not allowed when creating a resource)", 1);
+				$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
+				$this->logger->notice($err['message'], array($args, $data));
+				return $response->withJson($err)->withStatus(400);
 			}
 
 			// IF field defines uploads many-to-many relationship
@@ -543,13 +545,11 @@ class Api {
 
 			// else something happened, throw error
 			else {
-				$errorMessage = getMessage('CREATE_FAIL');
-				throw new \Exception($errorMessage, 1);
+				$err = getMessage('CREATE_FAIL');
+				throw new \Exception($err, 1);
 			}
 		}
 		catch(\Exception $e) {
-
-			// rollback transaction
 			R::rollback();
 			throw $e;
 		}
@@ -571,66 +571,76 @@ class Api {
 
 		// if no data was sent, return bad request response
 		if (empty($data)) {
-			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));			
 			return $response->withJson($err)->withStatus(400);
 		}
 
 		// dispense 'edge'
 		$item = R::load( $args['edge'], $args['id'] );
 
-		// foreach $data request payload, build array to insert
-		foreach ($data as $field => $value) {
+		// if item exists at database
+		if (!empty($item['id'])) {
 
-			// IF field is an id and does not match, throw exception
-			if ($field == 'id' && $value != $args['id']) {
-				throw new \Exception("Error Processing Request (field `id` does not match with request)", 1);
+			// foreach $data request payload, build array to insert
+			foreach ($data as $field => $value) {
+
+				// IF field is an id and does not match, throw exception
+				if ($field == 'id' && $value != $args['id']) {
+					$err = array('error' => true, 'message' => getMessage('INVALID_ID_MATCH_FORMDATA'));
+					$this->logger->notice($err['message'], array($args, $data));
+					return $response->withJson($err)->withStatus(400);
+				}
+
+				// IF field defines uploads many-to-many relationship
+				else if ($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['edges']['list'])) {
+					$upload = R::dispense( 'uploads' );
+					$upload->id = $value;
+					$item->sharedUploadList[] = $upload;
+				}
+
+				// IF field is a password, hash it up
+				else if ($field == 'password') {
+					$item[$field] = md5($value);
+				}
+
+				// ELSE field is literal, go on
+				else {
+					$item[$field] = $value;			
+				}
 			}
 
-			// IF field defines uploads many-to-many relationship
-			else if ($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['edges']['list'])) {
-				$upload = R::dispense( 'uploads' );
-				$upload->id = $value;
-				$item->sharedUploadList[] = $upload;
-			}
+			// inject modified current time to array to update
+			$item['modified'] = R::isoDateTime();
 
-			// IF field is a password, hash it up
-			else if ($field == 'password') {
-				$item[$field] = md5($value);
-			}
+			// let's start the update transaction
+			R::begin();
 
-			// ELSE field is literal, go on
-			else {
-				$item[$field] = $value;			
+			try {
+				// update item
+				R::store($item);
+				
+				// commit transaction
+				R::commit();
+
+				// build api response payload
+				$payload = array(
+					'id' 		=> $args['id'],
+					'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
+				);
+
+				//output response
+				return $response->withJson($payload);
+			}
+			catch(\Exception $e) {
+				R::rollback();
+				throw $e;
 			}
 		}
-
-		// inject modified current time to array to update
-		$item['modified'] = R::isoDateTime();
-
-		// let's start the update transaction
-		R::begin();
-
-		try {
-			// update item
-			R::store($item);
-			
-			// commit transaction
-			R::commit();
-
-			// build api response payload
-			$payload = array(
-				'id' 		=> $args['id'],
-				'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
-			);
-
-			//output response
-			return $response->withJson($payload);
-		}
-		catch(\Exception $e) {
-
-			// rollback transaction
-			R::rollback();
-			throw $e;
+		else {
+			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(404);
 		}
 	}
 
@@ -648,14 +658,15 @@ class Api {
 		// get data from 'body' request payload
 		$data = $request->getParsedBody();
 
-		// if no data was sent, return bad request response
-		if (empty($data)) {
-			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+		// if required data was not sent, return bad request response
+		if (empty($data['password']) || empty($data['new_password']) || empty($data['confirm_new_password'])) {
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 
 		// dispense 'edge'
-		$item = R::load( 'user', $args['id'] );
+		$item = R::load( 'users', $args['id'] );
 
 		// verify if password is valid
 		if ($item['password'] == md5($data['password'])) {
@@ -691,12 +702,14 @@ class Api {
 				}
 			} 
 			else {
-				$err = array('error' => true, 'message' => getMessage('PASSWORD_CONFIRM_FAIL'));
+				$err = array('error' => true, 'message' => getMessage('UPDATE_PASSWORD_CONFIRM_FAIL'));
+				$this->logger->notice($err['message'], $args);
 				return $response->withJson($err)->withStatus(400);
 			}
 		} 
 		else {
 			$err = array('error' => true, 'message' => getMessage('AUTH_PASS_FAIL'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 	}
@@ -716,7 +729,7 @@ class Api {
 		$item = R::load( $args['edge'], $args['id'] );
 
 		// if $item exists
-		if (!empty($item->id)) {
+		if (!empty($item['id'])) {
 
 			// check if edge has one-to-many relationship hierarchy
 			$hierarchy = $this->getHierarchy($args['edge']);
@@ -726,6 +739,7 @@ class Api {
 					$childs = $item->${'ownList'};
 					if (!empty($childs)) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
+						$this->logger->notice($err['message'], $args);
 						return $response->withJson($err)->withStatus(400);
 					}
 				}
@@ -750,15 +764,13 @@ class Api {
 				return $response->withJson($payload);
 
 			} catch (\Exception $e) {
-
-				// rollback transaction
 				R::rollback();
-
 				throw $e;
 			}
 		}
 		else {
 			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(404);
 		}
 	}
@@ -779,24 +791,28 @@ class Api {
 
 		// check if data was sent
 		if ( empty($data) ) {
-				$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
-				return $response->withJson($err)->withStatus(400);			
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(400);			
 		}
 		elseif ( empty($data['blob']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_BLOB_MISSING'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filesize']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILESIZE_MISSING'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filename']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILENAME_MISSING'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 
 		// explode $data['blob']
-			// TODO: this procedure can be done in one line if I use regex. verify correct expression.
+			// TODO: this procedure could be done in one line if I use regex. verify correct expression.
 			list($type, $data['blob']) = explode(';', $data['blob']);
 			list(,$type) = explode(':', $type);
 			list(,$data['blob']) = explode(',', $data['blob']);
@@ -854,7 +870,7 @@ class Api {
 				// build api response array
 				$payload = array(
 					'id' 		=> $id,
-					'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: '.$id.')',
+					'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: ' . $id . ')',
 				);
 				
 				//output response
@@ -867,9 +883,7 @@ class Api {
 			}
 		}
 		catch(\Exception $e) {
-			// rollback transaction
 			R::rollback();
-
 			throw $e;
 		}
 	}

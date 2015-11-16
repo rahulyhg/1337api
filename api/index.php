@@ -50,7 +50,7 @@ $app->group('/private', function () use ($validate){
 	$this->post('/{edge:'.$validate['edges'].'}/upload', 			'SlimBean\Api:upload');
 
 	$this->put('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 		'SlimBean\Api:update');
-	$this->patch('/user/{id:[0-9]+}/password', 						'SlimBean\Api:updatePassword'); 
+	$this->patch('/users/{id:[0-9]+}/password', 						'SlimBean\Api:updatePassword'); 
 
 	$this->delete('/{edge:'.$validate['edges'].'}/{id:[0-9]+}', 	'SlimBean\Api:destroy'); 
 
