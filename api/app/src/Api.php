@@ -330,7 +330,7 @@ class Api {
 		$item = R::load( $args['edge'], $args['id'] );
 
 		// if item retrieved
-		if(!empty($item['id'])) {
+		if (!empty($item['id'])) {
 
 			// foreach $item field, build response read array
 			foreach ($item as $field => $value) {
@@ -353,7 +353,7 @@ class Api {
 							}
 						}
 						else {
-							throw new \Exception('Error Processing Request (Parent Relationship Broken with Parent ID: "'.$value.'" FROM PARENT TABLE: "'.$parentEdge.'" NOT FOUND)', 1);
+							throw new \Exception(getMessage('BROKEN_RELATIONSHIP', 1));
 						}
 					}
 				}
@@ -367,6 +367,7 @@ class Api {
 		}
 		else {
 			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(404);
 		}
 	}
