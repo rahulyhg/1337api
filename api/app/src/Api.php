@@ -196,129 +196,121 @@ class Api {
 		// get database schema
 		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
-		// if raw schema found
-		if (!empty($raw)) {
+		// define default schema array
+		$schema = array(
+			'bean' 					=> $args['edge'],
+			'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
+			'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
+			'type' 					=> 'object',
+			'required' 				=> true,
+			'additionalProperties' 	=> false,
+			'properties' 			=> array(),
+			'raw' 					=> $raw
+		);
 
-			// define default schema array
-			$schema = array(
-				'bean' 					=> $args['edge'],
-				'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
-				'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
-				'type' 					=> 'object',
-				'required' 				=> true,
-				'additionalProperties' 	=> false,
-				'properties' 			=> array(),
-				'raw' 					=> $raw
-			);
+		// fill properties node into schema response array
+		foreach ($schema['raw'] as $field => $properties) {
 
-			// fill properties node into schema response array
-			foreach ($schema['raw'] as $field => $properties) {
+			// check if field is not at config blacklist
+			if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
 
-				// check if field is not at config blacklist
-				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
+				// check if field defines one-to-many relationship
+				if (substr($field, -3, 3) == '_id') {
+					$parent = substr($field, 0, -3);
 
-					// check if field defines one-to-many relationship
-					if (substr($field, -3, 3) == '_id') {
-						$parent = substr($field, 0, -3);
+					$schema['properties'][$field] = array(
+						'type' 				=> 'integer',
+						'title' 			=> getCaption('fields', $schema['bean'], $parent),
+						'required'	 		=> true,
+						'minLength'	 		=> 1,
+						'enum' 				=> array(),
+						'options' 			=> array(
+							'enum_titles' 	=> array()
+						)
+					);
 
-						$schema['properties'][$field] = array(
-							'type' 				=> 'integer',
-							'title' 			=> getCaption('fields', $schema['bean'], $parent),
-							'required'	 		=> true,
-							'minLength'	 		=> 1,
-							'enum' 				=> array(),
-							'options' 			=> array(
-								'enum_titles' 	=> array()
-							)
-						);
+					$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
 
-						$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
+					foreach ($parentOptions as $key => $value) {
+						$schema['properties'][$field]['enum'][] = $key;
+						$schema['properties'][$field]['options']['enum_titles'][] = $value;
+					}
+				}
+				// else, field is literal and we can go on
+				else {
 
-						foreach ($parentOptions as $key => $value) {
-							$schema['properties'][$field]['enum'][] = $key;
-							$schema['properties'][$field]['options']['enum_titles'][] = $value;
+					// prepare data
+					$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
+					$type 		= $dbType[0];
+					$format 	= $dbType[0];
+					$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
+					$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+
+					// converts db type to json-editor expected type
+					if (array_key_exists($type, $this->config['schema']['default']['type'])) {
+						$type = $this->config['schema']['default']['type'][$type];
+					}
+
+					// converts db format to json-editor expected format
+					if (array_key_exists($format, $this->config['schema']['default']['format'])) {
+						if ($format == 'varchar' && $maxLength > 256) {
+							$format = 'textarea';
+						}
+						else {
+							$format = $this->config['schema']['default']['format'][$format];
 						}
 					}
-					// else, field is literal and we can go on
-					else {
 
-						// prepare data
-						$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
-						$type 		= $dbType[0];
-						$format 	= $dbType[0];
-						$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-						$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+					// builds default properties array to json-editor
+					$schema['properties'][$field] = array(
+						'type'			=> $type,
+						'format' 		=> $format,
+						'title' 		=> getCaption('fields', $args['edge'], $field),
+						'required'	 	=> true,
+						'minLength' 	=> $minLength,
+						'maxLength'		=> $maxLength
+					);
 
-						// converts db type to json-editor expected type
-						if (array_key_exists($type, $this->config['schema']['default']['type'])) {
-							$type = $this->config['schema']['default']['type'][$type];
-						}
+					// array merge to custom properties defined at config
+					if (isset($this->config['schema']['custom']['fields'][$field])) {
+						$schema['properties'][$field] = array_merge($schema['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
+					}
 
-						// converts db format to json-editor expected format
-						if (array_key_exists($format, $this->config['schema']['default']['format'])) {
-							if ($format == 'varchar' && $maxLength > 256) {
-								$format = 'textarea';
-							}
-							else {
-								$format = $this->config['schema']['default']['format'][$format];
-							}
-						}
-
-						// builds default properties array to json-editor
-						$schema['properties'][$field] = array(
-							'type'			=> $type,
-							'format' 		=> $format,
-							'title' 		=> getCaption('fields', $args['edge'], $field),
-							'required'	 	=> true,
-							'minLength' 	=> $minLength,
-							'maxLength'		=> $maxLength
-						);
-
-						// array merge to custom properties defined at config
-						if (isset($this->config['schema']['custom']['fields'][$field])) {
-							$schema['properties'][$field] = array_merge($schema['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
-						}
-
-						// add '*' to field title if required.
-						if ($schema['properties'][$field]['minLength'] > 0) {
-							$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
-						}
+					// add '*' to field title if required.
+					if ($schema['properties'][$field]['minLength'] > 0) {
+						$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
 					}
 				}
 			}
+		}
 
-			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-			if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
-			
-				$schema['properties']['uploads_id'] = array(
-					'title' 	=> 'Imagem',
-					'type'		=> 'string',
-					'format' 	=> 'url',
-					'required'	=> true,
-					'minLength' => 0,
-					'maxLength' => 128,
-		  			'options'	=> array(
-		  				'upload' 	=> true,
-		  			),
-					'links' 	=> array(
-						array(
-							'rel' 	=> '',
-							'href' 	=> '{{self}}',
-						)
+		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
+		if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
+		
+			$schema['properties']['uploads_id'] = array(
+				'title' 	=> 'Imagem',
+				'type'		=> 'string',
+				'format' 	=> 'url',
+				'required'	=> true,
+				'minLength' => 0,
+				'maxLength' => 128,
+	  			'options'	=> array(
+	  				'upload' 	=> true,
+	  			),
+				'links' 	=> array(
+					array(
+						'rel' 	=> '',
+						'href' 	=> '{{self}}',
 					)
-				);
-			}
-
-			// build api response payload
-			$payload = $schema;
-
-			// output response payload
-			return $response->withJson($payload);
+				)
+			);
 		}
-		else {
-			$err = array('error' => true, 'message' => getMessage('SCHEMA_NOTFOUND'));
-			return $response->withJson($err)->withStatus(404);
-		}
+
+		// build api response payload
+		$payload = $schema;
+
+		// output response payload
+		return $response->withJson($payload);
 	}
 
 	/**
