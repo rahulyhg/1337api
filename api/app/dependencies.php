@@ -4,10 +4,10 @@
 ** ORM REDBEAN - INIT ********************************************************************************
 *************************************************************************************************** */ 
 
-if(R::testConnection() == TRUE){
+if (R::testConnection() == TRUE) {
 
 	// DEBUG MODE
-	if($config['api']['debug']){
+	if ($config['api']['debug']) {
 		R::debug( TRUE, 1 );
 	}
 
@@ -37,7 +37,7 @@ $c['logger'] = function ($c) {
 	$settings = $c->get('settings');
 	$logger = new \Monolog\Logger($settings['logger']['name']);
 	$logger->pushProcessor(new \Monolog\Processor\UidProcessor());
-	$logger->pushHandler(new \Monolog\Handler\StreamHandler($settings['logger']['path'], \Monolog\Logger::DEBUG));
+	$logger->pushHandler(new \Monolog\Handler\RotatingFileHandler($settings['logger']['path'], \Monolog\Logger::DEBUG));
 	return $logger;
 };
 
