@@ -36,6 +36,7 @@ $c = $app->getContainer();
 $c['logger'] = function ($c) {
 	$settings = $c->get('settings');
 	$logger = new \Monolog\Logger($settings['logger']['name']);
+	$logger->pushProcessor(new \Monolog\Processor\WebProcessor());
 	$logger->pushProcessor(new \Monolog\Processor\UidProcessor());
 	$logger->pushHandler(new \Monolog\Handler\RotatingFileHandler($settings['logger']['path'], \Monolog\Logger::DEBUG));
 	return $logger;
