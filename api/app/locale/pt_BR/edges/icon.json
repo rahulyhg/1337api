@@ -1,9 +1,9 @@
 {
-	"city": "map-marker",
-	"category": "th-large",
-	"collection": "th-large",
-	"page": "file-text",
-	"region": "map-marker",
-	"state": "map-marker",
-	"user": "users"
+	"cities": "map-marker",
+	"categories": "th-large",
+	"collections": "th-large",
+	"pages": "file-text",
+	"regions": "map-marker",
+	"states": "map-marker",
+	"users": "users"
 }

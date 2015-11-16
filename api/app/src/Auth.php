@@ -27,7 +27,7 @@ class Auth {
 			'password' 	=> md5($data['password'])
 		);
 
-		$user = R::findOne('user', 'email = :email AND password = :password AND active = true', $credentials );
+		$user = R::findOne('users', 'email = :email AND password = :password AND active = true', $credentials );
 
 		// IF USER EXISTS
 		if(!empty($user)){

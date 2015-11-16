@@ -47,7 +47,7 @@ return array(
 	// $config EDGES (Default Values)
 	'edges' => [
 		'list'		=> array(),
-		'blacklist' => array('uploads','page_uploads'),
+		'blacklist' => array('uploads','pages_uploads'),
 	],
 
 	// $config SCHEMA (Form Builder)
