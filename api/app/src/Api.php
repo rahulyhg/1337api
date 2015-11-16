@@ -411,11 +411,9 @@ class Api {
 
 		// collect data
 		$raw = R::findAll( $args['edge'] );
+		$data = R::exportAll( $raw, FALSE, array('NULL') );
 
-		if (!empty($raw)) {
-			
-			// export it all
-			$data = R::exportAll( $raw, FALSE, array('NULL') );
+		if (!empty($data)) {
 
 			// define csv properties
 			$headings = array_keys($data[0]);
@@ -440,7 +438,8 @@ class Api {
 			fclose($outstream);
 		}
 		else {
-			$err = array('error' => true, 'message' => getMessage('EDGE_NOTFOUND'));
+			$err = array('error' => true, 'message' => getMessage('EXPORT_EMPTY'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(404);			
 		}
 	}
