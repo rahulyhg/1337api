@@ -877,7 +877,7 @@ class Api {
 	private function getHierarchy($edge = null) {
 
 		// if param edge was passed, then
-		if($edge) {
+		if (!empty($edge)) {
 
 			// build hierarchy array, if exists
 			$hierarchy = R::getAssoc('
@@ -889,8 +889,8 @@ class Api {
 
 			// if not empty hierarchy, iterate
 			if (!empty($hierarchy)) {
-				foreach ($hierarchy as $child => $parent) {
-					$hierarchy[$child] = explode(',', $parent);
+				foreach ($hierarchy as $parent => $child) {
+					$hierarchy[$parent] = explode(',', $child);
 				}
 			}
 
