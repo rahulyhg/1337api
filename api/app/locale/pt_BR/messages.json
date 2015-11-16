@@ -18,7 +18,6 @@
 	"EDGE_NOTFOUND": "Não foi possível processar sua requisição. (404: edge não encontrado)",
 	"HI": "Olá, bem-vindo à área administrativa.",
 	"INVALID_REQUEST": "Não foi possível processar sua requisição. (parâmetros inválidos)",
-	"LIST_FAIL": "Erro na listagem dos registros.",
 	"NOT_FOUND": "Não encontrado (404).",
 	"PASSWORD_CONFIRM_FAIL": "A nova senha não confere. (Verifique o campo Confirme Nova Senha).",
 	"READ_FAIL": "Erro na leitura do registro.",

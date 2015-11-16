@@ -128,8 +128,9 @@ class Api {
 				$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
 			}
 			else {
-				$errorMessage = getMessage('INVALID_REQUEST');
-				throw new \Exception($errorMessage, 1);
+				$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+				$this->logger->notice($err['message'], $args);
+				return $response->withJson($err)->withStatus(400);
 			}
 		} 
 		else {
