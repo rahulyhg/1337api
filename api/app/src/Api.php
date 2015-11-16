@@ -143,7 +143,9 @@ class Api {
 			// list is not empty, let's foreach and build response array
 			foreach ($items as $item => $content) {
 				foreach ($content as $field => $value) {
-					$payload[$item][$field] = $value;
+					if (in_array($field, $this->config['api']['list_fields'])) {
+						$payload[$item][$field] = $value;
+					}
 				}
 			}
 		}

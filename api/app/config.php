@@ -39,6 +39,7 @@ return array(
 		'params' => array(
 			'pagination' => 5,
 		),
+		'list_fields' => array('id', 'name', 'created', 'modified'),
 		'uploads' => array(
 			'basepath' => '../uploads/',
 		),
