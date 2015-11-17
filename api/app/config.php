@@ -1,4 +1,10 @@
 <?php
+/**
+ * SlimBean global settings configuration file.
+ *
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 
 /* ***************************************************************************************************
 ** PHP CONSTANTS *************************************************************************************
