@@ -89,7 +89,6 @@ class Auth {
 		}
 	}
 
-
 	/**
 	  * Authentication Middleware to check authorization token method.
 	  *
@@ -102,7 +101,7 @@ class Auth {
 	public function isAuth($request, $response, $next) {
 
 		// CHECK AUTHORIZATION HEADER
-		if ( !empty($request->getHeader('Authorization')[0]) ) {
+		if (!empty($request->getHeader('Authorization')[0])) {
 
 			try {
 				
@@ -112,7 +111,7 @@ class Auth {
 				$token 		= JWT::decode($jwt, $secretKey, array('HS512'));
 
 				// if token is valid, go on
-				if($token){
+				if ($token) {
 					return $response = $next($request, $response);
 				}
 
@@ -120,36 +119,43 @@ class Auth {
 			catch (\UnexpectedValueException $e) {
 				// @throws UnexpectedValueException :: Provided JWT was invalid
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				$this->logger->notice($err['message'], $args);				
 				return $response->withJson($err)->withStatus(401);
 			}
 			catch (\DomainException $e) {
 				// @throws DomainException :: Algorithm was not provided
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				$this->logger->notice($err['message'], $args);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (\SignatureInvalidException $e) {
 				// @throws SignatureInvalidException :: Provided JWT was invalid because the signature verification failed
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				$this->logger->notice($err['message'], $args);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (\BeforeValidException $e) {
 				// @throws BeforeValidException :: Provided JWT is trying to be used before it's eligible as defined by 'nbf'
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				$this->logger->notice($err['message'], $args);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (\ExpiredException $e) {
 				// @throws ExpiredException :: Provided JWT has since expired, as defined by the 'exp' claim
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_EXPIRED'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
+				$this->logger->notice($err['message'], $args);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (Exception $e) {
 				// @throws Exception :: Generic try catch Exception
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL'));
+				$this->logger->notice($err['message'], $args);
 				return $response->withJson($err)->withStatus(401);
 			}
 		}
 		else {
 			$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_HEADER_MISSING'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(401);
 		}
 	}
