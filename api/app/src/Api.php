@@ -792,22 +792,22 @@ class Api {
 		// check if data was sent
 		if ( empty($data) ) {
 			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
-			$this->logger->notice($err['message'], $args);
+			$this->logger->warning($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);			
 		}
 		elseif ( empty($data['blob']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_BLOB_MISSING'));
-			$this->logger->notice($err['message'], $args);
+			$this->logger->warning($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filesize']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILESIZE_MISSING'));
-			$this->logger->notice($err['message'], $args);
+			$this->logger->warning($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filename']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILENAME_MISSING'));
-			$this->logger->notice($err['message'], $args);
+			$this->logger->warning($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 
@@ -878,8 +878,8 @@ class Api {
 			}
 			// else something happened, throw error
 			else {
-				$errorMessage = getMessage('UPLOAD_FAIL');
-				throw new \Exception($errorMessage, 1);
+				$err = getMessage('UPLOAD_FAIL');
+				throw new \Exception($err, 1);
 			}
 		}
 		catch(\Exception $e) {
