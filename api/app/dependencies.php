@@ -50,28 +50,32 @@ $c['errorHandler'] = function ($c) {
 	return function ($request, $response, $exception) use ($c) {
 		global $config;
 
-        $c['logger']->error($exception->getMessage());
-        $c['logger']->debug($exception->getTraceAsString());
-
+		// default error payload
 		$err = array(
 			'error' => true, 
 			'code' => 500,
 			'message' => $exception->getMessage()
 		);
 
-		if ( strpos($exception->getMessage(), '1062 Duplicate entry') ) {
+		// handle common exceptions messages to be user-friendly
+		if (strpos($exception->getMessage(), '1062 Duplicate entry')) {
 			$err['message'] = getMessage('UNIQUE_FAIL');
 		}
-	
-		if ( $config['api']['debug'] ) {
+
+		// add stack trace if API debug is true	
+		if ($config['api']['debug']) {
 			$err['debug'] = array(
-				'code' => $exception->getCode(),
-				'message' => $exception->getMessage(),
-				'file' => $exception->getFile(),
-				'line' => $exception->getLine(),
-				'trace' => explode("\n", $exception->getTraceAsString())
+				'code' 		=> $exception->getCode(),
+				'message' 	=> $exception->getMessage(),
+				'file' 		=> $exception->getFile(),
+				'line' 		=> $exception->getLine(),
+				'trace' 	=> explode("\n", $exception->getTraceAsString())
 			);
 		}
+
+		// log and return response
+		$c['logger']->error($exception->getMessage());
+		$c['logger']->debug($exception->getTraceAsString());
 		return $c['response']->withJson($err)->withStatus(500);
 	};
 };
@@ -80,12 +84,15 @@ $c['errorHandler'] = function ($c) {
 $c['notFoundHandler'] = function ($c) {
 	return function ($request, $response) use ($c) {
 
+		// default error payload
 		$err = array(
 			'error' => true,
 			'code' => 404,
-			'message' => 'Request Parameters Invalid. (NOT FOUND)'
+			'message' => getMessage('NOT_FOUND')
 		);
 
+		// log and return response
+		$c['logger']->notice($err['message']);
 		return $c['response']->withJson($err)->withStatus(404);
 	};
 };
@@ -94,12 +101,15 @@ $c['notFoundHandler'] = function ($c) {
 $c['notAllowedHandler'] = function ($c) {
 	return function ($request, $response, $methods) use ($c) {
 
+		// default error payload
 		$err = array(
 			'error' => true,
 			'code' => 405,
-			'message' => 'Method must be one of: ' . implode(', ', $methods)
+			'message' => getMessage('NOT_ALLOWED') . ' (Tente Novamente utilizando: ' . implode(', ', $methods) . ')'
 		);
 
+		// log and return response
+		$c['logger']->notice($err['message']);
 		return $c['response']->withJson($err)->withStatus(405)->withHeader('Allow', implode(', ', $methods));
 	};
 };

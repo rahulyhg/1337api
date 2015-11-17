@@ -20,6 +20,7 @@
 	"INVALID_ID_MATCH_FORMDATA": "Não foi possível processar sua requisição. (campo `id` não confere com `id` requisitado na atualização do registro)",
 	"MISSING_FORMDATA": "Não foi possível processar sua requisição. (dados do formulário não recebidos)",
 	"NOT_FOUND": "Recurso indisponível. (404 - Não Encontrado)",
+	"NOT_ALLOWED": "Não foi possível processar sua requisição. (405 - Método Não Permitido)",
 	"UNIQUE_FAIL": "Erro na gravação do registro (Campo UNIQUE com nome repetido)",
 	"UPDATE_FAIL": "Erro na atualização do registro.",
 	"UPDATE_PASSWORD_CONFIRM_FAIL": "A nova senha não confere. (Verifique o campo Confirme Nova Senha).",
