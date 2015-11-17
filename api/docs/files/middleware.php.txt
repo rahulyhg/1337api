@@ -1,4 +1,10 @@
 <?php
+/**
+ * SlimBean middleware register.
+ *
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 
 // Get $logger
 $logger = $app->getContainer()->get('logger');
