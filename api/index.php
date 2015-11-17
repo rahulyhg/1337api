@@ -39,7 +39,7 @@ $app->group('/v1', function () use ($validate) {
 	$this->group('/private', function () use ($validate) {
 
 		// EDGES ROUTE GROUP
-		$this->group('/{edge:'.$validate['edges'].'}', function () use ($validate) {
+		$this->group('/{edge:' . $validate['edges'] . '}', function () use ($validate) {
 
 			$this->get('', 						'SlimBean\Api:retrieve'	); 
 			$this->get('/{id:[0-9]+}', 			'SlimBean\Api:read'		);
