@@ -129,7 +129,7 @@ AdminApp.factory('apiService',
 
 						// validate if id param is required
 						if (id !== undefined) {
-							idCheck = $http.get(config.API_BASE_URL + '/exists/' + edge + '/' + id).then(function(response) {
+							idCheck = $http.get(config.API_BASE_URL + '/' + edge + '/' + id + '/exists').then(function(response) {
 
 								// validate if ID exist in database
 								if (response.data.exists === true) {
@@ -172,7 +172,7 @@ AdminApp.factory('apiService',
 				var deferred = $q.defer();
 				var edge = $route.current.params.edge;
 
-				schema = $http.get(config.API_BASE_URL + '/schema/' + edge,{cache: true}).then(function(response) {
+				schema = $http.get(config.API_BASE_URL + '/' + edge + '/schema',{cache: true}).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
@@ -184,7 +184,7 @@ AdminApp.factory('apiService',
 				var edge = $route.current.params.edge;
 				var page = $route.current.params.page;
 
-				list = $http.get(config.API_BASE_URL + '/list/' + edge + '/' + page).then(function(response) {
+				list = $http.get(config.API_BASE_URL + '/' + edge + '?page=' + page).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
@@ -195,7 +195,7 @@ AdminApp.factory('apiService',
 				var deferred = $q.defer();
 				var edge = $route.current.params.edge;
 
-				count = $http.get(config.API_BASE_URL + '/count/' + edge).then(function(response) {
+				count = $http.get(config.API_BASE_URL + '/' + edge + '/count' ).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
@@ -207,7 +207,7 @@ AdminApp.factory('apiService',
 				var edge = $route.current.params.edge;
 				var id = $route.current.params.id;
 
-				read = $http.get(config.API_BASE_URL + '/read/' + edge + '/' + id).then(function(response) {
+				read = $http.get(config.API_BASE_URL + '/' + edge + '/' + id).then(function(response) {
 					deferred.resolve(response.data);
 				});
 
@@ -255,11 +255,6 @@ AdminApp.factory('apiInterceptor',
 			},
 			'responseError': function(res) {
 
-				if (res.status === 400 || res.status === 405) {
-					$log.error(res.data.message);
-					swal("ERRO", res.data.message, "error");
-				}
-
 				if (res.status === 401 || res.status === 403) {
 					$log.error(res.data.message);
 					
@@ -270,6 +265,19 @@ AdminApp.factory('apiInterceptor',
 						window.location.href = window.location.pathname;
 					}
 				}
+				else {
+
+					if(res.data.message){
+						$log.error(res.data.message);
+						swal("ERRO", res.data.message, "error");						
+					}
+					else {
+						swal("ERRO", "Não foi possível processar sua requisição.", "error");						
+						$log.error('Não foi possível processar sua requisição.');
+					}
+
+				}
+
 				return $q.reject(res);
 			}
 		};

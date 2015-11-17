@@ -1,3 +1,5 @@
 uploads
 node_modules
 assets/vendor/bower_components
+api/logs/*
+*.phar

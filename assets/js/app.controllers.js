@@ -119,7 +119,7 @@ AdminApp.controller('ListController',
 		$scope.onExport = function() {
 			var deferred = $q.defer();
 
-			var onExport = $http.get(config.API_BASE_URL + '/export/' + $routeParams.edge)
+			var onExport = $http.get(config.API_BASE_URL + '/' + $routeParams.edge + '/export')
 				.then(function(res) {
 					var file = new Blob([res.data], { type: 'application/csv' });
 					var expTimestamp = Date.now();
@@ -141,11 +141,13 @@ AdminApp.controller('ListController',
 				 closeOnConfirm: false 
 				}, 
 				function(){
-					$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
+					$http.delete(config.API_BASE_URL + '/' + $routeParams.edge + '/' + id).then(function(response) {
 						swal("Sucesso", response.data.message, "success"); 
 					});
+					// TODO: list is not updating after delete. Check it.
 					delete $scope.items[id];
-				});
+				}
+			);
 		};
 
 	}]
@@ -256,7 +258,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 			var deferred = $q.defer();
 
-			var create = $http.post(config.API_BASE_URL + '/create/' + edge, item).then(function(res) {
+			var create = $http.post(config.API_BASE_URL + '/' + edge, item).then(function(res) {
 				$location.path('/list/' + edge);
 				deferred.resolve(res.data);
 			});
@@ -267,7 +269,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 			var deferred = $q.defer();
 
-			var update = $http.post(config.API_BASE_URL + '/update/' + edge + '/' + id, item).then(function(res) {
+			var update = $http.put(config.API_BASE_URL + '/' + edge + '/' + id, item).then(function(res) {
 				$location.path('/list/' + edge);
 				deferred.resolve(res.data);
 			});
@@ -278,7 +280,7 @@ AdminApp.controller('FormController',
 			var item = $scope.editor.getValue();
 			var id = $scope.$parent.user.id;
 
-			$http.post(config.API_BASE_URL + '/updatePassword/user/' + id, item).success(function() {
+			$http.patch(config.API_BASE_URL + '/users/' + id + '/password', item).success(function() {
 				//TODO: define what to do after updatePassword success. Should user be logged out?
 				//$location.path('/list/'+edge);
 			});
@@ -296,7 +298,7 @@ AdminApp.controller('FormController',
 				 closeOnConfirm: false 
 				}, 
 				function(){
-					$http.post(config.API_BASE_URL + '/destroy/' + $routeParams.edge + '/' + id).then(function(response) {
+					$http.delete(config.API_BASE_URL + '/' + $routeParams.edge + '/' + id).then(function(response) {
 						$location.path('/list/' + edge);
 						$log.debug(response.data.message);
 						swal("Sucesso", response.data.message, "success"); 

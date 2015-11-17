@@ -1,88 +1,92 @@
 <?php
+error_reporting(-1);
+ini_set('display_errors', 'On');
 
 /* ***************************************************************************************************
 ** INIT **********************************************************************************************
 *************************************************************************************************** */ 
+
+// COMPOSER VENDOR AUTOLOAD
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/config.php';
-require __DIR__ . '/helpers.php';
+
+// CONFIG SETTINGS
+$config = require __DIR__ . '/app/config.php';
 
 // REDBEAN ORM SETUP
 R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
-R::setAutoResolve( TRUE );
-R::freeze( FALSE );
 
-// TEST DB CONNECTION
-if(R::testConnection() == FALSE){
-	api_error('DB_CONN_FAIL');
-	exit();
-};
+// SLIM ROUTER SETUP
+$app = new \Slim\App($config['slim']);
 
-// INSPECT TABLES
-$api = array();
-$api['edges'] = R::inspect();
+// SLIMBEAN APP SETUP
+require __DIR__ . '/app/helpers.php';
+require __DIR__ . '/app/dependencies.php';
+require __DIR__ . '/app/middleware.php';
 
-// REDBEAN ORM DEBUG MODE ON
-if($config['api']['debug']){
-	R::debug( TRUE, 1 );
-};
+// SLIM ROUTER VALIDATE REGEX ARRAY
+$validate = array(
+	'edges' => implode('|', $config['edges']['list'])
+);
 
 /* ***************************************************************************************************
-** API REQUEST ***************************************************************************************
+** SLIM ROUTER - REST ROUTES DEFINITION **************************************************************
 *************************************************************************************************** */ 
 
-// BUILD $REQ OBJ FROM SERVER $_REQUEST
-foreach ($_REQUEST as $k => $v) {
-	$req[$k] = $v;
-};
+// API v1 ROUTE GROUP
+$app->group('/v1', function () use ($validate) {
+
+	// PRIVATE ROUTE GROUP - REQUIRE AUTH
+	$this->group('/private', function () use ($validate) {
+
+		// EDGES ROUTE GROUP
+		$this->group('/{edge:' . $validate['edges'] . '}', function () use ($validate) {
+
+			$this->get('', 						'SlimBean\Api:retrieve'	); 
+			$this->get('/{id:[0-9]+}', 			'SlimBean\Api:read'		);
+			$this->get('/{id:[0-9]+}/exists', 	'SlimBean\Api:exists'	); 
+			$this->get('/count', 				'SlimBean\Api:count'	);
+			$this->get('/schema', 				'SlimBean\Api:schema'	);
+			$this->get('/export', 				'SlimBean\Api:export'	); 
+
+			$this->post('', 					'SlimBean\Api:create'	);
+			$this->post('/upload', 				'SlimBean\Api:upload'	);
+
+			$this->put('/{id:[0-9]+}', 			'SlimBean\Api:update'	);
+			$this->delete('/{id:[0-9]+}', 		'SlimBean\Api:destroy'	); 
+		});
+
+		// AUX ROUTES
+		$this->get('/hi', 							'SlimBean\Api:hi');
+		$this->get('/edges', 						'SlimBean\Api:edges'); 
+		$this->put('/users/{id:[0-9]+}/password',	'SlimBean\Api:updatePassword'); 
+		$this->patch('/users/{id:[0-9]+}/password', 'SlimBean\Api:updatePassword'); 
+
+	})->add('SlimBean\Auth:isAuth');
+
+	// PUBLIC ROUTE GROUP
+	$this->group('/public', function () use ($validate){
+
+		// EDGES ROUTE GROUP
+		$this->group('/{edge:' . $validate['edges'] . '}', function () use ($validate) {
+			$this->get('', 						'SlimBean\Api:retrieve'	); 
+			$this->get('/{id:[0-9]+}', 			'SlimBean\Api:read'		);
+		});
+
+		// AUX ROUTES
+		$this->get('/test',						'SlimBean\Api:test'	);
+
+	});
+
+	// AUTH ROUTE GROUP
+	$this->group('/auth', function () {
+		$this->post('/signin', 'SlimBean\Auth:signin');
+	});
+
+});
 
 /* ***************************************************************************************************
-** API REQUEST MODE **********************************************************************************
+** SLIM RUN! *****************************************************************************************
 *************************************************************************************************** */ 
+$app->run();
 
-// SWITCH ROUTER FOR REQUEST MODE
-switch ($req['mode']) {
-	case 'auth':
-		require 'auth.php';
-		break;
-	case 'private':
-		require 'private.php';
-		break;
-	case 'public':
-		require 'public.php';
-		break;
-	default:
-		api_forbid();
-		break;
-};
-
-/* ***************************************************************************************************
-** API OUTPUT FUNCTIONS ******************************************************************************
-*************************************************************************************************** */ 
-
-// FORBIDDEN OUTPUT
-function api_forbid(){
-	header('HTTP/1.0 400 Bad Request');
-	$res = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
-	api_output($res);
-};
-
-// ERROR OUTPUT
-function api_error($msg, $debug = ''){
-	global $config;
-
-	$res = array('error' => true, 'message' => getMessage($msg));
-	
-	if($config['api']['debug']){
-		$res['debug'] = $debug;
-	};	
-
-	api_output($res);
-};
-
-// API JSON OUTPUT
-function api_output($res){
-	echo json_encode($res);
-};
-
-?>
+?>	

@@ -1,0 +1,23 @@
+{
+	"active": "Ativo",
+	"acronym": "Sigla",
+	"age": "Idade",
+	"categories": "Categoria",
+	"collections": "Coleção",
+	"content": "Conteúdo",
+	"date": "Data",
+	"description": "Descrição",
+	"email": "E-mail",
+	"excerpt": "Resumo",
+	"id": "ID",
+	"name": "Nome",
+	"password": "Senha",
+	"phone": "Telefone",
+	"price": "Preço",
+	"regions": "Região",
+	"shortdescription": "Descrição Curta",
+	"states": "Estado",
+	"tag": "Flag",
+	"terms": "Termos de Uso",
+	"uf": "UF"
+}
