@@ -139,43 +139,43 @@ class Auth {
 			catch (\UnexpectedValueException $e) {
 				// @throws UnexpectedValueException :: Provided JWT was invalid
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
-				$this->logger->notice($err['message'], $args);				
+				$this->logger->notice($err['message']);				
 				return $response->withJson($err)->withStatus(401);
 			}
 			catch (\DomainException $e) {
 				// @throws DomainException :: Algorithm was not provided
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
-				$this->logger->notice($err['message'], $args);
+				$this->logger->notice($err['message']);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (\SignatureInvalidException $e) {
 				// @throws SignatureInvalidException :: Provided JWT was invalid because the signature verification failed
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
-				$this->logger->notice($err['message'], $args);
+				$this->logger->notice($err['message']);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (\BeforeValidException $e) {
 				// @throws BeforeValidException :: Provided JWT is trying to be used before it's eligible as defined by 'nbf'
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_INVALID'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
-				$this->logger->notice($err['message'], $args);
+				$this->logger->notice($err['message']);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (\ExpiredException $e) {
 				// @throws ExpiredException :: Provided JWT has since expired, as defined by the 'exp' claim
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_TOKEN_EXPIRED'), 'debug' => 'JWT:: exception: ' . $e->getMessage());
-				$this->logger->notice($err['message'], $args);
+				$this->logger->notice($err['message']);
 				return $response->withJson($err)->withStatus(401);				
 			}
 			catch (Exception $e) {
 				// @throws Exception :: Generic try catch Exception
 				$err = array('error' => true, 'message' => getMessage('AUTH_FAIL'));
-				$this->logger->notice($err['message'], $args);
+				$this->logger->notice($err['message']);
 				return $response->withJson($err)->withStatus(401);
 			}
 		}
 		else {
 			$err = array('error' => true, 'message' => getMessage('AUTH_FAIL_HEADER_MISSING'));
-			$this->logger->notice($err['message'], $args);
+			$this->logger->notice($err['message']);
 			return $response->withJson($err)->withStatus(401);
 		}
 	}
