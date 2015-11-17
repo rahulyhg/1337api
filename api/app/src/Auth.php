@@ -1,13 +1,33 @@
 <?php 
+/**
+ * SlimBean
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 namespace SlimBean;
 
 use \RedBeanPHP\Facade as R;
 use \Firebase\JWT\JWT;
 use Psr\Log\LoggerInterface;
 
+/**
+ * SlimBean core Auth class.
+ * Provides default functions to JWT.io Authentication
+ * integrated with Firebase JWT, Slim Framework, RedBeanPHP and Monolog.
+ *
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 class Auth {
 
+	/**
+	 * @var array $config Global settings values. 
+	 */
 	private $config;
+
+	/**
+	 * @var Psr\Log\LoggerInterface $logger Logger handler. 
+	 */
 	private $logger;
 
 	public function __construct($config, LoggerInterface $logger)

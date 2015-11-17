@@ -1,12 +1,32 @@
 <?php 
+/**
+ * SlimBean
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 namespace SlimBean;
 
 use \RedBeanPHP\Facade as R;
 use Psr\Log\LoggerInterface;
 
+/**
+ * SlimBean core Api class.
+ * Provides main default functions to RESTful API
+ * integrated with Slim Framework, RedBeanPHP and Monolog.
+ *
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 class Api {
 
+	/**
+	 * @var array $config Global settings values. 
+	 */
 	private $config;
+
+	/**
+	 * @var Psr\Log\LoggerInterface $logger Logger handler. 
+	 */
 	private $logger;
 
 	public function __construct($config, LoggerInterface $logger) {
