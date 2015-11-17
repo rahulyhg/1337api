@@ -73,7 +73,6 @@ $app->group('/v1', function () use ($validate) {
 		});
 
 		// AUX ROUTES
-		$this->get('/hi', 						'SlimBean\Api:hi');
 		$this->get('/test',						'SlimBean\Api:test'	);
 
 	});
