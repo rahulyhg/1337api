@@ -26,8 +26,8 @@
 	"UPDATE_PASSWORD_CONFIRM_FAIL": "A nova senha não confere. (Verifique o campo Confirme Nova Senha).",
 	"UPDATE_SUCCESS": "Registro atualizado com sucesso.",
 	"UPLOAD_FAIL": "Erro no upload do arquivo.",
-	"UPLOAD_FAIL_BLOB_MISSING": "Error Processing Request (blob not found at request)",
-	"UPLOAD_FAIL_FILESIZE_MISSING": "Error Processing Request (filesize not found at request)",
-	"UPLOAD_FAIL_FILENAME_MISSING": "Error Processing Request (filename not found at request)",
+	"UPLOAD_FAIL_BLOB_MISSING": "Não foi possível processar sua requisição. (blob não encontrado na requisição)",
+	"UPLOAD_FAIL_FILESIZE_MISSING": "Não foi possível processar sua requisição. (filesize não encontrado na requisição)",
+	"UPLOAD_FAIL_FILENAME_MISSING": "Não foi possível processar sua requisição. (filename não encontrado na requisição)",
 	"UPLOAD_SUCCESS": "Upload realizado com sucesso."	
 }

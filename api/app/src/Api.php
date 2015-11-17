@@ -792,22 +792,22 @@ class Api {
 		// check if data was sent
 		if ( empty($data) ) {
 			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
-			$this->logger->warning($err['message'], $args);
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);			
 		}
 		elseif ( empty($data['blob']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_BLOB_MISSING'));
-			$this->logger->warning($err['message'], $args);
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filesize']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILESIZE_MISSING'));
-			$this->logger->warning($err['message'], $args);
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filename']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILENAME_MISSING'));
-			$this->logger->warning($err['message'], $args);
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 

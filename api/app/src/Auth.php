@@ -39,14 +39,14 @@ class Auth {
 		$user = R::findOne('users', 'email = :email AND password = :password AND active = true', $credentials );
 
 		// IF USER EXISTS
-		if(!empty($user)){
+		if (!empty($user)) {
 
 			// build jwt token variables
 			$tokenId    = base64_encode(mcrypt_create_iv(32));
-			$issuedAt   = strtotime(R::isoDateTime());						// Right Now
-			$notBefore  = $issuedAt; 										// Instant. Right Now
+			$issuedAt   = strtotime(R::isoDateTime());							// Right Now
+			$notBefore  = $issuedAt; 											// Instant. Right Now
 			$expire     = $notBefore + $this->config['auth']['jwt']['expire']; 	// Retrieve the expiration time from config file
-			$serverName = $this->config['auth']['jwt']['issuer']; 			// Retrieve the server name from config file
+			$serverName = $this->config['auth']['jwt']['issuer']; 				// Retrieve the server name from config file
 		
 			// create the token as an array
 			$token = [
@@ -85,6 +85,7 @@ class Auth {
 		// IF USER DOES NOT EXIST
 		else {
 			$err = array('error' => true, 'message' => getMessage('AUTH_USERPASS_FAIL'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err);
 		}
 	}
@@ -94,7 +95,6 @@ class Auth {
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
 	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
 	  *
 	  * @return Psr\Http\Message\ResponseInterface
 	  */
