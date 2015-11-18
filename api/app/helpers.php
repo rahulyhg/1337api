@@ -1,9 +1,24 @@
 <?php
+/**
+ * SlimBean helper functions.
+ *
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 
 /* ***************************************************************************************************
 ** LOCALE HELPER FUNCTIONS ***************************************************************************
 *************************************************************************************************** */ 
 
+/**
+  * Returns caption from locale dictionary.
+  *
+  * @param string $context 	Defines which dictionary should be used to get related caption.
+  * @param string $edge 	Defines which edge should be used to get related caption.
+  * @param string $term 	Defines which term should be used to get related caption.
+  *
+  * @return string
+  */
 function getCaption($context, $edge, $term){
 	global $caption;
 
@@ -46,6 +61,13 @@ function getCaption($context, $edge, $term){
 
 };
 
+/**
+  * Returns message from locale dictionary.
+  *
+  * @param string $term 	Defines which term should be used to get related caption.
+  *
+  * @return string
+  */
 function getMessage($term) {
 	global $caption;
 

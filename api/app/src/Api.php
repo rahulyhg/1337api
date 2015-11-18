@@ -1,12 +1,32 @@
 <?php 
+/**
+ * SlimBean
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 namespace SlimBean;
 
 use \RedBeanPHP\Facade as R;
 use Psr\Log\LoggerInterface;
 
+/**
+ * SlimBean core Api class.
+ * Provides main default functions to RESTful API
+ * integrated with Slim Framework, RedBeanPHP and Monolog.
+ *
+ * @author  Elijah Hatem <elias.hatem@gmail.com>
+ * @license MIT
+ */
 class Api {
 
+	/**
+	 * @var array $config Global settings values. 
+	 */
 	private $config;
+
+	/**
+	 * @var Psr\Log\LoggerInterface $logger Logger handler. 
+	 */
 	private $logger;
 
 	public function __construct($config, LoggerInterface $logger) {
@@ -78,31 +98,20 @@ class Api {
 			}
 
 			// if hierarchy exists, iterates parent and child properties to $edges array
-			if (!empty($this->getHierarchy())) {
-				$hierarchy = $this->getHierarchy();
-
-				// build hierarchy list - depth 1
+			$hierarchy = $this->getHierarchy();	
+			if (!empty($hierarchy)) {
+				// build hierarchy list - only 1 depth
+				// TODO: we should support more than 1 depth into the recursion
 				foreach ($edges as $edge => $obj) {
 					if (array_key_exists($edge, $hierarchy)) {
-						$edges[$edge]['has_parent'] = true;
-
-						foreach ($hierarchy[$edge] as $y => $z) {
-							$edges[$z]['has_child'] = true;
-							$edges[$edge]['parent'][$z] = $edges[$z];
-						}
-
-						// build hierarchy list - depth 2
-						if ($edges[$edge]['has_parent']) {
-							foreach ($edges[$edge]['parent'] as $parentBean => $parentObj) {
-								if (array_key_exists($parentBean, $hierarchy)) {
-									$edges[$edge]['parent'][$parentBean]['has_parent'] = true;
-									foreach ($hierarchy[$parentBean] as $y => $z) {
-										$edges[$edge]['parent'][$parentBean]['parent'][$z] = $edges[$z];
-									}
-								}
+						$edges[$edge]['has_child'] = true;
+						foreach ($hierarchy[$edge] as $k => $child) {
+							if (!in_array($child, $this->config['edges']['blacklist'])) {
+								$edges[$child]['has_parent'] = true;
+								$edges[$child]['parent'][$edge] = $edges[$edge];								
 							}
 						}
-					}
+					} 
 				}
 			}
 		}
@@ -139,8 +148,9 @@ class Api {
 				$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
 			}
 			else {
-				$errorMessage = getMessage('INVALID_REQUEST');
-				throw new \Exception($errorMessage, 1);
+				$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+				$this->logger->notice($err['message'], $args);
+				return $response->withJson($err)->withStatus(400);
 			}
 		} 
 		else {
@@ -153,7 +163,9 @@ class Api {
 			// list is not empty, let's foreach and build response array
 			foreach ($items as $item => $content) {
 				foreach ($content as $field => $value) {
-					$payload[$item][$field] = $value;
+					if (in_array($field, $this->config['api']['list_fields'])) {
+						$payload[$item][$field] = $value;
+					}
 				}
 			}
 		}
@@ -179,7 +191,7 @@ class Api {
 
 		// define response vars
 		$count = R::count( $args['edge'] );
-		$limit = $this->config['api']['params']['pagination'];
+		$limit = ( !empty($this->config['api']['params']['pagination']) ? $this->config['api']['params']['pagination'] : 10 );
 
 		// build response payload
 		$payload = array(
@@ -206,129 +218,121 @@ class Api {
 		// get database schema
 		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
-		// if raw schema found
-		if (!empty($raw)) {
+		// define default schema array
+		$schema = array(
+			'bean' 					=> $args['edge'],
+			'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
+			'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
+			'type' 					=> 'object',
+			'required' 				=> true,
+			'additionalProperties' 	=> false,
+			'properties' 			=> array(),
+			'raw' 					=> $raw
+		);
 
-			// define default schema array
-			$schema = array(
-				'bean' 					=> $args['edge'],
-				'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
-				'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
-				'type' 					=> 'object',
-				'required' 				=> true,
-				'additionalProperties' 	=> false,
-				'properties' 			=> array(),
-				'raw' 					=> $raw
-			);
+		// fill properties node into schema response array
+		foreach ($schema['raw'] as $field => $properties) {
 
-			// fill properties node into schema response array
-			foreach ($schema['raw'] as $field => $properties) {
+			// check if field is not at config blacklist
+			if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
 
-				// check if field is not at config blacklist
-				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
+				// check if field defines one-to-many relationship
+				if (substr($field, -3, 3) == '_id') {
+					$parent = substr($field, 0, -3);
 
-					// check if field defines one-to-many relationship
-					if (substr($field, -3, 3) == '_id') {
-						$parent = substr($field, 0, -3);
+					$schema['properties'][$field] = array(
+						'type' 				=> 'integer',
+						'title' 			=> getCaption('fields', $schema['bean'], $parent),
+						'required'	 		=> true,
+						'minLength'	 		=> 1,
+						'enum' 				=> array(),
+						'options' 			=> array(
+							'enum_titles' 	=> array()
+						)
+					);
 
-						$schema['properties'][$field] = array(
-							'type' 				=> 'integer',
-							'title' 			=> getCaption('fields', $schema['bean'], $parent),
-							'required'	 		=> true,
-							'minLength'	 		=> 1,
-							'enum' 				=> array(),
-							'options' 			=> array(
-								'enum_titles' 	=> array()
-							)
-						);
+					$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
 
-						$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
+					foreach ($parentOptions as $key => $value) {
+						$schema['properties'][$field]['enum'][] = $key;
+						$schema['properties'][$field]['options']['enum_titles'][] = $value;
+					}
+				}
+				// else, field is literal and we can go on
+				else {
 
-						foreach ($parentOptions as $key => $value) {
-							$schema['properties'][$field]['enum'][] = $key;
-							$schema['properties'][$field]['options']['enum_titles'][] = $value;
+					// prepare data
+					$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
+					$type 		= $dbType[0];
+					$format 	= $dbType[0];
+					$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
+					$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+
+					// converts db type to json-editor expected type
+					if (array_key_exists($type, $this->config['schema']['default']['type'])) {
+						$type = $this->config['schema']['default']['type'][$type];
+					}
+
+					// converts db format to json-editor expected format
+					if (array_key_exists($format, $this->config['schema']['default']['format'])) {
+						if ($format == 'varchar' && $maxLength > 256) {
+							$format = 'textarea';
+						}
+						else {
+							$format = $this->config['schema']['default']['format'][$format];
 						}
 					}
-					// else, field is literal and we can go on
-					else {
 
-						// prepare data
-						$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
-						$type 		= $dbType[0];
-						$format 	= $dbType[0];
-						$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-						$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+					// builds default properties array to json-editor
+					$schema['properties'][$field] = array(
+						'type'			=> $type,
+						'format' 		=> $format,
+						'title' 		=> getCaption('fields', $args['edge'], $field),
+						'required'	 	=> true,
+						'minLength' 	=> $minLength,
+						'maxLength'		=> $maxLength
+					);
 
-						// converts db type to json-editor expected type
-						if (array_key_exists($type, $this->config['schema']['default']['type'])) {
-							$type = $this->config['schema']['default']['type'][$type];
-						}
+					// array merge to custom properties defined at config
+					if (isset($this->config['schema']['custom']['fields'][$field])) {
+						$schema['properties'][$field] = array_merge($schema['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
+					}
 
-						// converts db format to json-editor expected format
-						if (array_key_exists($format, $this->config['schema']['default']['format'])) {
-							if ($format == 'varchar' && $maxLength > 256) {
-								$format = 'textarea';
-							}
-							else {
-								$format = $this->config['schema']['default']['format'][$format];
-							}
-						}
-
-						// builds default properties array to json-editor
-						$schema['properties'][$field] = array(
-							'type'			=> $type,
-							'format' 		=> $format,
-							'title' 		=> getCaption('fields', $args['edge'], $field),
-							'required'	 	=> true,
-							'minLength' 	=> $minLength,
-							'maxLength'		=> $maxLength
-						);
-
-						// array merge to custom properties defined at config
-						if (isset($this->config['schema']['custom']['fields'][$field])) {
-							$schema['properties'][$field] = array_merge($schema['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
-						}
-
-						// add '*' to field title if required.
-						if ($schema['properties'][$field]['minLength'] > 0) {
-							$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
-						}
+					// add '*' to field title if required.
+					if ($schema['properties'][$field]['minLength'] > 0) {
+						$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
 					}
 				}
 			}
+		}
 
-			// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-			if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
-			
-				$schema['properties']['uploads_id'] = array(
-					'title' 	=> 'Imagem',
-					'type'		=> 'string',
-					'format' 	=> 'url',
-					'required'	=> true,
-					'minLength' => 0,
-					'maxLength' => 128,
-		  			'options'	=> array(
-		  				'upload' 	=> true,
-		  			),
-					'links' 	=> array(
-						array(
-							'rel' 	=> '',
-							'href' 	=> '{{self}}',
-						)
+		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
+		if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
+		
+			$schema['properties']['uploads_id'] = array(
+				'title' 	=> 'Imagem',
+				'type'		=> 'string',
+				'format' 	=> 'url',
+				'required'	=> true,
+				'minLength' => 0,
+				'maxLength' => 128,
+	  			'options'	=> array(
+	  				'upload' 	=> true,
+	  			),
+				'links' 	=> array(
+					array(
+						'rel' 	=> '',
+						'href' 	=> '{{self}}',
 					)
-				);
-			}
-
-			// build api response payload
-			$payload = $schema;
-
-			// output response payload
-			return $response->withJson($payload);
+				)
+			);
 		}
-		else {
-			$err = array('error' => true, 'message' => getMessage('SCHEMA_NOTFOUND'));
-			return $response->withJson($err)->withStatus(404);
-		}
+
+		// build api response payload
+		$payload = $schema;
+
+		// output response payload
+		return $response->withJson($payload);
 	}
 
 	/**
@@ -346,7 +350,7 @@ class Api {
 		$item = R::load( $args['edge'], $args['id'] );
 
 		// if item retrieved
-		if(!empty($item['id'])) {
+		if (!empty($item['id'])) {
 
 			// foreach $item field, build response read array
 			foreach ($item as $field => $value) {
@@ -369,7 +373,7 @@ class Api {
 							}
 						}
 						else {
-							throw new \Exception('Error Processing Request (Parent Relationship Broken with Parent ID: "'.$value.'" FROM PARENT TABLE: "'.$parentEdge.'" NOT FOUND)', 1);
+							throw new \Exception(getMessage('BROKEN_RELATIONSHIP', 1));
 						}
 					}
 				}
@@ -383,6 +387,7 @@ class Api {
 		}
 		else {
 			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(404);
 		}
 	}
@@ -426,11 +431,9 @@ class Api {
 
 		// collect data
 		$raw = R::findAll( $args['edge'] );
+		$data = R::exportAll( $raw, FALSE, array('NULL') );
 
-		if (!empty($raw)) {
-			
-			// export it all
-			$data = R::exportAll( $raw, FALSE, array('NULL') );
+		if (!empty($data)) {
 
 			// define csv properties
 			$headings = array_keys($data[0]);
@@ -440,7 +443,6 @@ class Api {
 			//outstream response
 			header('Content-Type: text/csv');
 			header('Content-Disposition: attachment; filename='. $filename);
-
 			$outstream = fopen('php://output', 'w');
 
 				// inject field keys to data as csv export table heading
@@ -455,7 +457,8 @@ class Api {
 			fclose($outstream);
 		}
 		else {
-			$err = array('error' => true, 'message' => getMessage('EDGE_NOTFOUND'));
+			$err = array('error' => true, 'message' => getMessage('EXPORT_EMPTY'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(404);			
 		}
 	}
@@ -496,7 +499,8 @@ class Api {
 
 		// if no data was sent, return bad request response
 		if (empty($data)) {
-			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));
 			return $response->withJson($err)->withStatus(400);
 		}
 
@@ -506,9 +510,11 @@ class Api {
 		// foreach $data request payload, build array to insert
 		foreach ($data as $field => $value) {
 
-			// IF field is an id, throw exception
+			// IF field is an id, returns bad request response
 			if ($field == 'id') {
-				throw new \Exception("Error Processing Request (field `id` is not allowed when creating a resource)", 1);
+				$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
+				$this->logger->notice($err['message'], array($args, $data));
+				return $response->withJson($err)->withStatus(400);
 			}
 
 			// IF field defines uploads many-to-many relationship
@@ -559,13 +565,11 @@ class Api {
 
 			// else something happened, throw error
 			else {
-				$errorMessage = getMessage('CREATE_FAIL');
-				throw new \Exception($errorMessage, 1);
+				$err = getMessage('CREATE_FAIL');
+				throw new \Exception($err, 1);
 			}
 		}
 		catch(\Exception $e) {
-
-			// rollback transaction
 			R::rollback();
 			throw $e;
 		}
@@ -587,66 +591,76 @@ class Api {
 
 		// if no data was sent, return bad request response
 		if (empty($data)) {
-			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));			
 			return $response->withJson($err)->withStatus(400);
 		}
 
 		// dispense 'edge'
 		$item = R::load( $args['edge'], $args['id'] );
 
-		// foreach $data request payload, build array to insert
-		foreach ($data as $field => $value) {
+		// if item exists at database
+		if (!empty($item['id'])) {
 
-			// IF field is an id and does not match, throw exception
-			if ($field == 'id' && $value != $args['id']) {
-				throw new \Exception("Error Processing Request (field `id` does not match with request)", 1);
+			// foreach $data request payload, build array to insert
+			foreach ($data as $field => $value) {
+
+				// IF field is an id and does not match, throw exception
+				if ($field == 'id' && $value != $args['id']) {
+					$err = array('error' => true, 'message' => getMessage('INVALID_ID_MATCH_FORMDATA'));
+					$this->logger->notice($err['message'], array($args, $data));
+					return $response->withJson($err)->withStatus(400);
+				}
+
+				// IF field defines uploads many-to-many relationship
+				else if ($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['edges']['list'])) {
+					$upload = R::dispense( 'uploads' );
+					$upload->id = $value;
+					$item->sharedUploadList[] = $upload;
+				}
+
+				// IF field is a password, hash it up
+				else if ($field == 'password') {
+					$item[$field] = md5($value);
+				}
+
+				// ELSE field is literal, go on
+				else {
+					$item[$field] = $value;			
+				}
 			}
 
-			// IF field defines uploads many-to-many relationship
-			else if ($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['edges']['list'])) {
-				$upload = R::dispense( 'uploads' );
-				$upload->id = $value;
-				$item->sharedUploadList[] = $upload;
-			}
+			// inject modified current time to array to update
+			$item['modified'] = R::isoDateTime();
 
-			// IF field is a password, hash it up
-			else if ($field == 'password') {
-				$item[$field] = md5($value);
-			}
+			// let's start the update transaction
+			R::begin();
 
-			// ELSE field is literal, go on
-			else {
-				$item[$field] = $value;			
+			try {
+				// update item
+				R::store($item);
+				
+				// commit transaction
+				R::commit();
+
+				// build api response payload
+				$payload = array(
+					'id' 		=> $args['id'],
+					'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
+				);
+
+				//output response
+				return $response->withJson($payload);
+			}
+			catch(\Exception $e) {
+				R::rollback();
+				throw $e;
 			}
 		}
-
-		// inject modified current time to array to update
-		$item['modified'] = R::isoDateTime();
-
-		// let's start the update transaction
-		R::begin();
-
-		try {
-			// update item
-			R::store($item);
-			
-			// commit transaction
-			R::commit();
-
-			// build api response payload
-			$payload = array(
-				'id' 		=> $args['id'],
-				'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
-			);
-
-			//output response
-			return $response->withJson($payload);
-		}
-		catch(\Exception $e) {
-
-			// rollback transaction
-			R::rollback();
-			throw $e;
+		else {
+			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(404);
 		}
 	}
 
@@ -664,14 +678,15 @@ class Api {
 		// get data from 'body' request payload
 		$data = $request->getParsedBody();
 
-		// if no data was sent, return bad request response
-		if (empty($data)) {
-			$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
+		// if required data was not sent, return bad request response
+		if (empty($data['password']) || empty($data['new_password']) || empty($data['confirm_new_password'])) {
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 
 		// dispense 'edge'
-		$item = R::load( 'user', $args['id'] );
+		$item = R::load( 'users', $args['id'] );
 
 		// verify if password is valid
 		if ($item['password'] == md5($data['password'])) {
@@ -707,12 +722,14 @@ class Api {
 				}
 			} 
 			else {
-				$err = array('error' => true, 'message' => getMessage('PASSWORD_CONFIRM_FAIL'));
+				$err = array('error' => true, 'message' => getMessage('UPDATE_PASSWORD_CONFIRM_FAIL'));
+				$this->logger->notice($err['message'], $args);
 				return $response->withJson($err)->withStatus(400);
 			}
 		} 
 		else {
 			$err = array('error' => true, 'message' => getMessage('AUTH_PASS_FAIL'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 	}
@@ -732,7 +749,7 @@ class Api {
 		$item = R::load( $args['edge'], $args['id'] );
 
 		// if $item exists
-		if (!empty($item->id)) {
+		if (!empty($item['id'])) {
 
 			// check if edge has one-to-many relationship hierarchy
 			$hierarchy = $this->getHierarchy($args['edge']);
@@ -742,6 +759,7 @@ class Api {
 					$childs = $item->${'ownList'};
 					if (!empty($childs)) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
+						$this->logger->notice($err['message'], $args);
 						return $response->withJson($err)->withStatus(400);
 					}
 				}
@@ -766,19 +784,26 @@ class Api {
 				return $response->withJson($payload);
 
 			} catch (\Exception $e) {
-
-				// rollback transaction
 				R::rollback();
-
 				throw $e;
 			}
 		}
 		else {
 			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(404);
 		}
 	}
 
+	/**
+	  * Receives uploaded files and insert upload entry at database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
 	public function upload ($request, $response, $args) {
 
 		// get data from 'body' request payload
@@ -786,24 +811,28 @@ class Api {
 
 		// check if data was sent
 		if ( empty($data) ) {
-				$err = array('error' => true, 'message' => getMessage('DATA_MISSING'));
-				return $response->withJson($err)->withStatus(400);			
+			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(400);			
 		}
 		elseif ( empty($data['blob']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_BLOB_MISSING'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filesize']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILESIZE_MISSING'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 		elseif ( empty($data['filename']) ) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILENAME_MISSING'));
+			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
 
 		// explode $data['blob']
-			// TODO: this procedure can be done in one line if I use regex. verify correct expression.
+			// TODO: this procedure could be done in one line if I use regex. verify correct expression.
 			list($type, $data['blob']) = explode(';', $data['blob']);
 			list(,$type) = explode(':', $type);
 			list(,$data['blob']) = explode(',', $data['blob']);
@@ -861,7 +890,7 @@ class Api {
 				// build api response array
 				$payload = array(
 					'id' 		=> $id,
-					'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: '.$id.')',
+					'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: ' . $id . ')',
 				);
 				
 				//output response
@@ -869,59 +898,50 @@ class Api {
 			}
 			// else something happened, throw error
 			else {
-				$errorMessage = getMessage('UPLOAD_FAIL');
-				throw new \Exception($errorMessage, 1);
+				$err = getMessage('UPLOAD_FAIL');
+				throw new \Exception($err, 1);
 			}
 		}
 		catch(\Exception $e) {
-			// rollback transaction
 			R::rollback();
-
 			throw $e;
 		}
 	}
 
+	/**
+	  * Checks Hierarchy and relationships between edges at database tables.
+	  *
+	  * @param string $edge Optional parameter to filter results by only one edge.
+	  *
+	  * @return array Hierarchy array with Parent Key and Children Values.
+	  */
 	private function getHierarchy($edge = null) {
 
-		// if param edge was passed, then
-		if($edge) {
-
-			// build hierarchy array, if exists
-			$hierarchy = R::getAssoc('
-				SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
-				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-				WHERE (REFERENCED_TABLE_NAME IS NOT NULL AND REFERENCED_TABLE_NAME = \''.$edge.'\')
-				GROUP BY parent'
-			);
-
-			// if not empty hierarchy, iterate
-			if (!empty($hierarchy)) {
-				foreach ($hierarchy as $child => $parent) {
-					$hierarchy[$child] = explode(',', $parent);
-				}
-			}
-
+		// if param edge was passed, filter
+		if (!empty($edge)) {
+			$where_clause = 'REFERENCED_TABLE_NAME = \''.$edge.'\'';
+		}
+		// else, just give me all
+		else {
+			$where_clause = 'REFERENCED_TABLE_NAME IS NOT NULL';
 		}
 
-		// else, just return full hierarchy
-		else {
+		// build hierarchy array, if exists
+		$hierarchy = R::getAssoc('
+			SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
+			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+			WHERE (' . $where_clause . ')
+			GROUP BY parent'
+		);
 
-			// build hierarchy array, if exists
-			$hierarchy = R::getAssoc('
-				SELECT TABLE_NAME as child, GROUP_CONCAT(REFERENCED_TABLE_NAME) as parent
-				FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-				WHERE REFERENCED_TABLE_NAME IS NOT NULL
-				GROUP BY child
-			');
-
-			// if not empty hierarchy, iterate
-			if (!empty($hierarchy)) {
-				foreach ($hierarchy as $child => $parent) {
-					$hierarchy[$child] = explode(',', $parent);
-				}
+		// if not empty hierarchy, iterate
+		if (!empty($hierarchy)) {
+			foreach ($hierarchy as $parent => $child) {
+				$hierarchy[$parent] = explode(',', $child);
 			}
-		}		
+		}
 
+		// and return array
 		return $hierarchy;
 	}
 
