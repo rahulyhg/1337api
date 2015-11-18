@@ -796,7 +796,7 @@ class Api {
 	}
 
 	/**
-	  * Receives uploaded files and insert upload entry at database.
+	  * Auxiliar function to write uploaded files at storage.
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
 	  * @param Psr\Http\Message\ResponseInterface $response Response Object
@@ -810,18 +810,13 @@ class Api {
 		$data = $request->getParsedBody();
 
 		// check if data was sent
-		if ( empty($data) ) {
+		if (empty($data)) {
 			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);			
 		}
-		elseif ( empty($data['blob']) ) {
+		elseif (empty($data['blob'])) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_BLOB_MISSING'));
-			$this->logger->notice($err['message'], $args);
-			return $response->withJson($err)->withStatus(400);
-		}
-		elseif ( empty($data['filesize']) ) {
-			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILESIZE_MISSING'));
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
@@ -832,79 +827,52 @@ class Api {
 		}
 
 		// explode $data['blob']
-			// TODO: this procedure could be done in one line if I use regex. verify correct expression.
-			list($type, $data['blob']) = explode(';', $data['blob']);
-			list(,$type) = explode(':', $type);
-			list(,$data['blob']) = explode(',', $data['blob']);
+		// TODO: this procedure could be done in one line if I use regex. verify correct expression.
+		list($type, $data['blob']) = explode(';', $data['blob']);
+		list(,$type) = explode(':', $type);
+		list(,$data['blob']) = explode(',', $data['blob']);
 
-			// decode blob data
-			$content = base64_decode($data['blob']);
+		// decode blob data
+		$content = base64_decode($data['blob']);
 
-		// define path and new filename
-			$dateTime 	= R::isoDateTime();
-			$date 		= R::isoDate();
-			$basepath 	= $this->config['api']['uploads']['basepath'];
-			$datepath 	= str_replace('-', '/', $date) . '/';
-			$fullpath 	= $basepath . $datepath;
-			$hashname 	= md5($data['filename'].'-'.$dateTime) . '.' . end(explode('.', $data['filename']));
+		// define path
+		$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
+		$fullpath 	= $this->config['api']['uploads']['basepath'] . $datepath;
 
-		// build insert upload array
-		$upload = array(
-			'path' 		=> $datepath . $hashname,
-			'filename' 	=> $hashname,
-			'type' 		=> $type,
-			'size' 		=> $data['filesize'],
-			'edge' 		=> $args['edge'],
-			'created' 	=> R::isoDateTime(),
-			'modified' 	=> R::isoDateTime(),
-		);
+		// define hash unique filename
+		$tmp  = explode(".", $data['filename']);
+		$ext  = array_pop($tmp);
+		$name = implode('_', $tmp);
+		$hash = strtotime(R::isoDateTime());
+		$filename = $name . '-' . $hash . '.' . $ext;
 
-		// write file
-			// TODO: we should validate if the file was actually saved at disk.
-			// if folder doesn't exist, mkdir 
-			if (!file_exists($fullpath)) {
-				mkdir( $fullpath, 0777, true );
-			};
-			file_put_contents($fullpath . $hashname, $content);
-		
-		// dispense uploads edge
-		$item = R::dispense('uploads');
-
-		foreach ($upload as $k => $v) {
-			$item[$k] = $v;
-		}		
-
-		// let's start the insert transaction
-		R::begin();
-		try {
-			// insert item, returns id if success
-			R::store($item);
-			$id = R::getInsertID();
-
-			// if item was insert with success
-			if( $id ) {
-
-				// commit transaction
-				R::commit();
-
-				// build api response array
-				$payload = array(
-					'id' 		=> $id,
-					'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: ' . $id . ')',
-				);
-				
-				//output response
-				return $response->withJson($payload)->withStatus(201);
-			}
-			// else something happened, throw error
-			else {
-				$err = getMessage('UPLOAD_FAIL');
-				throw new \Exception($err, 1);
-			}
+		// if folder doesn't exist, mkdir 
+		if (!file_exists($fullpath)) {
+			mkdir($fullpath, 0777, true);
 		}
-		catch(\Exception $e) {
-			R::rollback();
-			throw $e;
+
+		// if folder is writable, put contents 
+		if (is_writable($fullpath)) {
+			file_put_contents($fullpath . $filename, $content);
+		}
+
+		// if it was written, success
+		if (file_exists($fullpath . $filename)) {
+		
+			// build api response array
+			$payload = array(
+				'fullpath' 		=> $fullpath,
+				'filename' 		=> $filename,
+				'message' 	=> getMessage('UPLOAD_SUCCESS'),
+			);
+		
+			//output response
+			return $response->withJson($payload)->withStatus(201);
+		}		
+		else {
+			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(400);
 		}
 	}
 
