@@ -49,8 +49,6 @@ $app->group('/v1', function () use ($validate) {
 			$this->get('/export', 				'SlimBean\Api:export'	); 
 
 			$this->post('', 					'SlimBean\Api:create'	);
-			$this->post('/upload', 				'SlimBean\Api:upload'	);
-
 			$this->put('/{id:[0-9]+}', 			'SlimBean\Api:update'	);
 			$this->delete('/{id:[0-9]+}', 		'SlimBean\Api:destroy'	); 
 		});
@@ -58,6 +56,7 @@ $app->group('/v1', function () use ($validate) {
 		// AUX ROUTES
 		$this->get('/hi', 							'SlimBean\Api:hi');
 		$this->get('/edges', 						'SlimBean\Api:edges'); 
+		$this->post('/upload', 						'SlimBean\Api:upload');
 		$this->put('/users/{id:[0-9]+}/password',	'SlimBean\Api:updatePassword'); 
 		$this->patch('/users/{id:[0-9]+}/password', 'SlimBean\Api:updatePassword'); 
 

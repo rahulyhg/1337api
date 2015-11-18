@@ -861,8 +861,9 @@ class Api {
 		
 			// build api response array
 			$payload = array(
-				'fullpath' 		=> $fullpath,
-				'filename' 		=> $filename,
+				'fullpath' 	=> $fullpath,
+				'filename' 	=> $filename,
+				'href' 		=> $fullpath . $filename,
 				'message' 	=> getMessage('UPLOAD_SUCCESS'),
 			);
 		
