@@ -85,6 +85,7 @@ class Api {
 
 			// build $edges array and properties
 			foreach ($this->config['edges']['list'] as $k => $edge) {
+
 				if (!in_array($edge, $this->config['edges']['blacklist'])) {
 					$edges[$edge] = array(
 						'name' 			=> $edge,
@@ -104,9 +105,9 @@ class Api {
 				// TODO: we should support more than 1 depth into the recursion
 				foreach ($edges as $edge => $obj) {
 					if (array_key_exists($edge, $hierarchy)) {
-						$edges[$edge]['has_child'] = true;
 						foreach ($hierarchy[$edge] as $k => $child) {
 							if (!in_array($child, $this->config['edges']['blacklist'])) {
+								$edges[$edge]['has_child'] = true;
 								$edges[$child]['has_parent'] = true;
 								$edges[$child]['parent'][$edge] = $edges[$edge];								
 							}

@@ -23,6 +23,14 @@ if (R::testConnection() == TRUE) {
 
 	// INSPECT TABLES
 	$config['edges']['list'] = R::inspect();
+
+	// INSERT MANY-TO-MANY TABLES AT BLACKLIST
+	foreach ($config['edges']['list'] as $k => $edge) {
+		if (strpos($edge, '_') !== FALSE) {
+			array_push($config['edges']['blacklist'], $edge);
+		}
+	}
+
 }
 
 /* ***************************************************************************************************
