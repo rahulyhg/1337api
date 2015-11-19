@@ -219,11 +219,63 @@ class Api {
 		// get database schema
 		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
+		// build json hyper $schema
+		$schema = $this->buildSchema($args['edge'], $raw);
+
+		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+		foreach ($this->config['edges']['relations'] as $k => $edge) {
+			
+			$relation = explode('_', $edge);
+
+			// FOUND A RELATION
+			if (in_array($args['edge'], $relation)) {
+				unset($relation[array_search($args['edge'], $relation)]);
+				$related = array_pop($relation);
+
+
+				// get related database schema
+				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
+
+				// build json hyper $schema
+				$schema['properties'][$related] = $this->buildSchema($related, $raw);
+
+/*				// TODO: recursion made, now need to check how to make uploads fields from related table schema
+				// define related many-to-many tables schema array
+					$schema['properties']['uploads_id'] = array(
+						'title' 	=> 'Imagem',
+						'type'		=> 'string',
+						'format' 	=> 'url',
+						'required'	=> true,
+						'minLength' => 0,
+						'maxLength' => 128,
+			  			'options'	=> array(
+			  				'upload' 	=> true,
+			  			),
+						'links' 	=> array(
+							array(
+								'rel' 	=> '',
+								'href' 	=> '{{self}}',
+							)
+						)
+					);*/
+			}
+
+		}
+
+		// build api response payload
+		$payload = $schema;
+
+		// output response payload
+		return $response->withJson($payload);
+	}
+
+	private function buildSchema ($edge, $raw) {
+
 		// define default schema array
 		$schema = array(
-			'bean' 					=> $args['edge'],
-			'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
-			'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
+			'bean' 					=> $edge,
+			'title' 				=> getCaption('edges', $edge, $edge),
+			'icon' 					=> getCaption('icon', $edge, $edge),
 			'type' 					=> 'object',
 			'required' 				=> true,
 			'additionalProperties' 	=> false,
@@ -288,7 +340,7 @@ class Api {
 					$schema['properties'][$field] = array(
 						'type'			=> $type,
 						'format' 		=> $format,
-						'title' 		=> getCaption('fields', $args['edge'], $field),
+						'title' 		=> getCaption('fields', $edge, $field),
 						'required'	 	=> true,
 						'minLength' 	=> $minLength,
 						'maxLength'		=> $maxLength
@@ -306,42 +358,7 @@ class Api {
 				}
 			}
 		}
-
-		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
-		foreach ($this->config['edges']['relations'] as $k => $edge) {
-			
-			$related = explode('_', $edge);
-			
-			if (in_array($args['edge'], $related) ) {
-
-				// TODO: i need to make a recursion here, to add this related table schema
-				// define related many-to-many tables schema array
-					$schema['properties']['uploads_id'] = array(
-						'title' 	=> 'Imagem',
-						'type'		=> 'string',
-						'format' 	=> 'url',
-						'required'	=> true,
-						'minLength' => 0,
-						'maxLength' => 128,
-			  			'options'	=> array(
-			  				'upload' 	=> true,
-			  			),
-						'links' 	=> array(
-							array(
-								'rel' 	=> '',
-								'href' 	=> '{{self}}',
-							)
-						)
-					);
-			}
-
-		}
-
-		// build api response payload
-		$payload = $schema;
-
-		// output response payload
-		return $response->withJson($payload);
+		return $schema;
 	}
 
 	/**
