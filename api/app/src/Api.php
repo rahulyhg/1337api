@@ -224,40 +224,22 @@ class Api {
 
 		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
 		foreach ($this->config['edges']['relations'] as $k => $edge) {
-			
 			$relation = explode('_', $edge);
 
-			// FOUND A RELATION
+			// IF RELATION WAS FOUND FOR THIS EDGE
 			if (in_array($args['edge'], $relation)) {
+				
+				// remove "self"
 				unset($relation[array_search($args['edge'], $relation)]);
+				
+				// stringify related
 				$related = array_pop($relation);
-
 
 				// get related database schema
 				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
 
 				// build json hyper $schema
 				$schema['properties'][$related] = $this->buildSchema($related, $raw);
-
-/*				// TODO: recursion made, now need to check how to make uploads fields from related table schema
-				// define related many-to-many tables schema array
-					$schema['properties']['uploads_id'] = array(
-						'title' 	=> 'Imagem',
-						'type'		=> 'string',
-						'format' 	=> 'url',
-						'required'	=> true,
-						'minLength' => 0,
-						'maxLength' => 128,
-			  			'options'	=> array(
-			  				'upload' 	=> true,
-			  			),
-						'links' 	=> array(
-							array(
-								'rel' 	=> '',
-								'href' 	=> '{{self}}',
-							)
-						)
-					);*/
 			}
 
 		}
@@ -273,7 +255,7 @@ class Api {
 
 		// define default schema array
 		$schema = array(
-			'bean' 					=> $edge,
+			'edge' 					=> $edge,
 			'title' 				=> getCaption('edges', $edge, $edge),
 			'icon' 					=> getCaption('icon', $edge, $edge),
 			'type' 					=> 'object',
@@ -295,7 +277,7 @@ class Api {
 
 					$schema['properties'][$field] = array(
 						'type' 				=> 'integer',
-						'title' 			=> getCaption('fields', $schema['bean'], $parent),
+						'title' 			=> getCaption('fields', $schema['edge'], $parent),
 						'required'	 		=> true,
 						'minLength'	 		=> 1,
 						'enum' 				=> array(),
@@ -345,6 +327,27 @@ class Api {
 						'minLength' 	=> $minLength,
 						'maxLength'		=> $maxLength
 					);
+
+/*				// TODO: recursion made, now need to check how to make uploads fields from related table schema
+				// define related many-to-many tables schema array
+					$schema['properties']['uploads_id'] = array(
+						'title' 	=> 'Imagem',
+						'type'		=> 'string',
+						'format' 	=> 'url',
+						'required'	=> true,
+						'minLength' => 0,
+						'maxLength' => 128,
+			  			'options'	=> array(
+			  				'upload' 	=> true,
+			  			),
+						'links' 	=> array(
+							array(
+								'rel' 	=> '',
+								'href' 	=> '{{self}}',
+							)
+						)
+					);*/
+
 
 					// array merge to custom properties defined at config
 					if (isset($this->config['schema']['custom']['fields'][$field])) {

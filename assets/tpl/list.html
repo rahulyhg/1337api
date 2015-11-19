@@ -20,13 +20,13 @@
 				<i class="fa fa-{{schema.icon}} fa-fw"></i> {{schema.title}}
 
 				<div class="btn-group pull-right" role="group">
-					<a class="btn btn-xs btn-primary" href="#/create/{{schema.bean}}"><i class="fa fa-plus"></i> Adicionar {{schema.title}}</a>
+					<a class="btn btn-xs btn-primary" href="#/create/{{schema.edge}}"><i class="fa fa-plus"></i> Adicionar {{schema.title}}</a>
 					<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-chevron-down"></i></button>
 					<ul class="dropdown-menu slidedown" role="menu">
 						<li><a href="" ng-click="onReload()"><i class="fa fa-refresh fa-fw"></i> Atualizar</a></li> 
 						<li><a href="" ng-click="onExport()"><i class="fa fa-table"></i> Exportar</a></li>
 						<li class="divider"></li>
-						<li><a href="#/create/{{schema.bean}}"><i class="fa fa-plus"></i> Adicionar {{schema.title}}</a></li>
+						<li><a href="#/create/{{schema.edge}}"><i class="fa fa-plus"></i> Adicionar {{schema.title}}</a></li>
 					</ul>
 				</div>
 
@@ -49,12 +49,12 @@
 					<tbody>
 						<tr ng-repeat="item in items | orderBy:'parseInt(id)':true">
 							<td>{{item.id}}</td>
-							<td><a href="#/read/{{schema.bean}}/{{item.id}}">{{item.name}}</a></td>
+							<td><a href="#/read/{{schema.edge}}/{{item.id}}">{{item.name}}</a></td>
 							<td class="hidden-xs">{{item.created}}</td>
 							<td class="hidden-sm hidden-xs">{{item.modified}}</td>
 							<td class="text-right">
-								<a href="#/read/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-eye"></i></a>
-								<a href="#/update/{{schema.bean}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
+								<a href="#/read/{{schema.edge}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-eye"></i></a>
+								<a href="#/update/{{schema.edge}}/{{item.id}}" class="btn btn-default btn-sm"><i class="fa fa-pencil"></i></a>
 								<button ng-click="onDestroy(item.id)" class="btn btn-default btn-sm"><i class="fa fa-trash"></i></button>
 							</td>
 						</tr>
