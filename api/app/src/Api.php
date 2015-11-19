@@ -539,28 +539,44 @@ class Api {
 		// foreach $data request payload, build array to insert
 		foreach ($data as $field => $value) {
 
-			// IF field is an id, returns bad request response
-			if ($field == 'id') {
-				$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
-				$this->logger->notice($err['message'], array($args, $data));
-				return $response->withJson($err)->withStatus(400);
-			}
+			// IF field is not array, just parse it
+			if (!is_array($value)) {
 
-			// IF field defines uploads many-to-many relationship
-			else if ($field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
-				$upload = R::dispense( 'uploads' );
-				$upload->id = $value;
-				$item->sharedUploadList[] = $upload;
-			}
+				// IF field is an id, returns bad request response
+				if ($field == 'id') {
+					$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
+					$this->logger->notice($err['message'], array($args, $data));
+					return $response->withJson($err)->withStatus(400);
+				}
 
-			// IF field is a password, hash it up
-			else if ($field == 'password') {
-				$item[$field] = md5($value);
-			}
+				// IF field is a password, hash it up
+				else if ($field == 'password') {
+					$item[$field] = md5($value);
+				}
 
-			// ELSE field is literal, go on
+				// ELSE field is literal, go on
+				else {
+					$item[$field] = $value;
+				}
+
+			}
+			// ELSE is array and defines many-to-many relationship
 			else {
-				$item[$field] = $value;
+				// validate if related edge is valid
+				// TODO: needs to validate if there is actually a relation between args edge and related edge.
+				if (in_array($field, $this->config['edges']['list'])) {
+
+					$relatedItem = R::dispense($field);
+
+					foreach ($value as $xfield => $yvalue) {
+						$relatedItem[$xfield] = $yvalue;
+					}
+					$item->sharedUploadList[] = $relatedItem;
+				}
+				else {
+					echo 'deu ruim';
+				}
+
 			}
 		}
 		
