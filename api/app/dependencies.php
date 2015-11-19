@@ -28,6 +28,7 @@ if (R::testConnection() == TRUE) {
 	foreach ($config['edges']['list'] as $k => $edge) {
 		if (strpos($edge, '_') !== FALSE) {
 			array_push($config['edges']['blacklist'], $edge);
+			array_push($config['edges']['relations'], $edge);
 		}
 	}
 

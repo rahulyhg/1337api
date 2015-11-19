@@ -55,6 +55,7 @@ return array(
 	'edges' => [
 		'list'		=> array(),
 		'blacklist' => array('images'),
+		'relations' => array(),
 	],
 
 	// $config SCHEMA (Form Builder)

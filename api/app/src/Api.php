@@ -307,26 +307,34 @@ class Api {
 			}
 		}
 
-		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-		if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
-		
-			$schema['properties']['uploads_id'] = array(
-				'title' 	=> 'Imagem',
-				'type'		=> 'string',
-				'format' 	=> 'url',
-				'required'	=> true,
-				'minLength' => 0,
-				'maxLength' => 128,
-	  			'options'	=> array(
-	  				'upload' 	=> true,
-	  			),
-				'links' 	=> array(
-					array(
-						'rel' 	=> '',
-						'href' 	=> '{{self}}',
-					)
-				)
-			);
+		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+		foreach ($this->config['edges']['relations'] as $k => $edge) {
+			
+			$related = explode('_', $edge);
+			
+			if (in_array($args['edge'], $related) ) {
+
+				// TODO: i need to make a recursion here, to add this related table schema
+				// define related many-to-many tables schema array
+					$schema['properties']['uploads_id'] = array(
+						'title' 	=> 'Imagem',
+						'type'		=> 'string',
+						'format' 	=> 'url',
+						'required'	=> true,
+						'minLength' => 0,
+						'maxLength' => 128,
+			  			'options'	=> array(
+			  				'upload' 	=> true,
+			  			),
+						'links' 	=> array(
+							array(
+								'rel' 	=> '',
+								'href' 	=> '{{self}}',
+							)
+						)
+					);
+			}
+
 		}
 
 		// build api response payload
