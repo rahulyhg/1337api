@@ -572,6 +572,13 @@ class Api {
 						$relatedItem[$xfield] = $yvalue;
 					}
 					$item->sharedUploadList[] = $relatedItem;
+
+					// inject created and modified current time
+					$related['created'] 	= R::isoDateTime();
+					$related['modified']	= R::isoDateTime();
+
+					// inject at shared item list
+					$item['shared' . ucfirst($field) . 'List'][] = $related;
 				}
 				else {
 					echo 'deu ruim';
