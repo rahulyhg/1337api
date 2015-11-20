@@ -807,9 +807,7 @@ class Api {
 			$hierarchy = $this->getHierarchy($args['edge']);
 			if (!empty($hierarchy[$args['edge']])) {
 				foreach ($hierarchy[$args['edge']] as $k => $child) {
-					${'ownList'} = 'own' . ucfirst($child) . 'List';
-					$childs = $item->${'ownList'};
-					if (!empty($childs)) {
+					if (!empty($item['own' . ucfirst($child) . 'List'])) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
 						$this->logger->notice($err['message'], $args);
 						return $response->withJson($err)->withStatus(400);
