@@ -566,12 +566,11 @@ class Api {
 				// TODO: needs to validate if there is actually a relation between args edge and related edge.
 				if (in_array($field, $this->config['edges']['list'])) {
 
-					$relatedItem = R::dispense($field);
+					$related = R::dispense($field);
 
-					foreach ($value as $xfield => $yvalue) {
-						$relatedItem[$xfield] = $yvalue;
+					foreach ($value as $xfield => $xvalue) {
+						$related[$xfield] = $xvalue;
 					}
-					$item->sharedUploadList[] = $relatedItem;
 
 					// inject created and modified current time
 					$related['created'] 	= R::isoDateTime();
@@ -581,9 +580,10 @@ class Api {
 					$item['shared' . ucfirst($field) . 'List'][] = $related;
 				}
 				else {
-					echo 'deu ruim';
+					$err = array('error' => true, 'message' => getMessage('CREATE_FAIL'));
+					$this->logger->notice($err['message'], array($args, $data));
+					return $response->withJson($err)->withStatus(400);
 				}
-
 			}
 		}
 		
