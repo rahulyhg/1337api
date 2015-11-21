@@ -532,6 +532,12 @@ class Api {
 			$this->logger->notice($err['message'], array($args, $data));
 			return $response->withJson($err)->withStatus(400);
 		}
+		// if id was send, return bad request response
+		if (isset($data['id'])) {
+			$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));
+			return $response->withJson($err)->withStatus(400);
+		}
 
 		// dispense 'edge'
 		$item = R::dispense( $args['edge'] );
@@ -542,28 +548,18 @@ class Api {
 			// IF field is not array, just parse it
 			if (!is_array($value)) {
 
-				// IF field is an id, returns bad request response
-				if ($field == 'id') {
-					$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
-					$this->logger->notice($err['message'], array($args, $data));
-					return $response->withJson($err)->withStatus(400);
-				}
-
 				// IF field is a password, hash it up
-				else if ($field == 'password') {
-					$item[$field] = md5($value);
+				if ($field == 'password') {
+					$value = md5($value);
 				}
 
-				// ELSE field is literal, go on
-				else {
-					$item[$field] = $value;
-				}
+				// ADD to insert array
+				$item[$field] = $value;
 
 			}
 			// ELSE is array and defines many-to-many relationship
 			else {
 				// validate if related edge is valid
-				// TODO: needs to validate if there is actually a relation between args edge and related edge.
 				if (in_array($field, $this->config['edges']['list'])) {
 
 					$related = R::dispense($field);
@@ -600,6 +596,7 @@ class Api {
 			$id = R::getInsertID();
 
 			// if item was insert with success
+			// TODO: when related tables inserted, the ID returned is not from the actual $item. Check it.
 			if ($id) {
 
 				// commit transaction
