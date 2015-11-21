@@ -420,6 +420,24 @@ class Api {
 				}
 			}
 
+			// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+			$relateds = $this->isM2MRelated($args);
+			if (!empty($relateds)) {
+				foreach ($relateds as $k => $related) {
+					$relatedList = $item['shared' . ucfirst($related) . 'List'];
+					if (!empty($relatedList)) {
+						foreach ($relatedList as $k => $relatedObj) {
+							foreach ($relatedObj as $relatedField => $relatedValue) {
+								// TODO: The $k above makes possible to have more than one item at this array. 
+								// BUT... JSON schema needs to be updated in order to work properly. 
+								// I'll work it later.
+								$read[$related][$relatedField] = $relatedValue;
+							}
+						}
+					}
+				}
+			}
+
 			// build api response payload
 			$payload = $read;
 
