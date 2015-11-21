@@ -226,11 +226,13 @@ class Api {
 		$relateds = $this->isM2MRelated($args);
 		if (!empty($relateds)) {
 			foreach ($relateds as $k => $related) {
+				
 				// get related database schema
 				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
-
+				
 				// build json hyper $schema
 				$schema['properties'][$related] = $this->buildSchema($related, $raw);
+
 			}
 		}
 
@@ -242,17 +244,18 @@ class Api {
 	}
 
 	private function isM2MRelated ($args) {
+		$relateds = array();
 		foreach ($this->config['edges']['relations'] as $k => $edge) {
 			$relation = explode('_', $edge);
 
 			// IF RELATION WAS FOUND FOR THIS EDGE
 			if (in_array($args['edge'], $relation)) {
-				
 				// remove "self"
 				unset($relation[array_search($args['edge'], $relation)]);
-				
 				// stringify related
-				$relateds[] = array_pop($relation);
+				$related = array_pop($relation);
+				// array push
+				array_push($relateds, $related);
 			}
 		}
 		return $relateds;
