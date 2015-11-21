@@ -750,53 +750,48 @@ class Api {
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
+		// if required data is not valid, return bad request response
+		if ($data['new_password'] != $data['confirm_new_password']) {
+			$err = array('error' => true, 'message' => getMessage('UPDATE_PASSWORD_CONFIRM_FAIL'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(400);
+		}
 
 		// dispense 'edge'
 		$item = R::load( 'users', $args['id'] );
 
-		// verify if password is valid
-		if ($item['password'] == md5($data['password'])) {
-			
-			// verify if new password matches
-			if ($data['new_password'] == $data['confirm_new_password']) {
-
-				// build array to update
-				$item['password'] = md5($data['new_password']);
-				$item['modified'] = R::isoDateTime();
-
-				// let's start the update transaction
-				R::begin();
-				try {
-					// update item, commit if success
-					R::store( $item );
-					// commit transaction
-					R::commit();
-
-					// build api response array
-					$payload = array(
-						'id' 		=> $args['id'],
-						'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
-					);
-					
-					//output response
-					return $response->withJson($payload);
-				}
-				catch(\Exception $e) {
-					// rollback transaction
-					R::rollback();
-					throw $e;
-				}
-			} 
-			else {
-				$err = array('error' => true, 'message' => getMessage('UPDATE_PASSWORD_CONFIRM_FAIL'));
-				$this->logger->notice($err['message'], $args);
-				return $response->withJson($err)->withStatus(400);
-			}
-		} 
-		else {
+		// if current password is not valid, return bad request response
+		if ($item['password'] != md5($data['password'])) {
 			$err = array('error' => true, 'message' => getMessage('AUTH_PASS_FAIL'));
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
+		}
+
+		// all set, let's build update array
+		$item['password'] = md5($data['new_password']);
+		$item['modified'] = R::isoDateTime();
+
+		// let's start the update transaction
+		R::begin();
+		try {
+			// update item, commit if success
+			R::store( $item );
+			// commit transaction
+			R::commit();
+
+			// build api response array
+			$payload = array(
+				'id' 		=> $args['id'],
+				'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
+			);
+			
+			//output response
+			return $response->withJson($payload);
+		}
+		catch(\Exception $e) {
+			// rollback transaction
+			R::rollback();
+			throw $e;
 		}
 	}
 
