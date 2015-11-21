@@ -532,7 +532,7 @@ class Api {
 			$this->logger->notice($err['message'], array($args, $data));
 			return $response->withJson($err)->withStatus(400);
 		}
-		// if id was send, return bad request response
+		// if id was sent, return bad request response
 		if (isset($data['id'])) {
 			$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
 			$this->logger->notice($err['message'], array($args, $data));
@@ -644,6 +644,11 @@ class Api {
 			$this->logger->notice($err['message'], array($args, $data));			
 			return $response->withJson($err)->withStatus(400);
 		}
+		if (isset($data['id']) && $data['id'] != $args['id']) {
+			$err = array('error' => true, 'message' => getMessage('INVALID_ID_MATCH_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));
+			return $response->withJson($err)->withStatus(400);
+		}
 
 		// dispense 'edge'
 		$item = R::load( $args['edge'], $args['id'] );
@@ -654,32 +659,44 @@ class Api {
 			// foreach $data request payload, build array to insert
 			foreach ($data as $field => $value) {
 
-				// IF field is an id and does not match, throw exception
-				if ($field == 'id' && $value != $args['id']) {
-					$err = array('error' => true, 'message' => getMessage('INVALID_ID_MATCH_FORMDATA'));
-					$this->logger->notice($err['message'], array($args, $data));
-					return $response->withJson($err)->withStatus(400);
-				}
+				// IF field is not array, just parse it
+				if (!is_array($value)) {
 
-				// IF field defines uploads many-to-many relationship
-				else if ($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['edges']['list'])) {
-					$upload = R::dispense( 'uploads' );
-					$upload->id = $value;
-					$item->sharedUploadList[] = $upload;
-				}
+					// IF field is a password, hash it up
+					if ($field == 'password') {
+						$value = md5($value);
+					}
 
-				// IF field is a password, hash it up
-				else if ($field == 'password') {
-					$item[$field] = md5($value);
-				}
+					// ADD to update array
+					$item[$field] = $value;
 
-				// ELSE field is literal, go on
+				}
+				// ELSE is array and defines many-to-many relationship
 				else {
-					$item[$field] = $value;			
+					// validate if related edge is valid
+					if (in_array($field, $this->config['edges']['list'])) {
+
+						$related = R::dispense($field);
+
+						foreach ($value as $xfield => $xvalue) {
+							$related[$xfield] = $xvalue;
+						}
+
+						// inject modified current time
+						$related['modified']	= R::isoDateTime();
+
+						// inject at shared item list
+						$item['shared' . ucfirst($field) . 'List'][] = $related;
+					}
+					else {
+						$err = array('error' => true, 'message' => getMessage('UPDATE_FAIL'));
+						$this->logger->notice($err['message'], array($args, $data));
+						return $response->withJson($err)->withStatus(400);
+					}
 				}
 			}
 
-			// inject modified current time to array to update
+			// inject modified current time to update array
 			$item['modified'] = R::isoDateTime();
 
 			// let's start the update transaction
