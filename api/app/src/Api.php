@@ -223,6 +223,24 @@ class Api {
 		$schema = $this->buildSchema($args['edge'], $raw);
 
 		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+		$related = $this->isM2MRelated($args);
+		if (!empty($related)) {
+
+			// get related database schema
+			$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
+
+			// build json hyper $schema
+			$schema['properties'][$related] = $this->buildSchema($related, $raw);
+		}
+
+		// build api response payload
+		$payload = $schema;
+
+		// output response payload
+		return $response->withJson($payload);
+	}
+
+	private function isM2MRelated ($args) {
 		foreach ($this->config['edges']['relations'] as $k => $edge) {
 			$relation = explode('_', $edge);
 
@@ -234,21 +252,9 @@ class Api {
 				
 				// stringify related
 				$related = array_pop($relation);
-
-				// get related database schema
-				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
-
-				// build json hyper $schema
-				$schema['properties'][$related] = $this->buildSchema($related, $raw);
 			}
-
 		}
-
-		// build api response payload
-		$payload = $schema;
-
-		// output response payload
-		return $response->withJson($payload);
+		return $related;
 	}
 
 	private function buildSchema ($edge, $raw) {
