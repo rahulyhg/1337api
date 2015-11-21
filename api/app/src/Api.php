@@ -385,7 +385,12 @@ class Api {
 			foreach ($item as $field => $value) {
 				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
 
-					// add to payload response
+					// IF field is a password, clean it up
+					if ($field == 'password') {
+						$value = '';
+					}
+
+					// ADD to payload response
 					$read[$field] = $value;
 
 					// IF field represents one-to-many relationship
