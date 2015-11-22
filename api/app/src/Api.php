@@ -303,6 +303,29 @@ class Api {
 						$schema['properties'][$field]['options']['enum_titles'][] = $value;
 					}
 				}
+				// check if field defines upload convension
+				else if (substr($field, -6, 6) == '_upload') {
+
+					// define upload schema array
+					$schema['properties'][$field] = array(
+						'title' 	=> getCaption('fields', $field, $field),
+						'type'		=> 'string',
+						'format' 	=> 'url',
+						'required'	=> true,
+						'minLength' => 0,
+						'maxLength' => 128,
+			  			'options'	=> array(
+			  				'upload' 	=> true,
+			  			),
+						'links' 	=> array(
+							array(
+								'rel' 	=> '',
+								'href' 	=> '{{self}}',
+							)
+						)
+					);
+				}
+
 				// else, field is literal and we can go on
 				else {
 
@@ -337,27 +360,6 @@ class Api {
 						'minLength' 	=> $minLength,
 						'maxLength'		=> $maxLength
 					);
-
-/*				// TODO: recursion made, now need to check how to make uploads fields from related table schema
-				// define related many-to-many tables schema array
-					$schema['properties']['uploads_id'] = array(
-						'title' 	=> 'Imagem',
-						'type'		=> 'string',
-						'format' 	=> 'url',
-						'required'	=> true,
-						'minLength' => 0,
-						'maxLength' => 128,
-			  			'options'	=> array(
-			  				'upload' 	=> true,
-			  			),
-						'links' 	=> array(
-							array(
-								'rel' 	=> '',
-								'href' 	=> '{{self}}',
-							)
-						)
-					);*/
-
 
 					// array merge to custom properties defined at config
 					if (isset($this->config['schema']['custom']['fields'][$field])) {
