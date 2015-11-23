@@ -880,7 +880,11 @@ class Api {
 						'minLength'	 		=> 1,
 						'enum' 				=> array(),
 						'options' 			=> array(
-							'enum_titles' 	=> array()
+							'enum_titles' 	=> array(),
+							'selectize_options' => array(
+								// TODO: for some reason this is not working. WTF?! 
+								'create' => false
+							)
 						)
 					);
 
