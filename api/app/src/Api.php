@@ -177,13 +177,13 @@ class Api {
 	}
 
 	/**
-	  * Deletes existing item at database.
+	  * Deletes existing item from database.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function destroy ($request, $response, $args) {
 
@@ -195,21 +195,23 @@ class Api {
 
 			// check if edge has one-to-many relationship hierarchy
 			$hierarchy = $this->getHierarchy($args['edge']);
+
 			if (!empty($hierarchy[$args['edge']])) {
 				foreach ($hierarchy[$args['edge']] as $k => $child) {
-					if (!empty($item['own' . ucfirst($child) . 'List'])) {
+					$ownList = $item['own' . ucfirst($child) . 'List'];
+					if (!empty($ownList)) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
 						$this->logger->notice($err['message'], $args);
 						return $response->withJson($err)->withStatus(400);
 					}
 				}
 			}
-			
-			// no relationship? let's go on:
-			// let's start the delete transaction
+
+			// no childs? let's start the delete transaction
 			R::begin();
 			try {
 
+				// TODO: If edge contains `_upload` field, we should unlink the files.
 				// destroy item, commit if success
 			    R::trash($item);
 				R::commit();
