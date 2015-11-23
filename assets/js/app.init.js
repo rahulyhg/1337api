@@ -248,6 +248,9 @@ var jePluginsConfig = {
 							emoticonsEnabled: false,
 							width: '98%',
 							resizeEnabled: false,
+						},
+						selectize: {
+							enable: true
 						}
 					};
 
@@ -258,6 +261,7 @@ var jeOptionsConfig = {
 						disable_collapse: true,
 						disable_edit_json: true,
 						disable_properties: true,
+						show_errors: 'change',
 						upload: jeUploadFunction,
 					};
 
