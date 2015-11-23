@@ -19,6 +19,8 @@ use Psr\Log\LoggerInterface;
  */
 class Api {
 
+/** VARS - SlimBean\Api Class Variables **/
+
 	/**
 	 * @var array $config Global settings values. 
 	 */
@@ -34,150 +36,7 @@ class Api {
 		$this->logger 	= $logger;
 	}
 
-	/**
-	  * API test method.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function test($request, $response, $args) {
-		$this->logger->info('Elijah says: hey mom, I\'m being logged!' );
-		return $response->withJson(array("message" => "Hello, tested!"));
-	}
-
-	/**
-	  * Returns API welcome message.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function hi($request, $response, $args) {
-
-		// build api response payload
-		$payload = array(
-			'message' => getMessage('HI')
-		);
-		// output response payload
-		return $response->withJson($payload);
-	}
-
-	/**
-	  * Returns all API edges dynamically from database table schema and properties related.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function edges($request, $response, $args) {
-
-		// initialize edges array
-		$edges = array();
-		
-		if (!empty($this->config['edges']['list'])) {
-
-			// build $edges array and properties
-			foreach ($this->config['edges']['list'] as $k => $edge) {
-
-				if (!in_array($edge, $this->config['edges']['blacklist'])) {
-					$edges[$edge] = array(
-						'name' 			=> $edge,
-						'title' 		=> getCaption('edges', $edge, $edge),
-						'count' 		=> R::count($edge),
-						'icon' 			=> getCaption('icon', $edge, $edge),
-						'has_parent' 	=> false,
-						'has_child' 	=> false,
-					);
-				}
-			}
-
-			// if hierarchy exists, iterates parent and child properties to $edges array
-			$hierarchy = $this->getHierarchy();	
-			if (!empty($hierarchy)) {
-				// build hierarchy list - only 1 depth
-				// TODO: we should support more than 1 depth into the recursion
-				foreach ($edges as $edge => $obj) {
-					if (array_key_exists($edge, $hierarchy)) {
-						foreach ($hierarchy[$edge] as $k => $child) {
-							if (!in_array($child, $this->config['edges']['blacklist'])) {
-								$edges[$edge]['has_child'] = true;
-								$edges[$child]['has_parent'] = true;
-								$edges[$child]['parent'][$edge] = $edges[$edge];								
-							}
-						}
-					} 
-				}
-			}
-		}
-
-		// build api response payload
-		$payload = array(
-			'edges' 	=> $edges,
-		);
-
-		// output response playload
-		return $response->withJson($payload);
-	}
-
-	/**
-	  * Retrieves a list of items from database edge and properties related.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  * @param int $query['page'] Query String parameter for paginated results
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function retrieve($request, $response, $args) {
-
-		// get query string parameters
-		$args['query'] = $request->getQueryParams();
-
-		// check if request is paginated or ALL
-		if (!empty($args['query']['page'])) {
-			if (is_numeric($args['query']['page'])) {
-				// param page exists, let's get this page
-				$limit = $this->config['api']['params']['pagination'];
-				$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
-			}
-			else {
-				$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
-				$this->logger->notice($err['message'], $args);
-				return $response->withJson($err)->withStatus(400);
-			}
-		} 
-		else {
-			// param page doesn't exist, let's get all
-			$items = R::findAll( $args['edge'], 'ORDER BY id DESC' );
-		}
-
-		// check if list is not empty
-		if (!empty($items)) {
-			// list is not empty, let's foreach and build response array
-			foreach ($items as $item => $content) {
-				foreach ($content as $field => $value) {
-					if (in_array($field, $this->config['api']['list_fields'])) {
-						$payload[$item][$field] = $value;
-					}
-				}
-			}
-		}
-		else {
-			// list is empty, let's return empty array
-			$payload = array();
-		}
-
-		// output response
-		return $response->withJson($payload);
-	}
+/** PUBLIC - SlimBean\Api Class Public Functions **/
 
 	/**
 	  * Counts items from database edge and properties related.
@@ -199,347 +58,6 @@ class Api {
 			'sum' 			=> $count,
 			'pages' 		=> ceil($count/$limit),
 			'itemsPerPage' 	=> $limit
-		);
-
-		// output response payload
-		return $response->withJson($payload);
-	}
-
-	/**
-	  * Returns edge database table schema and properties related.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function schema ($request, $response, $args) {
-
-		// get database schema
-		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
-
-		// build json hyper $schema
-		$schema = $this->buildSchema($args['edge'], $raw);
-
-		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
-		$relateds = $this->isM2MRelated($args);
-		if (!empty($relateds)) {
-			foreach ($relateds as $k => $related) {
-				
-				// get related database schema
-				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
-				
-				// build json hyper $schema
-				$schema['properties'][$related] = $this->buildSchema($related, $raw);
-
-			}
-		}
-
-		// build api response payload
-		$payload = $schema;
-
-		// output response payload
-		return $response->withJson($payload);
-	}
-
-	private function isM2MRelated ($args) {
-		$relateds = array();
-		foreach ($this->config['edges']['relations'] as $k => $edge) {
-			$relation = explode('_', $edge);
-
-			// IF RELATION WAS FOUND FOR THIS EDGE
-			if (in_array($args['edge'], $relation)) {
-				// remove "self"
-				unset($relation[array_search($args['edge'], $relation)]);
-				// stringify related
-				$related = array_pop($relation);
-				// array push
-				array_push($relateds, $related);
-			}
-		}
-		return $relateds;
-	}
-
-	private function buildSchema ($edge, $raw) {
-
-		// define default schema array
-		$schema = array(
-			'edge' 					=> $edge,
-			'title' 				=> getCaption('edges', $edge, $edge),
-			'icon' 					=> getCaption('icon', $edge, $edge),
-			'type' 					=> 'object',
-			'required' 				=> true,
-			'additionalProperties' 	=> false,
-			'properties' 			=> array(),
-			'raw' 					=> $raw
-		);
-
-		// fill properties node into schema response array
-		foreach ($schema['raw'] as $field => $properties) {
-
-			// check if field is not at config blacklist
-			if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
-
-				// check if field defines one-to-many relationship
-				if (substr($field, -3, 3) == '_id') {
-					$parent = substr($field, 0, -3);
-
-					$schema['properties'][$field] = array(
-						'type' 				=> 'integer',
-						'title' 			=> getCaption('fields', $schema['edge'], $parent),
-						'required'	 		=> true,
-						'minLength'	 		=> 1,
-						'enum' 				=> array(),
-						'options' 			=> array(
-							'enum_titles' 	=> array()
-						)
-					);
-
-					$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
-
-					foreach ($parentOptions as $key => $value) {
-						$schema['properties'][$field]['enum'][] = $key;
-						$schema['properties'][$field]['options']['enum_titles'][] = $value;
-					}
-				}
-
-				// check if field defines _upload input
-				else if (substr($field, -7, 7) == '_upload') {
-
-					$schema['properties'][$field] = array(
-						'type'		=> 'string',
-						'title' 	=> getCaption('fields', $schema['edge'], str_replace('_upload', '', $field)),
-						'format' 	=> 'url',
-						'required'	=> true,
-						'minLength' => 0,
-						'maxLength' => 128,
-			  			'options'	=> array(
-			  				'upload' 	=> true,
-			  			),
-						'links' 	=> array(
-							array(
-								'rel' 	=> '',
-								'href' 	=> '{{self}}',
-							)
-						)
-					);
-				}
-				// else, field is literal and we can go on
-				else {
-
-					// prepare data
-					$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
-					$type 		= $dbType[0];
-					$format 	= $dbType[0];
-					$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
-					$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
-
-					// converts db type to json-editor expected type
-					if (array_key_exists($type, $this->config['schema']['default']['type'])) {
-						$type = $this->config['schema']['default']['type'][$type];
-					}
-
-					// converts db format to json-editor expected format
-					if (array_key_exists($format, $this->config['schema']['default']['format'])) {
-						if ($format == 'varchar' && $maxLength > 256) {
-							$format = 'textarea';
-						}
-						else {
-							$format = $this->config['schema']['default']['format'][$format];
-						}
-					}
-
-					// builds default properties array to json-editor
-					$schema['properties'][$field] = array(
-						'type'			=> $type,
-						'format' 		=> $format,
-						'title' 		=> getCaption('fields', $edge, $field),
-						'required'	 	=> true,
-						'minLength' 	=> $minLength,
-						'maxLength'		=> $maxLength
-					);
-
-					// array merge to custom properties defined at config
-					if (isset($this->config['schema']['custom']['fields'][$field])) {
-						$schema['properties'][$field] = array_merge($schema['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
-					}
-
-					// add '*' to field title if required.
-					if ($schema['properties'][$field]['minLength'] > 0) {
-						$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
-					}
-				}
-			}
-		}
-		return $schema;
-	}
-
-	/**
-	  * Read entry from database and return properties related.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function read ($request, $response, $args) {
-		
-		// load item
-		$item = R::load( $args['edge'], $args['id'] );
-
-		// if item retrieved
-		if (!empty($item['id'])) {
-
-			// foreach $item field, build response read array
-			foreach ($item as $field => $value) {
-				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
-
-					// IF field is a password, clean it up
-					if ($field == 'password') {
-						$value = '';
-					}
-
-					// ADD to payload response
-					$read[$field] = $value;
-
-					// IF field represents one-to-many relationship
-					if (substr($field, -3, 3) == '_id') {
-						$parentEdge = substr($field, 0, -3);
-						$parent = R::load( $parentEdge, $value );
-
-						// IF parent is retrieved
-						if (!empty($parent['id'])) {
-							// foreach $parent field, add to response payload array
-							foreach ($parent as $parentField => $parentValue) {
-								// add to payload response
-								$read[$parentEdge][$value][$parentField] = $parentValue;
-							}
-						}
-						else {
-							throw new \Exception(getMessage('BROKEN_RELATIONSHIP', 1));
-						}
-					}
-				}
-			}
-
-			// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
-			$relateds = $this->isM2MRelated($args);
-			if (!empty($relateds)) {
-				foreach ($relateds as $k => $related) {
-					$relatedList = $item['shared' . ucfirst($related) . 'List'];
-					if (!empty($relatedList)) {
-						foreach ($relatedList as $k => $relatedObj) {
-							foreach ($relatedObj as $relatedField => $relatedValue) {
-								// TODO: The $k above makes possible to have more than one item at this array. 
-								// BUT... JSON schema needs to be updated in order to work properly. 
-								// I'll work it later.
-								$read[$related][$relatedField] = $relatedValue;
-							}
-						}
-					}
-				}
-			}
-
-			// build api response payload
-			$payload = $read;
-
-			// output response payload
-			return $response->withJson($payload);
-		}
-		else {
-			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
-			$this->logger->notice($err['message'], $args);
-			return $response->withJson($err)->withStatus(404);
-		}
-	}
-
-	/**
-	  * Verifies if an entry exists on database.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function exists ($request, $response, $args) {
-
-		// check if item is retrieved from database
-		$item = R::find( $args['edge'], ' id = '.$args['id'] );
-		$exists = !empty($item) ? true : false;
-
-		// build api response payload
-		$payload = array(
-			'edge' 		=> $args['edge'],
-			'id' 		=> $args['id'],
-			'exists' 	=> $exists
-		);
-		
-		// output response payload
-		return $response->withJson($payload);
-	}
-
-	/**
-	  * Exports to CSV file all entries from a edge database table.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return string CSV file output
-	  */
-	public function export ($request, $response, $args) {
-
-		// collect data
-		$raw = R::findAll( $args['edge'] );
-		$data = R::exportAll( $raw, FALSE, array('NULL') );
-
-		if (!empty($data)) {
-
-			// define csv properties
-			$headings = array_keys($data[0]);
-			$hashdate = str_replace(array(':','-',' '), '', R::isoDateTime());
-			$filename = 'export-'.$args['edge'].'-'.$hashdate.'.csv';
-
-			//outstream response
-			header('Content-Type: text/csv');
-			header('Content-Disposition: attachment; filename='. $filename);
-			$outstream = fopen('php://output', 'w');
-
-				// inject field keys to data as csv export table heading
-				fputcsv($outstream, $headings);
-
-				// foreach item, outstream fputcsv
-				foreach ($data as $row) {
-					fputcsv($outstream, $row);
-				}
-
-			// fclose
-			fclose($outstream);
-		}
-		else {
-			$err = array('error' => true, 'message' => getMessage('EXPORT_EMPTY'));
-			$this->logger->notice($err['message'], $args);
-			return $response->withJson($err)->withStatus(404);			
-		}
-	}
-
-	/**
-	  * Returns API coming soon message.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function soon ($request, $response, $args) {
-
-		// build api response payload
-		$payload = array(
-			'message' => getMessage('COMING_SOON')
 		);
 
 		// output response payload
@@ -656,6 +174,410 @@ class Api {
 			R::rollback();
 			throw $e;
 		}
+	}
+
+	/**
+	  * Deletes existing item at database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function destroy ($request, $response, $args) {
+
+		// dispense 'edge'
+		$item = R::load( $args['edge'], $args['id'] );
+
+		// if $item exists
+		if (!empty($item['id'])) {
+
+			// check if edge has one-to-many relationship hierarchy
+			$hierarchy = $this->getHierarchy($args['edge']);
+			if (!empty($hierarchy[$args['edge']])) {
+				foreach ($hierarchy[$args['edge']] as $k => $child) {
+					if (!empty($item['own' . ucfirst($child) . 'List'])) {
+						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
+						$this->logger->notice($err['message'], $args);
+						return $response->withJson($err)->withStatus(400);
+					}
+				}
+			}
+			
+			// no relationship? let's go on:
+			// let's start the delete transaction
+			R::begin();
+			try {
+
+				// destroy item, commit if success
+			    R::trash($item);
+				R::commit();
+
+				// build api response array
+				$payload = array(
+					'id' 		=> $args['id'],
+					'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$args['id'].')',
+				);
+
+				// output response
+				return $response->withJson($payload);
+
+			} catch (\Exception $e) {
+				R::rollback();
+				throw $e;
+			}
+		}
+		else {
+			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(404);
+		}
+	}
+
+	/**
+	  * Returns all API edges dynamically from database table schema and properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function edges($request, $response, $args) {
+
+		// initialize edges array
+		$edges = array();
+		
+		if (!empty($this->config['edges']['list'])) {
+
+			// build $edges array and properties
+			foreach ($this->config['edges']['list'] as $k => $edge) {
+
+				if (!in_array($edge, $this->config['edges']['blacklist'])) {
+					$edges[$edge] = array(
+						'name' 			=> $edge,
+						'title' 		=> getCaption('edges', $edge, $edge),
+						'count' 		=> R::count($edge),
+						'icon' 			=> getCaption('icon', $edge, $edge),
+						'has_parent' 	=> false,
+						'has_child' 	=> false,
+					);
+				}
+			}
+
+			// if hierarchy exists, iterates parent and child properties to $edges array
+			$hierarchy = $this->getHierarchy();	
+			if (!empty($hierarchy)) {
+				// build hierarchy list - only 1 depth
+				// TODO: we should support more than 1 depth into the recursion
+				foreach ($edges as $edge => $obj) {
+					if (array_key_exists($edge, $hierarchy)) {
+						foreach ($hierarchy[$edge] as $k => $child) {
+							if (!in_array($child, $this->config['edges']['blacklist'])) {
+								$edges[$edge]['has_child'] = true;
+								$edges[$child]['has_parent'] = true;
+								$edges[$child]['parent'][$edge] = $edges[$edge];								
+							}
+						}
+					} 
+				}
+			}
+		}
+
+		// build api response payload
+		$payload = array(
+			'edges' 	=> $edges,
+		);
+
+		// output response playload
+		return $response->withJson($payload);
+	}
+
+	/**
+	  * Verifies if an entry exists on database.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function exists ($request, $response, $args) {
+
+		// check if item is retrieved from database
+		$item = R::find( $args['edge'], ' id = '.$args['id'] );
+		$exists = !empty($item) ? true : false;
+
+		// build api response payload
+		$payload = array(
+			'edge' 		=> $args['edge'],
+			'id' 		=> $args['id'],
+			'exists' 	=> $exists
+		);
+		
+		// output response payload
+		return $response->withJson($payload);
+	}
+
+	/**
+	  * Exports to CSV file all entries from a edge database table.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return string CSV file output
+	  */
+	public function export ($request, $response, $args) {
+
+		// collect data
+		$raw = R::findAll( $args['edge'] );
+		$data = R::exportAll( $raw, FALSE, array('NULL') );
+
+		if (!empty($data)) {
+
+			// define csv properties
+			$headings = array_keys($data[0]);
+			$hashdate = str_replace(array(':','-',' '), '', R::isoDateTime());
+			$filename = 'export-'.$args['edge'].'-'.$hashdate.'.csv';
+
+			//outstream response
+			header('Content-Type: text/csv');
+			header('Content-Disposition: attachment; filename='. $filename);
+			$outstream = fopen('php://output', 'w');
+
+				// inject field keys to data as csv export table heading
+				fputcsv($outstream, $headings);
+
+				// foreach item, outstream fputcsv
+				foreach ($data as $row) {
+					fputcsv($outstream, $row);
+				}
+
+			// fclose
+			fclose($outstream);
+		}
+		else {
+			$err = array('error' => true, 'message' => getMessage('EXPORT_EMPTY'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(404);			
+		}
+	}
+
+	/**
+	  * Returns API welcome message.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function hi($request, $response, $args) {
+
+		// build api response payload
+		$payload = array(
+			'message' => getMessage('HI')
+		);
+		// output response payload
+		return $response->withJson($payload);
+	}
+
+	/**
+	  * Read entry from database and return properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function read ($request, $response, $args) {
+		
+		// load item
+		$item = R::load( $args['edge'], $args['id'] );
+
+		// if item retrieved
+		if (!empty($item['id'])) {
+
+			// foreach $item field, build response read array
+			foreach ($item as $field => $value) {
+				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
+
+					// IF field is a password, clean it up
+					if ($field == 'password') {
+						$value = '';
+					}
+
+					// ADD to payload response
+					$read[$field] = $value;
+
+					// IF field represents one-to-many relationship
+					if (substr($field, -3, 3) == '_id') {
+						$parentEdge = substr($field, 0, -3);
+						$parent = R::load( $parentEdge, $value );
+
+						// IF parent is retrieved
+						if (!empty($parent['id'])) {
+							// foreach $parent field, add to response payload array
+							foreach ($parent as $parentField => $parentValue) {
+								// add to payload response
+								$read[$parentEdge][$value][$parentField] = $parentValue;
+							}
+						}
+						else {
+							throw new \Exception(getMessage('BROKEN_RELATIONSHIP', 1));
+						}
+					}
+				}
+			}
+
+			// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+			$relateds = $this->isM2MRelated($args);
+			if (!empty($relateds)) {
+				foreach ($relateds as $k => $related) {
+					$relatedList = $item['shared' . ucfirst($related) . 'List'];
+					if (!empty($relatedList)) {
+						$i = 0;
+						foreach ($relatedList as $k => $relatedObj) {
+							foreach ($relatedObj as $relatedField => $relatedValue) {
+								$read[$related][$i][$relatedField] = $relatedValue;
+							}
+							$i++;
+						}
+					}
+				}
+			}
+
+			// build api response payload
+			$payload = $read;
+
+			// output response payload
+			return $response->withJson($payload);
+		}
+		else {
+			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(404);
+		}
+	}
+
+	/**
+	  * Retrieves a list of items from database edge and properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  * @param int $query['page'] Query String parameter for paginated results
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function retrieve($request, $response, $args) {
+
+		// get query string parameters
+		$args['query'] = $request->getQueryParams();
+
+		// check if request is paginated or ALL
+		if (!empty($args['query']['page'])) {
+			if (is_numeric($args['query']['page'])) {
+				// param page exists, let's get this page
+				$limit = $this->config['api']['params']['pagination'];
+				$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
+			}
+			else {
+				$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+				$this->logger->notice($err['message'], $args);
+				return $response->withJson($err)->withStatus(400);
+			}
+		} 
+		else {
+			// param page doesn't exist, let's get all
+			$items = R::findAll( $args['edge'], 'ORDER BY id DESC' );
+		}
+
+		// check if list is not empty
+		if (!empty($items)) {
+			// list is not empty, let's foreach and build response array
+			foreach ($items as $item => $content) {
+				foreach ($content as $field => $value) {
+					if (in_array($field, $this->config['api']['list_fields'])) {
+						$payload[$item][$field] = $value;
+					}
+				}
+			}
+		}
+		else {
+			// list is empty, let's return empty array
+			$payload = array();
+		}
+
+		// output response
+		return $response->withJson($payload);
+	}
+
+	/**
+	  * Returns edge database table schema and properties related.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function schema ($request, $response, $args) {
+
+		// get database schema
+		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
+
+		// build json hyper $schema
+		$schema = $this->buildSchema($args['edge'], $raw);
+
+		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+		$relateds = $this->isM2MRelated($args);
+		if (!empty($relateds)) {
+			foreach ($relateds as $k => $related) {
+				
+				// get related database schema
+				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
+				
+				// build json hyper $schema
+				$schema['properties'][$related] = array(
+					'type' 		=> 'array',
+					'format' 	=> 'table',
+					'title' 	=> getCaption('fields', $args['edge'], $related),
+					'uniqueItems' => true,
+					'items' 	=> $this->buildSchema($related, $raw),
+				); 
+
+			}
+		}
+
+		// build api response payload
+		$payload = $schema;
+
+		// output response payload
+		return $response->withJson($payload);
+	}
+
+	/**
+	  * Returns API coming soon message.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function soon ($request, $response, $args) {
+
+		// build api response payload
+		$payload = array(
+			'message' => getMessage('COMING_SOON')
+		);
+
+		// output response payload
+		return $response->withJson($payload);
 	}
 
 	/**
@@ -830,65 +752,6 @@ class Api {
 	}
 
 	/**
-	  * Deletes existing item at database.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
-	  *
-	  * @return Psr\Http\Message\ResponseInterface
-	  */
-	public function destroy ($request, $response, $args) {
-
-		// dispense 'edge'
-		$item = R::load( $args['edge'], $args['id'] );
-
-		// if $item exists
-		if (!empty($item['id'])) {
-
-			// check if edge has one-to-many relationship hierarchy
-			$hierarchy = $this->getHierarchy($args['edge']);
-			if (!empty($hierarchy[$args['edge']])) {
-				foreach ($hierarchy[$args['edge']] as $k => $child) {
-					if (!empty($item['own' . ucfirst($child) . 'List'])) {
-						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
-						$this->logger->notice($err['message'], $args);
-						return $response->withJson($err)->withStatus(400);
-					}
-				}
-			}
-			
-			// no relationship? let's go on:
-			// let's start the delete transaction
-			R::begin();
-			try {
-
-				// destroy item, commit if success
-			    R::trash($item);
-				R::commit();
-
-				// build api response array
-				$payload = array(
-					'id' 		=> $args['id'],
-					'message' 	=> getMessage('DESTROY_SUCCESS') . ' (id: '.$args['id'].')',
-				);
-
-				// output response
-				return $response->withJson($payload);
-
-			} catch (\Exception $e) {
-				R::rollback();
-				throw $e;
-			}
-		}
-		else {
-			$err = array('error' => true, 'message' => getMessage('NOT_FOUND'));
-			$this->logger->notice($err['message'], $args);
-			return $response->withJson($err)->withStatus(404);
-		}
-	}
-
-	/**
 	  * Auxiliar function to write uploaded files at storage.
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
@@ -971,6 +834,136 @@ class Api {
 	}
 
 	/**
+	  * API test method.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
+	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param array $args Wildcard arguments from Request URI
+	  *
+	  * @return Psr\Http\Message\ResponseInterface
+	  */
+	public function test($request, $response, $args) {
+		$this->logger->info('Elijah says: hey mom, I\'m being logged!' );
+		return $response->withJson(array("message" => "Hello, tested!"));
+	}
+
+/** PRIVATE - SlimBean\Api Class Private Functions **/
+
+	private function buildSchema ($edge, $raw) {
+
+		// define default schema array
+		$schema = array(
+			'edge' 					=> $edge,
+			'title' 				=> getCaption('edges', $edge, $edge),
+			'icon' 					=> getCaption('icon', $edge, $edge),
+			'type' 					=> 'object',
+			'required' 				=> true,
+			'additionalProperties' 	=> false,
+			'properties' 			=> array(),
+			'raw' 					=> $raw
+		);
+
+		// fill properties node into schema response array
+		foreach ($schema['raw'] as $field => $properties) {
+
+			// check if field is not at config blacklist
+			if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
+
+				// check if field defines one-to-many relationship
+				if (substr($field, -3, 3) == '_id') {
+					$parent = substr($field, 0, -3);
+
+					$schema['properties'][$field] = array(
+						'type' 				=> 'integer',
+						'title' 			=> getCaption('fields', $schema['edge'], $parent),
+						'required'	 		=> true,
+						'minLength'	 		=> 1,
+						'enum' 				=> array(),
+						'options' 			=> array(
+							'enum_titles' 	=> array()
+						)
+					);
+
+					$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
+
+					foreach ($parentOptions as $key => $value) {
+						$schema['properties'][$field]['enum'][] = $key;
+						$schema['properties'][$field]['options']['enum_titles'][] = $value;
+					}
+				}
+
+				// check if field defines _upload input
+				else if (substr($field, -7, 7) == '_upload') {
+
+					$schema['properties'][$field] = array(
+						'type'		=> 'string',
+						'title' 	=> getCaption('fields', $schema['edge'], str_replace('_upload', '', $field)),
+						'format' 	=> 'url',
+						'required'	=> true,
+						'minLength' => 0,
+						'maxLength' => 128,
+			  			'options'	=> array(
+			  				'upload' 	=> true,
+			  			),
+						'links' 	=> array(
+							array(
+								'rel' 	=> '',
+								'href' 	=> '{{self}}',
+							)
+						)
+					);
+				}
+				// else, field is literal and we can go on
+				else {
+
+					// prepare data
+					$dbType 	= preg_split("/[()]+/", $schema['raw'][$field]['Type']);
+					$type 		= $dbType[0];
+					$format 	= $dbType[0];
+					$maxLength 	= (!empty($dbType[1]) ? (int)$dbType[1] : '');
+					$minLength 	= ($schema['raw'][$field]['Null'] == 'YES' ? 0 : 1);
+
+					// converts db type to json-editor expected type
+					if (array_key_exists($type, $this->config['schema']['default']['type'])) {
+						$type = $this->config['schema']['default']['type'][$type];
+					}
+
+					// converts db format to json-editor expected format
+					if (array_key_exists($format, $this->config['schema']['default']['format'])) {
+						if ($format == 'varchar' && $maxLength > 256) {
+							$format = 'textarea';
+						}
+						else {
+							$format = $this->config['schema']['default']['format'][$format];
+						}
+					}
+
+					// builds default properties array to json-editor
+					$schema['properties'][$field] = array(
+						'type'			=> $type,
+						'format' 		=> $format,
+						'title' 		=> getCaption('fields', $edge, $field),
+						'required'	 	=> true,
+						'minLength' 	=> $minLength,
+						'maxLength'		=> $maxLength
+					);
+
+					// array merge to custom properties defined at config
+					if (isset($this->config['schema']['custom']['fields'][$field])) {
+						$schema['properties'][$field] = array_merge($schema['properties'][$field], $this->config['schema']['custom']['fields'][$field]);
+					}
+
+					// add '*' to field title if required.
+					if ($schema['properties'][$field]['minLength'] > 0) {
+						$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
+					}
+				}
+			}
+		}
+		return $schema;
+	}
+
+	/**
 	  * Checks Hierarchy and relationships between edges at database tables.
 	  *
 	  * @param string $edge Optional parameter to filter results by only one edge.
@@ -1005,6 +998,24 @@ class Api {
 
 		// and return array
 		return $hierarchy;
+	}
+
+	private function isM2MRelated ($args) {
+		$relateds = array();
+		foreach ($this->config['edges']['relations'] as $k => $edge) {
+			$relation = explode('_', $edge);
+
+			// IF RELATION WAS FOUND FOR THIS EDGE
+			if (in_array($args['edge'], $relation)) {
+				// remove "self"
+				unset($relation[array_search($args['edge'], $relation)]);
+				// stringify related
+				$related = array_pop($relation);
+				// array push
+				array_push($relateds, $related);
+			}
+		}
+		return $relateds;
 	}
 
 }
