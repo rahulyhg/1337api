@@ -527,29 +527,22 @@ class Api {
 	  */
 	public function schema ($request, $response, $args) {
 
-		// get database schema
-		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
+		// Build default JSON hyper $schema
+		$schema = $this->buildSchema($args['edge']);
 
-		// build json hyper $schema
-		$schema = $this->buildSchema($args['edge'], $raw);
-
-		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+		// IF Many-To-Many Relation exists
 		$relateds = $this->isM2MRelated($args);
 		if (!empty($relateds)) {
 			foreach ($relateds as $k => $related) {
-				
-				// get related database schema
-				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
-				
-				// build json hyper $schema
+				// Build array JSON hyper $schema
 				$schema['properties'][$related] = array(
-					'type' 		=> 'array',
-					'format' 	=> 'table',
-					'title' 	=> getCaption('fields', $args['edge'], $related),
-					'uniqueItems' => true,
-					'items' 	=> $this->buildSchema($related, $raw),
-				); 
-
+					'edge' 			=> $related,
+					'title' 		=> getCaption('fields', $args['edge'], $related),
+					'type' 			=> 'array',
+					'format' 		=> 'table',
+					'uniqueItems' 	=> true,
+					'items' 		=> $this->buildSchema($related),
+				);
 			}
 		}
 
@@ -849,7 +842,10 @@ class Api {
 
 /** PRIVATE - SlimBean\Api Class Private Functions **/
 
-	private function buildSchema ($edge, $raw) {
+	private function buildSchema ($edge) {
+
+		// get database schema
+		$raw = R::getAssoc( 'SHOW FULL COLUMNS FROM ' . $edge );
 
 		// define default schema array
 		$schema = array(
@@ -873,35 +869,37 @@ class Api {
 				if (substr($field, -3, 3) == '_id') {
 					$parent = substr($field, 0, -3);
 
+					// define default JSON hyper schema for One-To-Many select box.
 					$schema['properties'][$field] = array(
-						'type' 				=> 'integer',
+						'edge' 				=> $parent,
 						'title' 			=> getCaption('fields', $schema['edge'], $parent),
+						'type' 				=> 'integer',
 						'required'	 		=> true,
 						'minLength'	 		=> 1,
 						'enum' 				=> array(),
 						'options' 			=> array(
-							'enum_titles' 	=> array(),
+							'enum_titles' 		=> array(),
 							'selectize_options' => array(
-								// TODO: for some reason this is not working. WTF?! 
-								'create' => false
+								'create' => false // TODO: for some reason this selectize_options for false "create" is not working. WTF?! 
 							)
 						)
 					);
 
-					$parentOptions = R::getAssoc( 'SELECT id, name FROM '.$parent );
-
-					foreach ($parentOptions as $key => $value) {
-						$schema['properties'][$field]['enum'][] = $key;
-						$schema['properties'][$field]['options']['enum_titles'][] = $value;
+					$parentOptions = R::getAssoc( 'SELECT id, name FROM ' . $parent );
+					foreach ($parentOptions as $enum => $enumTitle) {
+						$schema['properties'][$field]['enum'][] = $enum;
+						$schema['properties'][$field]['options']['enum_titles'][] = $enumTitle;
 					}
 				}
 
 				// check if field defines _upload input
 				else if (substr($field, -7, 7) == '_upload') {
+					$upload = str_replace('_upload', '', $field);
 
+					// define default JSON hyper schema for Upload input.
 					$schema['properties'][$field] = array(
+						'title' 	=> getCaption('fields', $schema['edge'], $upload),
 						'type'		=> 'string',
-						'title' 	=> getCaption('fields', $schema['edge'], str_replace('_upload', '', $field)),
 						'format' 	=> 'url',
 						'required'	=> true,
 						'minLength' => 0,
@@ -917,6 +915,7 @@ class Api {
 						)
 					);
 				}
+
 				// else, field is literal and we can go on
 				else {
 
@@ -944,9 +943,9 @@ class Api {
 
 					// builds default properties array to json-editor
 					$schema['properties'][$field] = array(
+						'title' 		=> getCaption('fields', $edge, $field),
 						'type'			=> $type,
 						'format' 		=> $format,
-						'title' 		=> getCaption('fields', $edge, $field),
 						'required'	 	=> true,
 						'minLength' 	=> $minLength,
 						'maxLength'		=> $maxLength
