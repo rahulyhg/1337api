@@ -39,7 +39,7 @@ class Api {
 /** PUBLIC - SlimBean\Api Class Public Functions **/
 
 	/**
-	  * Counts items from a edge collection and properties related.
+	  * Counts items from a database collection and properties related.
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
 	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
