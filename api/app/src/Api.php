@@ -231,7 +231,13 @@ class Api {
 				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
 				
 				// build json hyper $schema
-				$schema['properties'][$related] = $this->buildSchema($related, $raw);
+				$schema['properties'][$related] = array(
+					'type' 		=> 'array',
+					'format' 	=> 'table',
+					'title' 	=> getCaption('fields', $args['edge'], $related),
+					'uniqueItems' => true,
+					'items' 	=> $this->buildSchema($related, $raw),
+				); 
 
 			}
 		}
@@ -430,13 +436,12 @@ class Api {
 				foreach ($relateds as $k => $related) {
 					$relatedList = $item['shared' . ucfirst($related) . 'List'];
 					if (!empty($relatedList)) {
+						$i = 0;
 						foreach ($relatedList as $k => $relatedObj) {
 							foreach ($relatedObj as $relatedField => $relatedValue) {
-								// TODO: The $k above makes possible to have more than one item at this array. 
-								// BUT... JSON schema needs to be updated in order to work properly. 
-								// I'll work it later.
-								$read[$related][$relatedField] = $relatedValue;
+								$read[$related][$i][$relatedField] = $relatedValue;
 							}
+							$i++;
 						}
 					}
 				}
