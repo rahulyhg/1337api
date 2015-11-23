@@ -85,6 +85,7 @@ class Api {
 
 			// build $edges array and properties
 			foreach ($this->config['edges']['list'] as $k => $edge) {
+
 				if (!in_array($edge, $this->config['edges']['blacklist'])) {
 					$edges[$edge] = array(
 						'name' 			=> $edge,
@@ -104,9 +105,9 @@ class Api {
 				// TODO: we should support more than 1 depth into the recursion
 				foreach ($edges as $edge => $obj) {
 					if (array_key_exists($edge, $hierarchy)) {
-						$edges[$edge]['has_child'] = true;
 						foreach ($hierarchy[$edge] as $k => $child) {
 							if (!in_array($child, $this->config['edges']['blacklist'])) {
+								$edges[$edge]['has_child'] = true;
 								$edges[$child]['has_parent'] = true;
 								$edges[$child]['parent'][$edge] = $edges[$edge];								
 							}
@@ -218,11 +219,55 @@ class Api {
 		// get database schema
 		$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$args['edge']);
 
+		// build json hyper $schema
+		$schema = $this->buildSchema($args['edge'], $raw);
+
+		// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+		$relateds = $this->isM2MRelated($args);
+		if (!empty($relateds)) {
+			foreach ($relateds as $k => $related) {
+				
+				// get related database schema
+				$raw = R::getAssoc('SHOW FULL COLUMNS FROM '.$related);
+				
+				// build json hyper $schema
+				$schema['properties'][$related] = $this->buildSchema($related, $raw);
+
+			}
+		}
+
+		// build api response payload
+		$payload = $schema;
+
+		// output response payload
+		return $response->withJson($payload);
+	}
+
+	private function isM2MRelated ($args) {
+		$relateds = array();
+		foreach ($this->config['edges']['relations'] as $k => $edge) {
+			$relation = explode('_', $edge);
+
+			// IF RELATION WAS FOUND FOR THIS EDGE
+			if (in_array($args['edge'], $relation)) {
+				// remove "self"
+				unset($relation[array_search($args['edge'], $relation)]);
+				// stringify related
+				$related = array_pop($relation);
+				// array push
+				array_push($relateds, $related);
+			}
+		}
+		return $relateds;
+	}
+
+	private function buildSchema ($edge, $raw) {
+
 		// define default schema array
 		$schema = array(
-			'bean' 					=> $args['edge'],
-			'title' 				=> getCaption('edges', $args['edge'], $args['edge']),
-			'icon' 					=> getCaption('icon', $args['edge'], $args['edge']),
+			'edge' 					=> $edge,
+			'title' 				=> getCaption('edges', $edge, $edge),
+			'icon' 					=> getCaption('icon', $edge, $edge),
 			'type' 					=> 'object',
 			'required' 				=> true,
 			'additionalProperties' 	=> false,
@@ -242,7 +287,7 @@ class Api {
 
 					$schema['properties'][$field] = array(
 						'type' 				=> 'integer',
-						'title' 			=> getCaption('fields', $schema['bean'], $parent),
+						'title' 			=> getCaption('fields', $schema['edge'], $parent),
 						'required'	 		=> true,
 						'minLength'	 		=> 1,
 						'enum' 				=> array(),
@@ -257,6 +302,28 @@ class Api {
 						$schema['properties'][$field]['enum'][] = $key;
 						$schema['properties'][$field]['options']['enum_titles'][] = $value;
 					}
+				}
+
+				// check if field defines _upload input
+				else if (substr($field, -7, 7) == '_upload') {
+
+					$schema['properties'][$field] = array(
+						'type'		=> 'string',
+						'title' 	=> getCaption('fields', $schema['edge'], str_replace('_upload', '', $field)),
+						'format' 	=> 'url',
+						'required'	=> true,
+						'minLength' => 0,
+						'maxLength' => 128,
+			  			'options'	=> array(
+			  				'upload' 	=> true,
+			  			),
+						'links' 	=> array(
+							array(
+								'rel' 	=> '',
+								'href' 	=> '{{self}}',
+							)
+						)
+					);
 				}
 				// else, field is literal and we can go on
 				else {
@@ -287,7 +354,7 @@ class Api {
 					$schema['properties'][$field] = array(
 						'type'			=> $type,
 						'format' 		=> $format,
-						'title' 		=> getCaption('fields', $args['edge'], $field),
+						'title' 		=> getCaption('fields', $edge, $field),
 						'required'	 	=> true,
 						'minLength' 	=> $minLength,
 						'maxLength'		=> $maxLength
@@ -305,34 +372,7 @@ class Api {
 				}
 			}
 		}
-
-		// IF _UPLOADS MANY-TO-MANY RELATIONSHIP EXISTS
-		if (in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
-		
-			$schema['properties']['uploads_id'] = array(
-				'title' 	=> 'Imagem',
-				'type'		=> 'string',
-				'format' 	=> 'url',
-				'required'	=> true,
-				'minLength' => 0,
-				'maxLength' => 128,
-	  			'options'	=> array(
-	  				'upload' 	=> true,
-	  			),
-				'links' 	=> array(
-					array(
-						'rel' 	=> '',
-						'href' 	=> '{{self}}',
-					)
-				)
-			);
-		}
-
-		// build api response payload
-		$payload = $schema;
-
-		// output response payload
-		return $response->withJson($payload);
+		return $schema;
 	}
 
 	/**
@@ -356,7 +396,12 @@ class Api {
 			foreach ($item as $field => $value) {
 				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
 
-					// add to payload response
+					// IF field is a password, clean it up
+					if ($field == 'password') {
+						$value = '';
+					}
+
+					// ADD to payload response
 					$read[$field] = $value;
 
 					// IF field represents one-to-many relationship
@@ -374,6 +419,24 @@ class Api {
 						}
 						else {
 							throw new \Exception(getMessage('BROKEN_RELATIONSHIP', 1));
+						}
+					}
+				}
+			}
+
+			// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
+			$relateds = $this->isM2MRelated($args);
+			if (!empty($relateds)) {
+				foreach ($relateds as $k => $related) {
+					$relatedList = $item['shared' . ucfirst($related) . 'List'];
+					if (!empty($relatedList)) {
+						foreach ($relatedList as $k => $relatedObj) {
+							foreach ($relatedObj as $relatedField => $relatedValue) {
+								// TODO: The $k above makes possible to have more than one item at this array. 
+								// BUT... JSON schema needs to be updated in order to work properly. 
+								// I'll work it later.
+								$read[$related][$relatedField] = $relatedValue;
+							}
 						}
 					}
 				}
@@ -503,6 +566,12 @@ class Api {
 			$this->logger->notice($err['message'], array($args, $data));
 			return $response->withJson($err)->withStatus(400);
 		}
+		// if id was sent, return bad request response
+		if (isset($data['id'])) {
+			$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));
+			return $response->withJson($err)->withStatus(400);
+		}
 
 		// dispense 'edge'
 		$item = R::dispense( $args['edge'] );
@@ -510,28 +579,41 @@ class Api {
 		// foreach $data request payload, build array to insert
 		foreach ($data as $field => $value) {
 
-			// IF field is an id, returns bad request response
-			if ($field == 'id') {
-				$err = array('error' => true, 'message' => getMessage('INVALID_ID_FORMDATA'));
-				$this->logger->notice($err['message'], array($args, $data));
-				return $response->withJson($err)->withStatus(400);
-			}
+			// IF field is not array, just parse it
+			if (!is_array($value)) {
 
-			// IF field defines uploads many-to-many relationship
-			else if ($field == 'uploads_id' && in_array($args['edge'] .'_uploads', $this->config['edges']['list'])) {
-				$upload = R::dispense( 'uploads' );
-				$upload->id = $value;
-				$item->sharedUploadList[] = $upload;
-			}
+				// IF field is a password, hash it up
+				if ($field == 'password') {
+					$value = md5($value);
+				}
 
-			// IF field is a password, hash it up
-			else if ($field == 'password') {
-				$item[$field] = md5($value);
-			}
-
-			// ELSE field is literal, go on
-			else {
+				// ADD to insert array
 				$item[$field] = $value;
+
+			}
+			// ELSE is array and defines many-to-many relationship
+			else {
+				// validate if related edge is valid
+				if (in_array($field, $this->config['edges']['list'])) {
+
+					$related = R::dispense($field);
+
+					foreach ($value as $xfield => $xvalue) {
+						$related[$xfield] = $xvalue;
+					}
+
+					// inject created and modified current time
+					$related['created'] 	= R::isoDateTime();
+					$related['modified']	= R::isoDateTime();
+
+					// inject at shared item list
+					$item['shared' . ucfirst($field) . 'List'][] = $related;
+				}
+				else {
+					$err = array('error' => true, 'message' => getMessage('CREATE_FAIL'));
+					$this->logger->notice($err['message'], array($args, $data));
+					return $response->withJson($err)->withStatus(400);
+				}
 			}
 		}
 		
@@ -548,6 +630,7 @@ class Api {
 			$id = R::getInsertID();
 
 			// if item was insert with success
+			// TODO: when related tables inserted, the ID returned is not from the actual $item. Check it.
 			if ($id) {
 
 				// commit transaction
@@ -595,6 +678,11 @@ class Api {
 			$this->logger->notice($err['message'], array($args, $data));			
 			return $response->withJson($err)->withStatus(400);
 		}
+		if (isset($data['id']) && $data['id'] != $args['id']) {
+			$err = array('error' => true, 'message' => getMessage('INVALID_ID_MATCH_FORMDATA'));
+			$this->logger->notice($err['message'], array($args, $data));
+			return $response->withJson($err)->withStatus(400);
+		}
 
 		// dispense 'edge'
 		$item = R::load( $args['edge'], $args['id'] );
@@ -605,32 +693,44 @@ class Api {
 			// foreach $data request payload, build array to insert
 			foreach ($data as $field => $value) {
 
-				// IF field is an id and does not match, throw exception
-				if ($field == 'id' && $value != $args['id']) {
-					$err = array('error' => true, 'message' => getMessage('INVALID_ID_MATCH_FORMDATA'));
-					$this->logger->notice($err['message'], array($args, $data));
-					return $response->withJson($err)->withStatus(400);
-				}
+				// IF field is not array, just parse it
+				if (!is_array($value)) {
 
-				// IF field defines uploads many-to-many relationship
-				else if ($field == 'uploads_id' && in_array($req['edge'] .'_uploads', $this->config['edges']['list'])) {
-					$upload = R::dispense( 'uploads' );
-					$upload->id = $value;
-					$item->sharedUploadList[] = $upload;
-				}
+					// IF field is a password, hash it up
+					if ($field == 'password') {
+						$value = md5($value);
+					}
 
-				// IF field is a password, hash it up
-				else if ($field == 'password') {
-					$item[$field] = md5($value);
-				}
+					// ADD to update array
+					$item[$field] = $value;
 
-				// ELSE field is literal, go on
+				}
+				// ELSE is array and defines many-to-many relationship
 				else {
-					$item[$field] = $value;			
+					// validate if related edge is valid
+					if (in_array($field, $this->config['edges']['list'])) {
+
+						$related = R::dispense($field);
+
+						foreach ($value as $xfield => $xvalue) {
+							$related[$xfield] = $xvalue;
+						}
+
+						// inject modified current time
+						$related['modified']	= R::isoDateTime();
+
+						// inject at shared item list
+						$item['shared' . ucfirst($field) . 'List'][] = $related;
+					}
+					else {
+						$err = array('error' => true, 'message' => getMessage('UPDATE_FAIL'));
+						$this->logger->notice($err['message'], array($args, $data));
+						return $response->withJson($err)->withStatus(400);
+					}
 				}
 			}
 
-			// inject modified current time to array to update
+			// inject modified current time to update array
 			$item['modified'] = R::isoDateTime();
 
 			// let's start the update transaction
@@ -684,53 +784,48 @@ class Api {
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
+		// if required data is not valid, return bad request response
+		if ($data['new_password'] != $data['confirm_new_password']) {
+			$err = array('error' => true, 'message' => getMessage('UPDATE_PASSWORD_CONFIRM_FAIL'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(400);
+		}
 
 		// dispense 'edge'
 		$item = R::load( 'users', $args['id'] );
 
-		// verify if password is valid
-		if ($item['password'] == md5($data['password'])) {
-			
-			// verify if new password matches
-			if ($data['new_password'] == $data['confirm_new_password']) {
-
-				// build array to update
-				$item['password'] = md5($data['new_password']);
-				$item['modified'] = R::isoDateTime();
-
-				// let's start the update transaction
-				R::begin();
-				try {
-					// update item, commit if success
-					R::store( $item );
-					// commit transaction
-					R::commit();
-
-					// build api response array
-					$payload = array(
-						'id' 		=> $args['id'],
-						'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
-					);
-					
-					//output response
-					return $response->withJson($payload);
-				}
-				catch(\Exception $e) {
-					// rollback transaction
-					R::rollback();
-					throw $e;
-				}
-			} 
-			else {
-				$err = array('error' => true, 'message' => getMessage('UPDATE_PASSWORD_CONFIRM_FAIL'));
-				$this->logger->notice($err['message'], $args);
-				return $response->withJson($err)->withStatus(400);
-			}
-		} 
-		else {
+		// if current password is not valid, return bad request response
+		if ($item['password'] != md5($data['password'])) {
 			$err = array('error' => true, 'message' => getMessage('AUTH_PASS_FAIL'));
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
+		}
+
+		// all set, let's build update array
+		$item['password'] = md5($data['new_password']);
+		$item['modified'] = R::isoDateTime();
+
+		// let's start the update transaction
+		R::begin();
+		try {
+			// update item, commit if success
+			R::store( $item );
+			// commit transaction
+			R::commit();
+
+			// build api response array
+			$payload = array(
+				'id' 		=> $args['id'],
+				'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
+			);
+			
+			//output response
+			return $response->withJson($payload);
+		}
+		catch(\Exception $e) {
+			// rollback transaction
+			R::rollback();
+			throw $e;
 		}
 	}
 
@@ -755,9 +850,7 @@ class Api {
 			$hierarchy = $this->getHierarchy($args['edge']);
 			if (!empty($hierarchy[$args['edge']])) {
 				foreach ($hierarchy[$args['edge']] as $k => $child) {
-					${'ownList'} = 'own' . ucfirst($child) . 'List';
-					$childs = $item->${'ownList'};
-					if (!empty($childs)) {
+					if (!empty($item['own' . ucfirst($child) . 'List'])) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
 						$this->logger->notice($err['message'], $args);
 						return $response->withJson($err)->withStatus(400);
@@ -796,7 +889,7 @@ class Api {
 	}
 
 	/**
-	  * Receives uploaded files and insert upload entry at database.
+	  * Auxiliar function to write uploaded files at storage.
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
 	  * @param Psr\Http\Message\ResponseInterface $response Response Object
@@ -810,18 +903,13 @@ class Api {
 		$data = $request->getParsedBody();
 
 		// check if data was sent
-		if ( empty($data) ) {
+		if (empty($data)) {
 			$err = array('error' => true, 'message' => getMessage('MISSING_FORMDATA'));
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);			
 		}
-		elseif ( empty($data['blob']) ) {
+		elseif (empty($data['blob'])) {
 			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_BLOB_MISSING'));
-			$this->logger->notice($err['message'], $args);
-			return $response->withJson($err)->withStatus(400);
-		}
-		elseif ( empty($data['filesize']) ) {
-			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL_FILESIZE_MISSING'));
 			$this->logger->notice($err['message'], $args);
 			return $response->withJson($err)->withStatus(400);
 		}
@@ -832,79 +920,53 @@ class Api {
 		}
 
 		// explode $data['blob']
-			// TODO: this procedure could be done in one line if I use regex. verify correct expression.
-			list($type, $data['blob']) = explode(';', $data['blob']);
-			list(,$type) = explode(':', $type);
-			list(,$data['blob']) = explode(',', $data['blob']);
+		// TODO: this procedure could be done in one line if I use regex. verify correct expression.
+		list($type, $data['blob']) = explode(';', $data['blob']);
+		list(,$type) = explode(':', $type);
+		list(,$data['blob']) = explode(',', $data['blob']);
 
-			// decode blob data
-			$content = base64_decode($data['blob']);
+		// decode blob data
+		$content = base64_decode($data['blob']);
 
-		// define path and new filename
-			$dateTime 	= R::isoDateTime();
-			$date 		= R::isoDate();
-			$basepath 	= $this->config['api']['uploads']['basepath'];
-			$datepath 	= str_replace('-', '/', $date) . '/';
-			$fullpath 	= $basepath . $datepath;
-			$hashname 	= md5($data['filename'].'-'.$dateTime) . '.' . end(explode('.', $data['filename']));
+		// define path
+		$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
+		$fullpath 	= $this->config['api']['uploads']['basepath'] . $datepath;
 
-		// build insert upload array
-		$upload = array(
-			'path' 		=> $datepath . $hashname,
-			'filename' 	=> $hashname,
-			'type' 		=> $type,
-			'size' 		=> $data['filesize'],
-			'edge' 		=> $args['edge'],
-			'created' 	=> R::isoDateTime(),
-			'modified' 	=> R::isoDateTime(),
-		);
+		// define hash unique filename
+		$tmp  = explode(".", $data['filename']);
+		$ext  = array_pop($tmp);
+		$name = implode('_', $tmp);
+		$hash = strtotime(R::isoDateTime());
+		$filename = $name . '-' . $hash . '.' . $ext;
 
-		// write file
-			// TODO: we should validate if the file was actually saved at disk.
-			// if folder doesn't exist, mkdir 
-			if (!file_exists($fullpath)) {
-				mkdir( $fullpath, 0777, true );
-			};
-			file_put_contents($fullpath . $hashname, $content);
-		
-		// dispense uploads edge
-		$item = R::dispense('uploads');
-
-		foreach ($upload as $k => $v) {
-			$item[$k] = $v;
-		}		
-
-		// let's start the insert transaction
-		R::begin();
-		try {
-			// insert item, returns id if success
-			R::store($item);
-			$id = R::getInsertID();
-
-			// if item was insert with success
-			if( $id ) {
-
-				// commit transaction
-				R::commit();
-
-				// build api response array
-				$payload = array(
-					'id' 		=> $id,
-					'message' 	=> getMessage('UPLOAD_SUCCESS') . ' (id: ' . $id . ')',
-				);
-				
-				//output response
-				return $response->withJson($payload)->withStatus(201);
-			}
-			// else something happened, throw error
-			else {
-				$err = getMessage('UPLOAD_FAIL');
-				throw new \Exception($err, 1);
-			}
+		// if folder doesn't exist, mkdir 
+		if (!file_exists($fullpath)) {
+			mkdir($fullpath, 0777, true);
 		}
-		catch(\Exception $e) {
-			R::rollback();
-			throw $e;
+
+		// if folder is writable, put contents 
+		if (is_writable($fullpath)) {
+			file_put_contents($fullpath . $filename, $content);
+		}
+
+		// if it was written, success
+		if (file_exists($fullpath . $filename)) {
+		
+			// build api response array
+			$payload = array(
+				'fullpath' 	=> $fullpath,
+				'filename' 	=> $filename,
+				'href' 		=> $fullpath . $filename,
+				'message' 	=> getMessage('UPLOAD_SUCCESS'),
+			);
+		
+			//output response
+			return $response->withJson($payload)->withStatus(201);
+		}		
+		else {
+			$err = array('error' => true, 'message' => getMessage('UPLOAD_FAIL'));
+			$this->logger->notice($err['message'], $args);
+			return $response->withJson($err)->withStatus(400);
 		}
 	}
 

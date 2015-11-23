@@ -49,7 +49,7 @@ html {
 /* ./end */
 
 /* json editor */
-json-editor h3 {
+json-editor>div>h3 {
 	display:none;
 }
 
