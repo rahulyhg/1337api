@@ -39,19 +39,19 @@ class Api {
 /** PUBLIC - SlimBean\Api Class Public Functions **/
 
 	/**
-	  * Counts items from database edge and properties related.
+	  * Counts items from a edge collection and properties related.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function count ($request, $response, $args) {
 
 		// define response vars
 		$count = R::count( $args['edge'] );
-		$limit = ( !empty($this->config['api']['params']['pagination']) ? $this->config['api']['params']['pagination'] : 10 );
+		$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
 
 		// build response payload
 		$payload = array(
