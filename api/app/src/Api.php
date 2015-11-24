@@ -426,8 +426,10 @@ class Api {
 						if (!empty($parent['id'])) {
 							// foreach $parent field, add to response payload array
 							foreach ($parent as $parentField => $parentValue) {
-								// add to payload response
-								$read[$parentEdge][$value][$parentField] = $parentValue;
+								if (!in_array($parentField, $this->config['schema']['default']['blacklist'])) {
+									// add to payload response
+									$read[$parentEdge][$parentField] = $parentValue;
+								}
 							}
 						}
 						else {
@@ -437,18 +439,22 @@ class Api {
 				}
 			}
 
-			// VERIFY IF _ MANY-TO-MANY RELATIONSHIP EXISTS
-			$relateds = $this->isM2MRelated($args);
-			if (!empty($relateds)) {
-				foreach ($relateds as $k => $related) {
-					$relatedList = $item['shared' . ucfirst($related) . 'List'];
-					if (!empty($relatedList)) {
-						$i = 0;
-						foreach ($relatedList as $k => $relatedObj) {
-							foreach ($relatedObj as $relatedField => $relatedValue) {
-								$read[$related][$i][$relatedField] = $relatedValue;
+			// IF _ many-to-many relationship exists
+			if ($this->edgeHasM2MRelations($args['edge'])) {
+				$relateds = $this->edgeGetM2MRelations($args['edge']);
+				if (!empty($relateds)) {
+					foreach ($relateds as $k => $related) {
+						$relatedList = $item['shared' . ucfirst($related) . 'List'];
+						if (!empty($relatedList)) {
+							$i = 0;
+							foreach ($relatedList as $relatedObj) {
+								foreach ($relatedObj as $relatedField => $relatedValue) {
+									if (!in_array($relatedField, $this->config['schema']['default']['blacklist'])) {
+										$read[$related][$i][$relatedField] = $relatedValue;
+									}
+								}
+								$i++;
 							}
-							$i++;
 						}
 					}
 				}
@@ -535,7 +541,7 @@ class Api {
 		$schema = $this->buildSchema($args['edge']);
 
 		// IF Many-To-Many Relation exists
-		$relateds = $this->isM2MRelated($args);
+		$relateds = $this->edgeGetM2MRelations($args['edge']);
 		if (!empty($relateds)) {
 			foreach ($relateds as $k => $related) {
 				// Build array JSON hyper $schema
@@ -1018,6 +1024,24 @@ class Api {
 		return $parents;
 	}
 
+	private function edgeGetM2MRelations ($edge) {
+		$relateds = array();
+		foreach ($this->config['edges']['relations'] as $relations) {
+			$relation = explode('_', $relations);
+
+			// IF RELATION WAS FOUND FOR THIS EDGE
+			if (in_array($edge, $relation)) {
+				// remove "self"
+				unset($relation[array_search($edge, $relation)]);
+				// stringify related
+				$related = array_pop($relation);
+				// array push
+				array_push($relateds, $related);
+			}
+		}
+		return $relateds;
+	}
+
 	private function edgeHasParent ($edge) {
 
 		// return bool if found in multi-dimensional array
@@ -1033,6 +1057,19 @@ class Api {
 
 		// return bool if found in array
 		return ( array_key_exists($edge, $this->hierarchy) ? true : false );
+	}
+
+	private function edgeHasM2MRelations ($edge) {
+
+		foreach ($this->config['edges']['relations'] as $relations) {
+			$relation = explode('_', $relations);
+
+			// IF relation was found for this edge
+			if (in_array($edge, $relation)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -1061,24 +1098,6 @@ class Api {
 
 		// and sets hierarchy array
 		$this->hierarchy = $hierarchy;
-	}
-
-	private function isM2MRelated ($args) {
-		$relateds = array();
-		foreach ($this->config['edges']['relations'] as $k => $edge) {
-			$relation = explode('_', $edge);
-
-			// IF RELATION WAS FOUND FOR THIS EDGE
-			if (in_array($args['edge'], $relation)) {
-				// remove "self"
-				unset($relation[array_search($args['edge'], $relation)]);
-				// stringify related
-				$related = array_pop($relation);
-				// array push
-				array_push($relateds, $related);
-			}
-		}
-		return $relateds;
 	}
 
 }
