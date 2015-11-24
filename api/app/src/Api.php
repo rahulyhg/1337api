@@ -316,8 +316,6 @@ class Api {
 
 		// build api response payload
 		$payload = array(
-			'edge' 		=> $args['edge'],
-			'id' 		=> $args['id'],
 			'exists' 	=> $exists
 		);
 		
