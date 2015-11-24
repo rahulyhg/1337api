@@ -200,10 +200,8 @@ class Api {
 		if (!empty($item['id'])) {
 
 			// check if edge has one-to-many relationship hierarchy
-			$hierarchy = $this->getHierarchy($args['edge']);
-
-			if (!empty($hierarchy[$args['edge']])) {
-				foreach ($hierarchy[$args['edge']] as $k => $child) {
+			if ($this->edgeHasChild($args['edge'])) {
+				foreach ($this->hierarchy[$args['edge']] as $child) {
 					$ownList = $item['own' . ucfirst($child) . 'List'];
 					if (!empty($ownList)) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
@@ -1037,22 +1035,13 @@ class Api {
 	  *
 	  * @return array Hierarchy array with Parent Key and Children Values.
 	  */
-	private function getHierarchy($edge = null) {
-
-		// if param edge was passed, filter
-		if (!empty($edge)) {
-			$where_clause = 'REFERENCED_TABLE_NAME = \''.$edge.'\'';
-		}
-		// else, just give me all
-		else {
-			$where_clause = 'REFERENCED_TABLE_NAME IS NOT NULL';
-		}
+	private function getHierarchy() {
 
 		// build hierarchy array, if exists
 		$hierarchy = R::getAssoc('
 			SELECT REFERENCED_TABLE_NAME as parent, GROUP_CONCAT(TABLE_NAME) as child
 			FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-			WHERE (' . $where_clause . ')
+			WHERE REFERENCED_TABLE_NAME IS NOT NULL
 			GROUP BY parent'
 		);
 
