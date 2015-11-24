@@ -280,7 +280,10 @@ class Api {
 
 				// append children to $edges tree root array
 				foreach ($root as $edge => $object) {
-					$edges[$edge]['relations'] = $this->edgeAppendChild($edge, $root, $hierarchy, $edges);
+					$edges[$edge]['relations'] = $this->edgeAppendRelations($edge, $root, $hierarchy, $edges);
+					if (empty($edges[$edge]['relations'])) {
+						unset($edges[$edge]['relations']);
+					}
 				}
 			}
 		}
@@ -967,20 +970,47 @@ class Api {
 	}
 
 	private function edgeAppendRelations ($edge, $root, $hierarchy, $edges) {
-		
-		if ($root[$edge]['has_child']) {
-			$result = array();
-			foreach ($hierarchy[$edge] as $parent => $child) {
-				if (!in_array($child, $this->config['edges']['blacklist'])) {
-					$result[$child] = $edges[$child];
-					if ($result[$child]['has_child']) {
-						$result[$child]['relations'] = $this->edgeAppendRelations($child, $result, $hierarchy, $edges);
+		$relations = array();
+
+		if ($root[$edge]['has_parent']) {
+			$parents = $this->edgeGetParents($edge);
+			
+			foreach ($parents as $parent) {
+				if (!in_array($parent, $this->config['edges']['blacklist'])) {
+					$relations[$parent] = $edges[$parent];
+					$relations[$parent]['type'] = 'one-to-many';
+					
+					// let's go deeper - gettin' recursive
+					if ($relations[$parent]['has_parent']) {
+						$relations[$parent]['relations'] = $this->edgeAppendRelations($parent, $relations, $hierarchy, $edges);
+						if (empty($relations[$parent]['relations'])) {
+							unset($relations[$parent]['relations']);
+						}
 					}
 				}
 			}
-			return $result;
+		}
+		return $relations;
+	}
+
+	private function edgeGetParents ($edge) {
+		$parents = array();
+
+		// get hierarchy
+		$hierarchy = $this->getHierarchy();	
+
+		if (!empty($hierarchy)) {
+			foreach ($hierarchy as $parent => $children) {
+				foreach ($children as $child) {
+					if ($edge == $child) {
+						array_push($parents, $parent);
+					}
+				}
+			}
 		}
 
+		// return parents array
+		return $parents;
 	}
 
 	private function edgeHasParent ($edge) {
