@@ -39,19 +39,19 @@ class Api {
 /** PUBLIC - SlimBean\Api Class Public Functions **/
 
 	/**
-	  * Counts items from database edge and properties related.
+	  * Counts items from a database collection and properties related.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function count ($request, $response, $args) {
 
 		// define response vars
 		$count = R::count( $args['edge'] );
-		$limit = ( !empty($this->config['api']['params']['pagination']) ? $this->config['api']['params']['pagination'] : 10 );
+		$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
 
 		// build response payload
 		$payload = array(
@@ -67,11 +67,11 @@ class Api {
 	/**
 	  * Inserts new item at database.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function create ($request, $response, $args) {
 
@@ -177,13 +177,13 @@ class Api {
 	}
 
 	/**
-	  * Deletes existing item at database.
+	  * Deletes existing item from database.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function destroy ($request, $response, $args) {
 
@@ -195,21 +195,23 @@ class Api {
 
 			// check if edge has one-to-many relationship hierarchy
 			$hierarchy = $this->getHierarchy($args['edge']);
+
 			if (!empty($hierarchy[$args['edge']])) {
 				foreach ($hierarchy[$args['edge']] as $k => $child) {
-					if (!empty($item['own' . ucfirst($child) . 'List'])) {
+					$ownList = $item['own' . ucfirst($child) . 'List'];
+					if (!empty($ownList)) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
 						$this->logger->notice($err['message'], $args);
 						return $response->withJson($err)->withStatus(400);
 					}
 				}
 			}
-			
-			// no relationship? let's go on:
-			// let's start the delete transaction
+
+			// no childs? let's start the delete transaction
 			R::begin();
 			try {
 
+				// TODO: If edge contains `_upload` field, we should unlink the files.
 				// destroy item, commit if success
 			    R::trash($item);
 				R::commit();
@@ -236,13 +238,13 @@ class Api {
 	}
 
 	/**
-	  * Returns all API edges dynamically from database table schema and properties related.
+	  * Returns all API edges dynamically from database collections table schema and properties related.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function edges($request, $response, $args) {
 
@@ -269,8 +271,12 @@ class Api {
 			// if hierarchy exists, iterates parent and child properties to $edges array
 			$hierarchy = $this->getHierarchy();	
 			if (!empty($hierarchy)) {
-				// build hierarchy list - only 1 depth
-				// TODO: we should support more than 1 depth into the recursion
+
+				function recursiveDepth () {
+					// TODO: A function that recursive this depth to infinite. We should support more than 1 depth into the recursion.
+				};
+
+				// build hierarchy list
 				foreach ($edges as $edge => $obj) {
 					if (array_key_exists($edge, $hierarchy)) {
 						foreach ($hierarchy[$edge] as $k => $child) {
@@ -297,11 +303,11 @@ class Api {
 	/**
 	  * Verifies if an entry exists on database.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function exists ($request, $response, $args) {
 
@@ -323,9 +329,9 @@ class Api {
 	/**
 	  * Exports to CSV file all entries from a edge database table.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
 	  * @return string CSV file output
 	  */
@@ -368,11 +374,11 @@ class Api {
 	/**
 	  * Returns API welcome message.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function hi($request, $response, $args) {
 
@@ -387,11 +393,11 @@ class Api {
 	/**
 	  * Read entry from database and return properties related.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function read ($request, $response, $args) {
 		
@@ -466,12 +472,12 @@ class Api {
 	/**
 	  * Retrieves a list of items from database edge and properties related.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  * @param int $query['page'] Query String parameter for paginated results
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function retrieve($request, $response, $args) {
 
@@ -482,7 +488,7 @@ class Api {
 		if (!empty($args['query']['page'])) {
 			if (is_numeric($args['query']['page'])) {
 				// param page exists, let's get this page
-				$limit = $this->config['api']['params']['pagination'];
+				$limit = $this->config['api']['list']['itemsPerPage'];
 				$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
 			}
 			else {
@@ -519,11 +525,11 @@ class Api {
 	/**
 	  * Returns edge database table schema and properties related.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function schema ($request, $response, $args) {
 
@@ -556,11 +562,11 @@ class Api {
 	/**
 	  * Returns API coming soon message.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function soon ($request, $response, $args) {
 
@@ -576,11 +582,11 @@ class Api {
 	/**
 	  * Updates existing item at database.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function update ($request, $response, $args) {
 
@@ -682,11 +688,11 @@ class Api {
 	/**
 	  * Updates user password.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function updatePassword ($request, $response, $args) {
 
@@ -747,11 +753,11 @@ class Api {
 	/**
 	  * Auxiliar function to write uploaded files at storage.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function upload ($request, $response, $args) {
 
@@ -829,11 +835,11 @@ class Api {
 	/**
 	  * API test method.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function test($request, $response, $args) {
 		$this->logger->info('Elijah says: hey mom, I\'m being logged!' );

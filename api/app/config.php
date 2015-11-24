@@ -41,9 +41,9 @@ return array(
 
 	// $config API (Global Values)
 	'api' => [
-		'debug' 	=> TRUE,
-		'params' 	=> array(
-			'pagination' => 5,
+		'debug' => TRUE,
+		'list' 	=> array(
+			'itemsPerPage' => 5,
 		),
 		'list_fields' => array('id', 'name', 'created', 'modified'),
 		'uploads' => array(
