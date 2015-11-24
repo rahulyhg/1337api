@@ -335,19 +335,19 @@ class Api {
 	public function export ($request, $response, $args) {
 
 		// collect data
-		$raw = R::findAll( $args['edge'] );
-		$data = R::exportAll( $raw, FALSE, array('NULL') );
+		$raw 	= R::findAll( $args['edge'] );
+		$data 	= R::exportAll( $raw, FALSE, array('NULL') );
 
 		if (!empty($data)) {
 
 			// define csv properties
 			$headings = array_keys($data[0]);
 			$hashdate = str_replace(array(':','-',' '), '', R::isoDateTime());
-			$filename = 'export-'.$args['edge'].'-'.$hashdate.'.csv';
+			$filename = 'export-' . $args['edge'] . '-' . $hashdate . '.csv';
 
 			//outstream response
 			header('Content-Type: text/csv');
-			header('Content-Disposition: attachment; filename='. $filename);
+			header('Content-Disposition: attachment; filename=' . $filename);
 			$outstream = fopen('php://output', 'w');
 
 				// inject field keys to data as csv export table heading
