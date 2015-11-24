@@ -45,7 +45,7 @@
 							<i class="fa fa-link"></i> Relações <span class="caret"></span>
 						</button>
 						<ul class="dropdown-menu">
-							<li ng-if"edge.has_parent" ng-repeat="submenu in edge.parent">
+							<li ng-if"edge.has_parent" ng-repeat="submenu in edge.relations">
 								<a href="#/list/{{submenu.name}}"><i class="fa fa-fw fa-{{submenu.icon}}"></i> {{submenu.title}}</a> 
 							</li>
 						</ul>

@@ -31,9 +31,15 @@ class Api {
 	 */
 	private $logger;
 
+	/**
+	 * @var array $hierarchy Hierarchy private array, built from $this->getHierarchy function. 
+	 */
+	private $hierarchy;
+
 	public function __construct($config, LoggerInterface $logger) {
-		$this->config 	= $config;		
-		$this->logger 	= $logger;
+		$this->config 		= $config;		
+		$this->logger 		= $logger;
+		$this->hierarchy 	= $this->getHierarchy();
 	}
 
 /** PUBLIC - SlimBean\Api Class Public Functions **/
@@ -248,49 +254,43 @@ class Api {
 	  */
 	public function edges($request, $response, $args) {
 
-		// initialize edges array
-		$edges = array();
-		
+		// initialize root and edges tree array
+		$root 	= array();
+		$edges 	= array();
+
+		// if not empty edges, build root
 		if (!empty($this->config['edges']['list'])) {
 
 			// build $edges array and properties
 			foreach ($this->config['edges']['list'] as $k => $edge) {
-
 				if (!in_array($edge, $this->config['edges']['blacklist'])) {
-					$edges[$edge] = array(
+					$root[$edge] = array(
 						'name' 			=> $edge,
 						'title' 		=> getCaption('edges', $edge, $edge),
 						'count' 		=> R::count($edge),
 						'icon' 			=> getCaption('icon', $edge, $edge),
-						'has_parent' 	=> false,
-						'has_child' 	=> false,
+						'has_parent' 	=> $this->edgeHasParent($edge),
+						'has_child' 	=> $this->edgeHasChild($edge)
 					);
 				}
 			}
 
-			// if hierarchy exists, iterates parent and child properties to $edges array
-			$hierarchy = $this->getHierarchy();	
-			if (!empty($hierarchy)) {
+			// if there's hierarchy, let's build our tree
+			if (!empty($this->hierarchy)) {
 
-				function recursiveDepth () {
-					// TODO: A function that recursive this depth to infinite. We should support more than 1 depth into the recursion.
-				};
+				// add $root to $edges tree array
+				$edges = $root;
 
-				// build hierarchy list
-				foreach ($edges as $edge => $obj) {
-					if (array_key_exists($edge, $hierarchy)) {
-						foreach ($hierarchy[$edge] as $k => $child) {
-							if (!in_array($child, $this->config['edges']['blacklist'])) {
-								$edges[$edge]['has_child'] = true;
-								$edges[$child]['has_parent'] = true;
-								$edges[$child]['parent'][$edge] = $edges[$edge];								
-							}
-						}
-					} 
+				// append children to $edges tree root array
+				foreach ($root as $edge => $object) {
+					$edges[$edge]['relations'] = $this->edgeAppendRelations($edge, $root, $edges);
+					if (empty($edges[$edge]['relations'])) {
+						unset($edges[$edge]['relations']);
+					}
 				}
 			}
 		}
-
+		
 		// build api response payload
 		$payload = array(
 			'edges' 	=> $edges,
@@ -970,6 +970,64 @@ class Api {
 			}
 		}
 		return $schema;
+	}
+
+	private function edgeAppendRelations ($edge, $root, $edges) {
+		$relations = array();
+
+		if ($root[$edge]['has_parent']) {
+			$parents = $this->edgeGetParents($edge);
+			
+			foreach ($parents as $parent) {
+				if (!in_array($parent, $this->config['edges']['blacklist'])) {
+					$relations[$parent] = $edges[$parent];
+					$relations[$parent]['type'] = 'one-to-many';
+					
+					// let's go deeper - gettin' recursive
+					if ($relations[$parent]['has_parent']) {
+						$relations[$parent]['relations'] = $this->edgeAppendRelations($parent, $relations, $edges);
+						if (empty($relations[$parent]['relations'])) {
+							unset($relations[$parent]['relations']);
+						}
+					}
+				}
+			}
+		}
+		return $relations;
+	}
+
+	private function edgeGetParents ($edge) {
+		$parents = array();
+
+		if (!empty($this->hierarchy)) {
+			foreach ($this->hierarchy as $parent => $children) {
+				foreach ($children as $child) {
+					if ($edge == $child) {
+						array_push($parents, $parent);
+					}
+				}
+			}
+		}
+
+		// return parents array
+		return $parents;
+	}
+
+	private function edgeHasParent ($edge) {
+
+		// return bool if found in multi-dimensional array
+		foreach ($this->hierarchy as $values) {
+			if (in_array($edge, $values)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private function edgeHasChild ($edge) {
+
+		// return bool if found in array
+		return ( array_key_exists($edge, $this->hierarchy) ? true : false );
 	}
 
 	/**

@@ -43,7 +43,7 @@
 			</a>
 
 			<ul id="menu-{{edge.name}}" class="nav navbar-nav side-nav-sub collapse">
-				<li ng-class="isActive(submenu.name)" ng-if"edge.has_parent" ng-repeat="submenu in edge.parent"><a href="#/list/{{submenu.name}}"><i class="fa fa-fw fa-{{submenu.icon}}"></i> {{submenu.title}}</a></li>
+				<li ng-class="isActive(submenu.name)" ng-if"edge.has_parent" ng-repeat="submenu in edge.relations"><a href="#/list/{{submenu.name}}"><i class="fa fa-fw fa-{{submenu.icon}}"></i> {{submenu.title}}</a></li>
 				<li ng-class="isActive(edge.name)"><a href="#/list/{{edge.name}}"><i class="fa fa-fw fa-{{edge.icon}}"></i> {{edge.title}}</a></li>
 			</ul>	
 			
