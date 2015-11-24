@@ -280,7 +280,7 @@ class Api {
 
 				// append children to $edges tree root array
 				foreach ($root as $edge => $object) {
-					$edges[$edge]['children'] = $this->edgeAppendChild($edge, $root, $hierarchy, $edges);
+					$edges[$edge]['relations'] = $this->edgeAppendChild($edge, $root, $hierarchy, $edges);
 				}
 			}
 		}
@@ -966,7 +966,7 @@ class Api {
 		return $schema;
 	}
 
-	private function edgeAppendChild ($edge, $root, $hierarchy, $edges) {
+	private function edgeAppendRelations ($edge, $root, $hierarchy, $edges) {
 		
 		if ($root[$edge]['has_child']) {
 			$result = array();
@@ -974,7 +974,7 @@ class Api {
 				if (!in_array($child, $this->config['edges']['blacklist'])) {
 					$result[$child] = $edges[$child];
 					if ($result[$child]['has_child']) {
-						$result[$child]['children'] = $this->edgeAppendChild($child, $result, $hierarchy, $edges);
+						$result[$child]['relations'] = $this->edgeAppendRelations($child, $result, $hierarchy, $edges);
 					}
 				}
 			}
