@@ -254,8 +254,7 @@ class Api {
 	  */
 	public function edges($request, $response, $args) {
 
-		// initialize root and edges tree array
-		$root 	= array();
+		// initialize edges tree array
 		$edges 	= array();
 
 		// if not empty edges, build root
@@ -264,7 +263,7 @@ class Api {
 			// build $edges array and properties
 			foreach ($this->config['edges']['list'] as $k => $edge) {
 				if (!in_array($edge, $this->config['edges']['blacklist'])) {
-					$root[$edge] = array(
+					$edges[$edge] = array(
 						'name' 			=> $edge,
 						'title' 		=> getCaption('edges', $edge, $edge),
 						'count' 		=> R::count($edge),
@@ -278,11 +277,11 @@ class Api {
 			// if there's hierarchy, let's build our tree
 			if (!empty($this->hierarchy)) {
 
-				// add $root to $edges tree array
-				$edges = $root;
+				// define $root to $edges tree array
+				$root = $edges;
 
 				// append children to $edges tree root array
-				foreach ($root as $edge => $object) {
+				foreach ($edges as $edge => $object) {
 					$edges[$edge]['relations'] = $this->edgeAppendRelations($edge, $root, $edges);
 					if (empty($edges[$edge]['relations'])) {
 						unset($edges[$edge]['relations']);
