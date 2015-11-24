@@ -39,7 +39,8 @@ class Api {
 	public function __construct($config, LoggerInterface $logger) {
 		$this->config 		= $config;		
 		$this->logger 		= $logger;
-		$this->hierarchy 	= $this->getHierarchy();
+		
+		$this->setHierarchy();
 	}
 
 /** PUBLIC - SlimBean\Api Class Public Functions **/
@@ -1029,13 +1030,13 @@ class Api {
 	}
 
 	/**
-	  * Checks Hierarchy and relationships between edges at database tables.
+	  * Sets $hierarchy array private var with relationships between edges at database tables.
 	  *
 	  * @param string $edge Optional parameter to filter results by only one edge.
 	  *
 	  * @return array Hierarchy array with Parent Key and Children Values.
 	  */
-	private function getHierarchy() {
+	private function setHierarchy() {
 
 		// build hierarchy array, if exists
 		$hierarchy = R::getAssoc('
@@ -1052,8 +1053,8 @@ class Api {
 			}
 		}
 
-		// and return array
-		return $hierarchy;
+		// and sets hierarchy array
+		$this->hierarchy = $hierarchy;
 	}
 
 	private function isM2MRelated ($args) {
