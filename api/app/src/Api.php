@@ -200,10 +200,11 @@ class Api {
 		// if $item exists
 		if (!empty($item['id'])) {
 
-			// check if edge has one-to-many relationship hierarchy
+			// check if edge has one-to-many relationships
 			if ($this->edgeHasChild($args['edge'])) {
 				foreach ($this->hierarchy[$args['edge']] as $child) {
 					$ownList = $item['own' . ucfirst($child) . 'List'];
+					// check if there are children and return bad request response
 					if (!empty($ownList)) {
 						$err = array('error' => true, 'message' => getMessage('DESTROY_FAIL_CHILD_EXISTS'));
 						$this->logger->notice($err['message'], $args);
