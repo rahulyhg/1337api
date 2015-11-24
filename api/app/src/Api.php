@@ -248,49 +248,43 @@ class Api {
 	  */
 	public function edges($request, $response, $args) {
 
-		// initialize edges array
-		$edges = array();
-		
+		// initialize root and edges tree array
+		$root 	= array();
+		$edges 	= array();
+
+		// if not empty edges, build root
 		if (!empty($this->config['edges']['list'])) {
 
 			// build $edges array and properties
 			foreach ($this->config['edges']['list'] as $k => $edge) {
-
 				if (!in_array($edge, $this->config['edges']['blacklist'])) {
-					$edges[$edge] = array(
+					$root[$edge] = array(
 						'name' 			=> $edge,
 						'title' 		=> getCaption('edges', $edge, $edge),
 						'count' 		=> R::count($edge),
 						'icon' 			=> getCaption('icon', $edge, $edge),
-						'has_parent' 	=> false,
-						'has_child' 	=> false,
+						'has_parent' 	=> $this->edgeHasParent($edge),
+						'has_child' 	=> $this->edgeHasChild($edge)
 					);
 				}
 			}
 
-			// if hierarchy exists, iterates parent and child properties to $edges array
+			// get hierarchy
 			$hierarchy = $this->getHierarchy();	
+
+			// if there's hierarchy, let's build our tree
 			if (!empty($hierarchy)) {
 
-				function recursiveDepth () {
-					// TODO: A function that recursive this depth to infinite. We should support more than 1 depth into the recursion.
-				};
+				// add $root to $edges tree array
+				$edges = $root;
 
-				// build hierarchy list
-				foreach ($edges as $edge => $obj) {
-					if (array_key_exists($edge, $hierarchy)) {
-						foreach ($hierarchy[$edge] as $k => $child) {
-							if (!in_array($child, $this->config['edges']['blacklist'])) {
-								$edges[$edge]['has_child'] = true;
-								$edges[$child]['has_parent'] = true;
-								$edges[$child]['parent'][$edge] = $edges[$edge];								
-							}
-						}
-					} 
+				// append children to $edges tree root array
+				foreach ($root as $edge => $object) {
+					$edges[$edge]['children'] = $this->edgeAppendChild($edge, $root, $hierarchy, $edges);
 				}
 			}
 		}
-
+		
 		// build api response payload
 		$payload = array(
 			'edges' 	=> $edges,
@@ -970,6 +964,46 @@ class Api {
 			}
 		}
 		return $schema;
+	}
+
+	private function edgeAppendChild ($edge, $root, $hierarchy, $edges) {
+		
+		if ($root[$edge]['has_child']) {
+			$result = array();
+			foreach ($hierarchy[$edge] as $parent => $child) {
+				if (!in_array($child, $this->config['edges']['blacklist'])) {
+					$result[$child] = $edges[$child];
+					if ($result[$child]['has_child']) {
+						$result[$child]['children'] = $this->edgeAppendChild($child, $result, $hierarchy, $edges);
+					}
+				}
+			}
+			return $result;
+		}
+
+	}
+
+	private function edgeHasParent ($edge) {
+
+		// get hierarchy
+		$hierarchy = $this->getHierarchy();	
+
+		// return bool if found in multi-dimensional array
+		foreach ($hierarchy as $values) {
+			if (in_array($edge, $values)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private function edgeHasChild ($edge) {
+
+		// get hierarchy
+		$hierarchy = $this->getHierarchy();	
+
+		// return bool if found in array
+		return ( array_key_exists($edge, $hierarchy) ? true : false );
 	}
 
 	/**
