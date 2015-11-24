@@ -271,8 +271,12 @@ class Api {
 			// if hierarchy exists, iterates parent and child properties to $edges array
 			$hierarchy = $this->getHierarchy();	
 			if (!empty($hierarchy)) {
-				// build hierarchy list - only 1 depth
-				// TODO: we should support more than 1 depth into the recursion
+
+				function recursiveDepth () {
+					// TODO: A function that recursive this depth to infinite. We should support more than 1 depth into the recursion.
+				};
+
+				// build hierarchy list
 				foreach ($edges as $edge => $obj) {
 					if (array_key_exists($edge, $hierarchy)) {
 						foreach ($hierarchy[$edge] as $k => $child) {
