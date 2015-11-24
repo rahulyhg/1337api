@@ -484,7 +484,7 @@ class Api {
 		if (!empty($args['query']['page'])) {
 			if (is_numeric($args['query']['page'])) {
 				// param page exists, let's get this page
-				$limit = $this->config['api']['params']['pagination'];
+				$limit = $this->config['api']['list']['itemsPerPage'];
 				$items = R::findAll( $args['edge'], 'ORDER BY id DESC LIMIT '.(($args['query']['page']-1)*$limit).', '.$limit);
 			}
 			else {
