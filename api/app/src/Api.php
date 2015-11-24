@@ -377,12 +377,13 @@ class Api {
 	  *
 	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
-	public function hi($request, $response, $args) {
+	public function hi ($request, $response, $args) {
 
 		// build api response payload
 		$payload = array(
 			'message' => getMessage('HI')
 		);
+
 		// output response payload
 		return $response->withJson($payload);
 	}
@@ -838,9 +839,16 @@ class Api {
 	  *
 	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
-	public function test($request, $response, $args) {
-		$this->logger->info('Elijah says: hey mom, I\'m being logged!' );
-		return $response->withJson(array("message" => "Hello, tested!"));
+	public function test ($request, $response, $args) {
+
+		// build api response payload
+		$payload = array(
+			'message' => 'Hello, tested!'
+		);
+
+		// output response payload
+		$this->logger->info($payload['message'], $args);
+		return $response->withJson($payload);
 	}
 
 /** PRIVATE - SlimBean\Api Class Private Functions **/
