@@ -31,9 +31,15 @@ class Api {
 	 */
 	private $logger;
 
+	/**
+	 * @var array $hierarchy Hierarchy private array, built from $this->getHierarchy function. 
+	 */
+	private $hierarchy;
+
 	public function __construct($config, LoggerInterface $logger) {
-		$this->config 	= $config;		
-		$this->logger 	= $logger;
+		$this->config 		= $config;		
+		$this->logger 		= $logger;
+		$this->hierarchy 	= $this->getHierarchy();
 	}
 
 /** PUBLIC - SlimBean\Api Class Public Functions **/
@@ -269,18 +275,15 @@ class Api {
 				}
 			}
 
-			// get hierarchy
-			$hierarchy = $this->getHierarchy();	
-
 			// if there's hierarchy, let's build our tree
-			if (!empty($hierarchy)) {
+			if (!empty($this->hierarchy)) {
 
 				// add $root to $edges tree array
 				$edges = $root;
 
 				// append children to $edges tree root array
 				foreach ($root as $edge => $object) {
-					$edges[$edge]['relations'] = $this->edgeAppendRelations($edge, $root, $hierarchy, $edges);
+					$edges[$edge]['relations'] = $this->edgeAppendRelations($edge, $root, $edges);
 					if (empty($edges[$edge]['relations'])) {
 						unset($edges[$edge]['relations']);
 					}
@@ -969,7 +972,7 @@ class Api {
 		return $schema;
 	}
 
-	private function edgeAppendRelations ($edge, $root, $hierarchy, $edges) {
+	private function edgeAppendRelations ($edge, $root, $edges) {
 		$relations = array();
 
 		if ($root[$edge]['has_parent']) {
@@ -982,7 +985,7 @@ class Api {
 					
 					// let's go deeper - gettin' recursive
 					if ($relations[$parent]['has_parent']) {
-						$relations[$parent]['relations'] = $this->edgeAppendRelations($parent, $relations, $hierarchy, $edges);
+						$relations[$parent]['relations'] = $this->edgeAppendRelations($parent, $relations, $edges);
 						if (empty($relations[$parent]['relations'])) {
 							unset($relations[$parent]['relations']);
 						}
@@ -996,11 +999,8 @@ class Api {
 	private function edgeGetParents ($edge) {
 		$parents = array();
 
-		// get hierarchy
-		$hierarchy = $this->getHierarchy();	
-
-		if (!empty($hierarchy)) {
-			foreach ($hierarchy as $parent => $children) {
+		if (!empty($this->hierarchy)) {
+			foreach ($this->hierarchy as $parent => $children) {
 				foreach ($children as $child) {
 					if ($edge == $child) {
 						array_push($parents, $parent);
@@ -1015,11 +1015,8 @@ class Api {
 
 	private function edgeHasParent ($edge) {
 
-		// get hierarchy
-		$hierarchy = $this->getHierarchy();	
-
 		// return bool if found in multi-dimensional array
-		foreach ($hierarchy as $values) {
+		foreach ($this->hierarchy as $values) {
 			if (in_array($edge, $values)) {
 				return true;
 			}
@@ -1029,11 +1026,8 @@ class Api {
 
 	private function edgeHasChild ($edge) {
 
-		// get hierarchy
-		$hierarchy = $this->getHierarchy();	
-
 		// return bool if found in array
-		return ( array_key_exists($edge, $hierarchy) ? true : false );
+		return ( array_key_exists($edge, $this->hierarchy) ? true : false );
 	}
 
 	/**
