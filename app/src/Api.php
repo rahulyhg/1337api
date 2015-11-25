@@ -67,19 +67,54 @@ class Api {
 	  */
 	public function count ($request, $response, $args) {
 
-		// define response vars
-		$count = R::count( $args['edge'] );
-		$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
+		// normal count, no child relation
+		if (!isset($args['child'])) {
 
-		// build response payload
-		$payload = array(
-			'sum' 			=> $count,
-			'pages' 		=> ceil($count/$limit),
-			'itemsPerPage' 	=> $limit
-		);
+			// define response vars
+			$count = R::count( $args['edge'] );
+			$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
 
-		// output response payload
-		return $response->withJson($payload);
+			// build response payload
+			$payload = array(
+				'sum' 			=> $count,
+				'pages' 		=> ceil($count/$limit),
+				'itemsPerPage' 	=> $limit
+			);
+
+			// output response payload
+			return $response->withJson($payload);
+		}
+		else {
+
+			// check if there is a relation between child and edge
+			if ($this->edgeHasChild($args['edge'])) {
+
+				if (in_array($args['child'], $this->edgeGetChildren($args['edge']))) {
+
+					// load item
+					$item = R::load( $args['edge'], $args['id'] );
+
+					// define response vars
+					$count = $item->countOwn( $args['child'] );
+					$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
+
+					// build response payload
+					$payload = array(
+						'sum' 			=> $count,
+						'pages' 		=> ceil($count/$limit),
+						'itemsPerPage' 	=> $limit
+					);
+
+					// output response payload
+					return $response->withJson($payload);
+				}
+				else {
+					die('deu ruim, não existe');
+				}
+
+			}
+		}
+
 	}
 
 	/**
@@ -1053,6 +1088,26 @@ class Api {
 			}
 		}
 		return $relations;
+	}
+
+	/**
+	  * Auxiliar private method to get Children array (many-to-one relationships) from an API edge resource.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return array 									$parents 	API Edges related in a many-to-one relationship with this edge. 
+	  */
+	private function edgeGetChildren ($edge) {
+		$children = array();
+
+		if (!empty($this->getHierarchy()) && array_key_exists($edge, $this->getHierarchy())) {
+			foreach ($this->getHierarchy()[$edge] as $child) {
+				array_push($children, $child);
+			}
+		}
+
+		// return children array
+		return $children;
 	}
 
 	/**
