@@ -30,6 +30,12 @@ class Auth {
 	 */
 	private $logger;
 
+	/**
+	  * eApi\Auth class construct function.
+	  *
+	  * @param array 									$config 	Global settings values
+	  * @param Psr\Log\LoggerInterface 					$logger 	Monolog Logger interface handler
+	  */
 	public function __construct($config, LoggerInterface $logger)
 	{
 		$this->config = $config;
@@ -115,6 +121,7 @@ class Auth {
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
 	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param callable 								$next 		The next middleware callable
 	  *
 	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */

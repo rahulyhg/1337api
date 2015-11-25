@@ -22,25 +22,32 @@ class Api {
 /** VARS - eApi\Api Class Variables **/
 
 	/**
-	 * @var array 						$config 	Global settings values. 
+	 * @var array 						$config 	Global settings values
 	 */
 	private $config;
 
 	/**
-	 * @var array 						$edges 		API Edges list private array. 
+	 * @var array 						$edges 		API Edges list private array
 	 */
 	private $edges;
 
 	/**
-	 * @var array 						$hierarchy 	API Edges hierarchy private array. 
+	 * @var array 						$hierarchy 	API Edges hierarchy private array
 	 */
 	private $hierarchy;
 
 	/**
-	 * @var Psr\Log\LoggerInterface 	$logger 	Monolog Logger handler. 
+	 * @var Psr\Log\LoggerInterface 	$logger 	Monolog Logger interface handler
 	 */
 	private $logger;
 
+	/**
+	  * eApi\Api class construct function.
+	  *
+	  * @param array 									$config 	Global settings values
+	  * @param array 									$edges 		API Edges list private array
+	  * @param Psr\Log\LoggerInterface 					$logger 	Monolog Logger interface handler
+	  */
 	public function __construct($config, $edges, LoggerInterface $logger) {
 		$this->config 		= $config;
 		$this->edges 		= $edges;
