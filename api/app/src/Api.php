@@ -172,6 +172,7 @@ class Api {
 				);
 				
 				//output response
+				$this->logger->info($payload['message'], $args);
 				return $response->withJson($payload)->withStatus(201);
 			}
 
@@ -247,7 +248,7 @@ class Api {
 				);
 
 				// output response
-				$this->logger->info(getMessage('DESTROY_SUCCESS'), $payload);
+				$this->logger->info($payload['message'], $args);
 				return $response->withJson($payload);
 
 			} catch (\Exception $e) {
@@ -697,6 +698,7 @@ class Api {
 				);
 
 				//output response
+				$this->logger->info($payload['message'], $args);
 				return $response->withJson($payload);
 			}
 			catch(\Exception $e) {
@@ -767,6 +769,7 @@ class Api {
 			);
 			
 			//output response
+			$this->logger->info($payload['message'], $args);
 			return $response->withJson($payload);
 		}
 		catch(\Exception $e) {
@@ -848,6 +851,7 @@ class Api {
 			);
 		
 			//output response
+			$this->logger->info($payload['message'], array($args, $payload));
 			return $response->withJson($payload)->withStatus(201);
 		}		
 		else {
