@@ -469,7 +469,7 @@ class Api {
 
 			// foreach $item field, build response read array
 			foreach ($item as $field => $value) {
-				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
+				if (!in_array($field, $this->config['api']['read']['blacklist'])) {
 
 					// IF field is a password, clean it up
 					if ($field == 'password') {
@@ -488,7 +488,7 @@ class Api {
 						if (!empty($parent['id'])) {
 							// foreach $parent field, add to response payload array
 							foreach ($parent as $parentField => $parentValue) {
-								if (!in_array($parentField, $this->config['schema']['default']['blacklist'])) {
+								if (!in_array($parentField, $this->config['api']['read']['blacklist'])) {
 									// add to payload response
 									$read[$parentEdge][$parentField] = $parentValue;
 								}
@@ -511,7 +511,7 @@ class Api {
 							$i = 0;
 							foreach ($childList as $childObj) {
 								foreach ($childObj as $childField => $childValue) {
-									if (!in_array($childField, $this->config['schema']['default']['blacklist']) && $childField != $args['edge'] . '_id' ) {
+									if (!in_array($childField, $this->config['api']['read']['blacklist']) && $childField != $args['edge'] . '_id' ) {
 										// TODO: And if the child item has related fields? We should get recursive here.
 										$read[$child][$i][$childField] = $childValue;
 									}
@@ -533,7 +533,7 @@ class Api {
 							$i = 0;
 							foreach ($relatedList as $relatedObj) {
 								foreach ($relatedObj as $relatedField => $relatedValue) {
-									if (!in_array($relatedField, $this->config['schema']['default']['blacklist'])) {
+									if (!in_array($relatedField, $this->config['api']['read']['blacklist'])) {
 										// TODO: And if the related item has related fields? We should get recursive here.
 										$read[$related][$i][$relatedField] = $relatedValue;
 									}
