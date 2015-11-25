@@ -41,9 +41,9 @@ class Api {
 	 */
 	private $logger;
 
-	public function __construct($config, LoggerInterface $logger) {
+	public function __construct($config, $edges, LoggerInterface $logger) {
 		$this->config 		= $config;
-		$this->edges 		= $config['edges']['list'];
+		$this->edges 		= $edges;
 		$this->logger 		= $logger;
 	}
 
@@ -123,7 +123,7 @@ class Api {
 			// ELSE is array and defines many-to-many relationship
 			else {
 				// validate if related edge is valid
-				if (in_array($field, $this->edges)) {
+				if (in_array($field, $this->edges['list'])) {
 
 					$related = R::dispense($field);
 
@@ -262,11 +262,11 @@ class Api {
 		$edges 	= array();
 
 		// if not empty edges, build root
-		if (!empty($this->edges)) {
+		if (!empty($this->edges['list'])) {
 
 			// build $edges array and properties
-			foreach ($this->edges as $k => $edge) {
-				if (!in_array($edge, $this->config['edges']['blacklist'])) {
+			foreach ($this->edges['list'] as $k => $edge) {
+				if (!in_array($edge, $this->edges['blacklist'])) {
 					$edges[$edge] = array(
 						'name' 			=> $edge,
 						'title' 		=> getCaption('edges', $edge, $edge),
@@ -640,7 +640,7 @@ class Api {
 				// ELSE is array and defines many-to-many relationship
 				else {
 					// validate if related edge is valid
-					if (in_array($field, $this->edges)) {
+					if (in_array($field, $this->edges['list'])) {
 
 						$related = R::dispense($field);
 
@@ -1012,7 +1012,7 @@ class Api {
 			$parents = $this->edgeGetParents($edge);
 			
 			foreach ($parents as $parent) {
-				if (!in_array($parent, $this->config['edges']['blacklist'])) {
+				if (!in_array($parent, $this->edges['blacklist'])) {
 					$relations[$parent] = $edges[$parent];
 					$relations[$parent]['type'] = 'one-to-many';
 					
@@ -1062,7 +1062,7 @@ class Api {
 	  */
 	private function edgeGetM2MRelations ($edge) {
 		$relateds = array();
-		foreach ($this->config['edges']['relations'] as $relations) {
+		foreach ($this->edges['relations'] as $relations) {
 			$relation = explode('_', $relations);
 
 			// IF relation was found for this edge
@@ -1118,7 +1118,7 @@ class Api {
 	  */
 	private function edgeHasM2MRelations ($edge) {
 
-		foreach ($this->config['edges']['relations'] as $relations) {
+		foreach ($this->edges['relations'] as $relations) {
 			$relation = explode('_', $relations);
 
 			// IF relation was found for this edge

@@ -21,17 +21,20 @@ if (R::testConnection() == TRUE) {
 	R::setAutoResolve( TRUE );
 	R::freeze( TRUE );
 
-	// INSPECT TABLES
-	$config['edges']['list'] = R::inspect();
+	// INIT TABLE EDGES
+	$edges = array(
+		'list' 		=> R::inspect(),
+		'relations' => array(),
+		'blacklist' => $config['api']['edges']['blacklist']
+	);
 
 	// INSERT MANY-TO-MANY TABLES AT BLACKLIST
-	foreach ($config['edges']['list'] as $k => $edge) {
+	foreach ($edges['list'] as $edge) {
 		if (strpos($edge, '_') !== FALSE) {
-			array_push($config['edges']['blacklist'], $edge);
-			array_push($config['edges']['relations'], $edge);
+			array_push($edges['blacklist'], $edge);
+			array_push($edges['relations'], $edge);
 		}
 	}
-
 }
 
 /* ***************************************************************************************************
@@ -133,12 +136,16 @@ $c['notAllowedHandler'] = function ($c) {
 // -----------------------------------------------------------------------------
 $c['eApi\Api'] = function ($c) {
 	global $config;
-	return new eApi\Api($config, $c->get('logger'));
+	global $edges;
+
+	return new eApi\Api($config, $edges, $c->get('logger'));
 };
 
 $c['eApi\Auth'] = function ($c) {
 	global $config;
-	return new eApi\Auth($config, $c->get('logger'));
+	global $edges;
+
+	return new eApi\Auth($config, $edges, $c->get('logger'));
 };
 
 ?>

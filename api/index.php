@@ -25,7 +25,7 @@ require __DIR__ . '/app/middleware.php';
 
 // SLIM ROUTER VALIDATE REGEX ARRAY
 $validate = array(
-	'edges' => implode('|', $config['edges']['list'])
+	'edges' => implode('|', $edges['list'])
 );
 
 /* ***************************************************************************************************

@@ -42,6 +42,9 @@ return array(
 	// $config API (Global Values)
 	'api' => [
 		'debug' => TRUE,
+		'edges' => array(
+			'blacklist' => array('images')
+		),
 		'list' 	=> array(
 			'itemsPerPage' 	=> 5,
 			'fields' 		=> array('id', 'name', 'created', 'modified')
@@ -49,13 +52,6 @@ return array(
 		'uploads' => array(
 			'basepath' => 'uploads/',
 		),
-	],
-
-	// $config EDGES (Default Values)
-	'edges' => [
-		'list'		=> array(),
-		'blacklist' => array('images'),
-		'relations' => array(),
 	],
 
 	// $config SCHEMA (Form Builder)
