@@ -27,17 +27,23 @@ class Api {
 	private $config;
 
 	/**
-	 * @var Psr\Log\LoggerInterface 	$logger 	Monolog Logger handler. 
+	 * @var array 						$edges 		API Edges list private array. 
 	 */
-	private $logger;
+	private $edges;
 
 	/**
 	 * @var array 						$hierarchy 	API Edges hierarchy private array. 
 	 */
 	private $hierarchy;
 
+	/**
+	 * @var Psr\Log\LoggerInterface 	$logger 	Monolog Logger handler. 
+	 */
+	private $logger;
+
 	public function __construct($config, LoggerInterface $logger) {
-		$this->config 		= $config;		
+		$this->config 		= $config;
+		$this->edges 		= $config['edges']['list'];
 		$this->logger 		= $logger;
 	}
 
@@ -117,7 +123,7 @@ class Api {
 			// ELSE is array and defines many-to-many relationship
 			else {
 				// validate if related edge is valid
-				if (in_array($field, $this->config['edges']['list'])) {
+				if (in_array($field, $this->edges)) {
 
 					$related = R::dispense($field);
 
@@ -256,10 +262,10 @@ class Api {
 		$edges 	= array();
 
 		// if not empty edges, build root
-		if (!empty($this->config['edges']['list'])) {
+		if (!empty($this->edges)) {
 
 			// build $edges array and properties
-			foreach ($this->config['edges']['list'] as $k => $edge) {
+			foreach ($this->edges as $k => $edge) {
 				if (!in_array($edge, $this->config['edges']['blacklist'])) {
 					$edges[$edge] = array(
 						'name' 			=> $edge,
@@ -634,7 +640,7 @@ class Api {
 				// ELSE is array and defines many-to-many relationship
 				else {
 					// validate if related edge is valid
-					if (in_array($field, $this->config['edges']['list'])) {
+					if (in_array($field, $this->edges)) {
 
 						$related = R::dispense($field);
 
