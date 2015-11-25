@@ -1,2 +1,2 @@
-node_modules
-assets/vendor/bower_components
+logs/*
+*.phar
