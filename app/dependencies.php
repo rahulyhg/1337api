@@ -145,7 +145,7 @@ $c['eApi\Auth'] = function ($c) {
 	global $config;
 	global $edges;
 
-	return new eApi\Auth($config, $edges, $c->get('logger'));
+	return new eApi\Auth($config, $c->get('logger'));
 };
 
 ?>

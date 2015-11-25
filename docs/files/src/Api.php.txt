@@ -1,16 +1,16 @@
 <?php 
 /**
- * SlimBean
+ * eApi
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT
  */
-namespace SlimBean;
+namespace eApi;
 
 use \RedBeanPHP\Facade as R;
 use Psr\Log\LoggerInterface;
 
 /**
- * SlimBean core Api class.
+ * eApi core Api class.
  * Provides main default functions to RESTful API
  * integrated with Slim Framework, RedBeanPHP and Monolog.
  *
@@ -19,35 +19,42 @@ use Psr\Log\LoggerInterface;
  */
 class Api {
 
-/** VARS - SlimBean\Api Class Variables **/
+/** VARS - eApi\Api Class Variables **/
 
 	/**
-	 * @var array 						$config 	Global settings values. 
+	 * @var array 						$config 	Global settings values
 	 */
 	private $config;
 
 	/**
-	 * @var array 						$edges 		API Edges list private array. 
+	 * @var array 						$edges 		API Edges list private array
 	 */
 	private $edges;
 
 	/**
-	 * @var array 						$hierarchy 	API Edges hierarchy private array. 
+	 * @var array 						$hierarchy 	API Edges hierarchy private array
 	 */
 	private $hierarchy;
 
 	/**
-	 * @var Psr\Log\LoggerInterface 	$logger 	Monolog Logger handler. 
+	 * @var Psr\Log\LoggerInterface 	$logger 	Monolog Logger interface handler
 	 */
 	private $logger;
 
-	public function __construct($config, LoggerInterface $logger) {
+	/**
+	  * eApi\Api class construct function.
+	  *
+	  * @param array 									$config 	Global settings values
+	  * @param array 									$edges 		API Edges list private array
+	  * @param Psr\Log\LoggerInterface 					$logger 	Monolog Logger interface handler
+	  */
+	public function __construct($config, $edges, LoggerInterface $logger) {
 		$this->config 		= $config;
-		$this->edges 		= $config['edges']['list'];
+		$this->edges 		= $edges;
 		$this->logger 		= $logger;
 	}
 
-/** PUBLIC - SlimBean\Api Class Public Functions **/
+/** PUBLIC - eApi\Api Class Public Functions **/
 
 	/**
 	  * Counts items from a database collection and properties related.
@@ -123,7 +130,7 @@ class Api {
 			// ELSE is array and defines many-to-many relationship
 			else {
 				// validate if related edge is valid
-				if (in_array($field, $this->edges)) {
+				if (in_array($field, $this->edges['list'])) {
 
 					$related = R::dispense($field);
 
@@ -172,6 +179,7 @@ class Api {
 				);
 				
 				//output response
+				$this->logger->info($payload['message'], $args);
 				return $response->withJson($payload)->withStatus(201);
 			}
 
@@ -221,9 +229,23 @@ class Api {
 			R::begin();
 			try {
 
-				// TODO: If edge contains `_upload` field, we should unlink the files.
+				// if there are linked uploads, destroys it.
+				foreach ($item as $field => $value) {
+					if (substr($field, -7, 7) == '_upload') {
+						$realPath = $request->getServerParams()['DOCUMENT_ROOT'] . $request->getUri()->getBasePath() . '/' . $value;
+						
+						if (file_exists($realPath)) {
+							unlink($realPath);
+							$this->logger->info(getMessage('DESTROY_UNLINK_SUCCESS'), array('path' => $realPath));
+						} 
+						else {
+							$this->logger->info(getMessage('DESTROY_UNLINK_FAIL'), array('path' => $realPath));
+						}
+					}
+				}
+
 				// destroy item, commit if success
-			    R::trash($item);
+				R::trash($item);
 				R::commit();
 
 				// build api response array
@@ -233,6 +255,7 @@ class Api {
 				);
 
 				// output response
+				$this->logger->info($payload['message'], $args);
 				return $response->withJson($payload);
 
 			} catch (\Exception $e) {
@@ -262,11 +285,11 @@ class Api {
 		$edges 	= array();
 
 		// if not empty edges, build root
-		if (!empty($this->edges)) {
+		if (!empty($this->edges['list'])) {
 
 			// build $edges array and properties
-			foreach ($this->edges as $k => $edge) {
-				if (!in_array($edge, $this->config['edges']['blacklist'])) {
+			foreach ($this->edges['list'] as $k => $edge) {
+				if (!in_array($edge, $this->edges['blacklist'])) {
 					$edges[$edge] = array(
 						'name' 			=> $edge,
 						'title' 		=> getCaption('edges', $edge, $edge),
@@ -640,7 +663,7 @@ class Api {
 				// ELSE is array and defines many-to-many relationship
 				else {
 					// validate if related edge is valid
-					if (in_array($field, $this->edges)) {
+					if (in_array($field, $this->edges['list'])) {
 
 						$related = R::dispense($field);
 
@@ -682,6 +705,7 @@ class Api {
 				);
 
 				//output response
+				$this->logger->info($payload['message'], $args);
 				return $response->withJson($payload);
 			}
 			catch(\Exception $e) {
@@ -752,6 +776,7 @@ class Api {
 			);
 			
 			//output response
+			$this->logger->info($payload['message'], $args);
 			return $response->withJson($payload);
 		}
 		catch(\Exception $e) {
@@ -802,7 +827,7 @@ class Api {
 
 		// define path
 		$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
-		$fullpath 	= $this->config['api']['uploads']['basepath'] . $datepath;
+		$fullpath 	= $this->config['api']['uploads']['basePath'] . $datepath;
 
 		// define hash unique filename
 		$tmp  = explode(".", $data['filename']);
@@ -833,6 +858,7 @@ class Api {
 			);
 		
 			//output response
+			$this->logger->info($payload['message'], array($args, $payload));
 			return $response->withJson($payload)->withStatus(201);
 		}		
 		else {
@@ -863,7 +889,7 @@ class Api {
 		return $response->withJson($payload);
 	}
 
-/** PRIVATE - SlimBean\Api Class Private Functions **/
+/** PRIVATE - eApi\Api Class Private Functions **/
 
 	/**
 	  * Auxiliar private method to build JSON hyperschema compatible array from database table description.
@@ -1012,7 +1038,7 @@ class Api {
 			$parents = $this->edgeGetParents($edge);
 			
 			foreach ($parents as $parent) {
-				if (!in_array($parent, $this->config['edges']['blacklist'])) {
+				if (!in_array($parent, $this->edges['blacklist'])) {
 					$relations[$parent] = $edges[$parent];
 					$relations[$parent]['type'] = 'one-to-many';
 					
@@ -1062,7 +1088,7 @@ class Api {
 	  */
 	private function edgeGetM2MRelations ($edge) {
 		$relateds = array();
-		foreach ($this->config['edges']['relations'] as $relations) {
+		foreach ($this->edges['relations'] as $relations) {
 			$relation = explode('_', $relations);
 
 			// IF relation was found for this edge
@@ -1118,7 +1144,7 @@ class Api {
 	  */
 	private function edgeHasM2MRelations ($edge) {
 
-		foreach ($this->config['edges']['relations'] as $relations) {
+		foreach ($this->edges['relations'] as $relations) {
 			$relation = explode('_', $relations);
 
 			// IF relation was found for this edge

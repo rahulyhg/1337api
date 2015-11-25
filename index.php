@@ -60,7 +60,7 @@ $app->group('/v1', function () use ($validate) {
 		$this->put('/users/{id:[0-9]+}/password',	'eApi\Api:updatePassword'); 
 		$this->patch('/users/{id:[0-9]+}/password', 'eApi\Api:updatePassword'); 
 
-	})->add('SlimBean\Auth:isAuth');
+	})->add('eApi\Auth:isAuth');
 
 	// PUBLIC ROUTE GROUP
 	$this->group('/public', function () use ($validate){
