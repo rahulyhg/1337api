@@ -41,8 +41,8 @@ return array(
 
 	// $config API (Global Values)
 	'api' => [
-		'debug' => TRUE,
-		'edges' => array(
+		'debug' 	=> TRUE,
+		'edges' 	=> array(
 			'blacklist' => array('images')
 		),
 		'list' 	=> array(
@@ -50,7 +50,7 @@ return array(
 			'fields' 		=> array('id', 'name', 'created', 'modified')
 		),
 		'uploads' => array(
-			'basepath' => 'uploads/',
+			'basePath' => 'uploads/',
 		),
 	],
 

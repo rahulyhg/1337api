@@ -221,9 +221,23 @@ class Api {
 			R::begin();
 			try {
 
-				// TODO: If edge contains `_upload` field, we should unlink the files.
+				// if there are linked uploads, destroys it.
+				foreach ($item as $field => $value) {
+					if (substr($field, -7, 7) == '_upload') {
+						$realPath = $request->getServerParams()['DOCUMENT_ROOT'] . $request->getUri()->getBasePath() . '/' . $value;
+						
+						if (file_exists($realPath)) {
+							unlink($realPath);
+							$this->logger->info(getMessage('DESTROY_UNLINK_SUCCESS'), array('path' => $realPath));
+						} 
+						else {
+							$this->logger->info(getMessage('DESTROY_UNLINK_FAIL'), array('path' => $realPath));
+						}
+					}
+				}
+
 				// destroy item, commit if success
-			    R::trash($item);
+				R::trash($item);
 				R::commit();
 
 				// build api response array
@@ -233,6 +247,7 @@ class Api {
 				);
 
 				// output response
+				$this->logger->info(getMessage('DESTROY_SUCCESS'), $payload);
 				return $response->withJson($payload);
 
 			} catch (\Exception $e) {
@@ -802,7 +817,7 @@ class Api {
 
 		// define path
 		$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
-		$fullpath 	= $this->config['api']['uploads']['basepath'] . $datepath;
+		$fullpath 	= $this->config['api']['uploads']['basePath'] . $datepath;
 
 		// define hash unique filename
 		$tmp  = explode(".", $data['filename']);
