@@ -43,9 +43,9 @@ return array(
 	'api' => [
 		'debug' => TRUE,
 		'list' 	=> array(
-			'itemsPerPage' => 5,
+			'itemsPerPage' 	=> 5,
+			'fields' 		=> array('id', 'name', 'created', 'modified')
 		),
-		'list_fields' => array('id', 'name', 'created', 'modified'),
 		'uploads' => array(
 			'basepath' => '../uploads/',
 		),

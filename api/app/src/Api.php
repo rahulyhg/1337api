@@ -252,7 +252,7 @@ class Api {
 	  *
 	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
-	public function edges($request, $response, $args) {
+	public function edges ($request, $response, $args) {
 
 		// initialize edges tree array
 		$edges 	= array();
@@ -450,6 +450,7 @@ class Api {
 							foreach ($relatedList as $relatedObj) {
 								foreach ($relatedObj as $relatedField => $relatedValue) {
 									if (!in_array($relatedField, $this->config['schema']['default']['blacklist'])) {
+										// TODO: And if the related item has related fields? We should get recursive here.
 										$read[$related][$i][$relatedField] = $relatedValue;
 									}
 								}
@@ -476,14 +477,14 @@ class Api {
 	/**
 	  * Retrieves a list of items from database edge and properties related.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
-	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
-	  * @param array 									$args 		Associative array with current route's named placeholders
-	  * @param int $query['page'] Query String parameter for paginated results
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 		PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 		PSR 7 ResponseInterface Object
+	  * @param array 									$args 			Associative array with current route's named placeholders
+	  * @param int 										$query['page'] 	Query String parameter for paginated results
 	  *
 	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
-	public function retrieve($request, $response, $args) {
+	public function retrieve ($request, $response, $args) {
 
 		// get query string parameters
 		$args['query'] = $request->getQueryParams();
@@ -506,21 +507,23 @@ class Api {
 			$items = R::findAll( $args['edge'], 'ORDER BY id DESC' );
 		}
 
+		// initialize $retrieve array
+		$retrieve = array();
+
 		// check if list is not empty
 		if (!empty($items)) {
-			// list is not empty, let's foreach and build response array
+			// let's foreach and build response array
 			foreach ($items as $item => $content) {
 				foreach ($content as $field => $value) {
-					if (in_array($field, $this->config['api']['list_fields'])) {
-						$payload[$item][$field] = $value;
+					if (in_array($field, $this->config['api']['list']['fields'])) {
+						$retrieve[$item][$field] = $value;
 					}
 				}
 			}
 		}
-		else {
-			// list is empty, let's return empty array
-			$payload = array();
-		}
+
+		// build api response payload
+		$payload = $retrieve;
 
 		// output response
 		return $response->withJson($payload);
