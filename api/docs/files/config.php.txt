@@ -41,20 +41,21 @@ return array(
 
 	// $config API (Global Values)
 	'api' => [
-		'debug' 	=> TRUE,
-		'params' 	=> array(
-			'pagination' => 5,
+		'debug' => TRUE,
+		'list' 	=> array(
+			'itemsPerPage' 	=> 5,
+			'fields' 		=> array('id', 'name', 'created', 'modified')
 		),
-		'list_fields' => array('id', 'name', 'created', 'modified'),
 		'uploads' => array(
-			'basepath' => '../uploads/',
+			'basepath' => 'uploads/',
 		),
 	],
 
 	// $config EDGES (Default Values)
 	'edges' => [
 		'list'		=> array(),
-		'blacklist' => array('uploads','pages_uploads'),
+		'blacklist' => array('images'),
+		'relations' => array(),
 	],
 
 	// $config SCHEMA (Form Builder)

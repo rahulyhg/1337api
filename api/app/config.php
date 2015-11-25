@@ -1,6 +1,6 @@
 <?php
 /**
- * SlimBean global settings configuration file.
+ * eApi global settings configuration file.
  *
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT
@@ -42,19 +42,16 @@ return array(
 	// $config API (Global Values)
 	'api' => [
 		'debug' 	=> TRUE,
-		'params' 	=> array(
-			'pagination' => 5,
+		'edges' 	=> array(
+			'blacklist' => array('images')
 		),
-		'list_fields' => array('id', 'name', 'created', 'modified'),
+		'list' 	=> array(
+			'itemsPerPage' 	=> 5,
+			'fields' 		=> array('id', 'name', 'created', 'modified')
+		),
 		'uploads' => array(
-			'basepath' => '../uploads/',
+			'basePath' => 'uploads/',
 		),
-	],
-
-	// $config EDGES (Default Values)
-	'edges' => [
-		'list'		=> array(),
-		'blacklist' => array('uploads','pages_uploads'),
 	],
 
 	// $config SCHEMA (Form Builder)

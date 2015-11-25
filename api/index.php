@@ -18,14 +18,14 @@ R::setup($config['db']['host'], $config['db']['user'], $config['db']['pass']);
 // SLIM ROUTER SETUP
 $app = new \Slim\App($config['slim']);
 
-// SLIMBEAN APP SETUP
+// EAPI APP SETUP
 require __DIR__ . '/app/helpers.php';
 require __DIR__ . '/app/dependencies.php';
 require __DIR__ . '/app/middleware.php';
 
 // SLIM ROUTER VALIDATE REGEX ARRAY
 $validate = array(
-	'edges' => implode('|', $config['edges']['list'])
+	'edges' => implode('|', $edges['list'])
 );
 
 /* ***************************************************************************************************
@@ -41,25 +41,24 @@ $app->group('/v1', function () use ($validate) {
 		// EDGES ROUTE GROUP
 		$this->group('/{edge:' . $validate['edges'] . '}', function () use ($validate) {
 
-			$this->get('', 						'SlimBean\Api:retrieve'	); 
-			$this->get('/{id:[0-9]+}', 			'SlimBean\Api:read'		);
-			$this->get('/{id:[0-9]+}/exists', 	'SlimBean\Api:exists'	); 
-			$this->get('/count', 				'SlimBean\Api:count'	);
-			$this->get('/schema', 				'SlimBean\Api:schema'	);
-			$this->get('/export', 				'SlimBean\Api:export'	); 
+			$this->get('', 							'eApi\Api:retrieve'	); 
+			$this->get('/{id:[0-9]+}', 				'eApi\Api:read'		);
+			$this->get('/{id:[0-9]+}/exists', 		'eApi\Api:exists'	); 
+			$this->get('/count', 					'eApi\Api:count'	);
+			$this->get('/schema', 					'eApi\Api:schema'	);
+			$this->get('/export', 					'eApi\Api:export'	); 
 
-			$this->post('', 					'SlimBean\Api:create'	);
-			$this->post('/upload', 				'SlimBean\Api:upload'	);
-
-			$this->put('/{id:[0-9]+}', 			'SlimBean\Api:update'	);
-			$this->delete('/{id:[0-9]+}', 		'SlimBean\Api:destroy'	); 
+			$this->post('', 						'eApi\Api:create'	);
+			$this->put('/{id:[0-9]+}', 				'eApi\Api:update'	);
+			$this->delete('/{id:[0-9]+}', 			'eApi\Api:destroy'	); 
 		});
 
 		// AUX ROUTES
-		$this->get('/hi', 							'SlimBean\Api:hi');
-		$this->get('/edges', 						'SlimBean\Api:edges'); 
-		$this->put('/users/{id:[0-9]+}/password',	'SlimBean\Api:updatePassword'); 
-		$this->patch('/users/{id:[0-9]+}/password', 'SlimBean\Api:updatePassword'); 
+		$this->get('/hi', 							'eApi\Api:hi'		);
+		$this->get('/edges', 						'eApi\Api:edges'	); 
+		$this->post('/upload', 						'eApi\Api:upload'	);
+		$this->put('/users/{id:[0-9]+}/password',	'eApi\Api:updatePassword'); 
+		$this->patch('/users/{id:[0-9]+}/password', 'eApi\Api:updatePassword'); 
 
 	})->add('SlimBean\Auth:isAuth');
 
@@ -68,18 +67,18 @@ $app->group('/v1', function () use ($validate) {
 
 		// EDGES ROUTE GROUP
 		$this->group('/{edge:' . $validate['edges'] . '}', function () use ($validate) {
-			$this->get('', 						'SlimBean\Api:retrieve'	); 
-			$this->get('/{id:[0-9]+}', 			'SlimBean\Api:read'		);
+			$this->get('', 							'eApi\Api:retrieve'	); 
+			$this->get('/{id:[0-9]+}', 				'eApi\Api:read'		);
 		});
 
 		// AUX ROUTES
-		$this->get('/test',						'SlimBean\Api:test'	);
+		$this->get('/test',							'eApi\Api:test'		);
 
 	});
 
 	// AUTH ROUTE GROUP
 	$this->group('/auth', function () {
-		$this->post('/signin', 'SlimBean\Auth:signin');
+		$this->post('/signin', 'eApi\Auth:signin');
 	});
 
 });

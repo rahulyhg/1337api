@@ -10,6 +10,8 @@
 	"CREATE_SUCCESS": "Registro criado com sucesso.",
 	"COMING_SOON": "elijah says: still in development.",
 	"DB_CONN_FAIL": "Não foi possível conectar ao banco de dados.",
+	"DESTROY_UNLINK_FAIL": "Arquivo relacionado ao registro não encontrado.",
+	"DESTROY_UNLINK_SUCCESS": "Arquivo relacionado ao registro excluído.",
 	"DESTROY_FAIL": "Erro na exclusão do registro.",
 	"DESTROY_FAIL_CHILD_EXISTS": "Erro na exclusão do registro. (Existem registros vinculados)",
 	"DESTROY_SUCCESS": "Excluído com sucesso.",

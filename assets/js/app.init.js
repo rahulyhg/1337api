@@ -206,8 +206,7 @@ var jeUploadFunction = function(type, file, cbs) {
 											return xhr;
 										},										
 										type: 'POST',
-										// TODO: need to pass "edge" at upload url.
-										url: 'api/v1/private/pages/upload',
+										url: 'api/v1/private/upload',
 										headers: {'Authorization':'Bearer ' + token},
 										contentType: 'application/json; charset=utf-8',
 										dataType: 'json',
@@ -225,7 +224,7 @@ var jeUploadFunction = function(type, file, cbs) {
 												cbs.success('');
 											}
 											else {
-												cbs.success('' + data.id + '');
+												cbs.success('' + data.href + '');
 											}
 										},
 										error: function(jqXhr, textStatus, errorThrown) {
@@ -249,6 +248,9 @@ var jePluginsConfig = {
 							emoticonsEnabled: false,
 							width: '98%',
 							resizeEnabled: false,
+						},
+						selectize: {
+							enable: true
 						}
 					};
 
@@ -259,6 +261,7 @@ var jeOptionsConfig = {
 						disable_collapse: true,
 						disable_edit_json: true,
 						disable_properties: true,
+						show_errors: 'change',
 						upload: jeUploadFunction,
 					};
 
