@@ -39,8 +39,6 @@ class Api {
 	public function __construct($config, LoggerInterface $logger) {
 		$this->config 		= $config;		
 		$this->logger 		= $logger;
-		
-		$this->setHierarchy();
 	}
 
 /** PUBLIC - SlimBean\Api Class Public Functions **/
@@ -202,7 +200,7 @@ class Api {
 
 			// check if edge has one-to-many relationships
 			if ($this->edgeHasChild($args['edge'])) {
-				foreach ($this->hierarchy[$args['edge']] as $child) {
+				foreach ($this->getHierarchy()[$args['edge']] as $child) {
 					$ownList = $item['own' . ucfirst($child) . 'List'];
 					// check if there are children and return bad request response
 					if (!empty($ownList)) {
@@ -275,7 +273,7 @@ class Api {
 			}
 
 			// if there's hierarchy, let's build our tree
-			if (!empty($this->hierarchy)) {
+			if (!empty($this->getHierarchy())) {
 
 				// define $root to $edges tree array
 				$root = $edges;
@@ -1035,8 +1033,8 @@ class Api {
 	private function edgeGetParents ($edge) {
 		$parents = array();
 
-		if (!empty($this->hierarchy)) {
-			foreach ($this->hierarchy as $parent => $children) {
+		if (!empty($this->getHierarchy())) {
+			foreach ($this->getHierarchy() as $parent => $children) {
 				foreach ($children as $child) {
 					if ($edge == $child) {
 						array_push($parents, $parent);
@@ -1084,7 +1082,7 @@ class Api {
 	private function edgeHasParent ($edge) {
 
 		// return boolean if found in multi-dimensional array
-		foreach ($this->hierarchy as $values) {
+		foreach ($this->getHierarchy() as $values) {
 			if (in_array($edge, $values)) {
 				return true;
 			}
@@ -1102,7 +1100,7 @@ class Api {
 	private function edgeHasChild ($edge) {
 
 		// return boolean if found in array
-		return ( array_key_exists($edge, $this->hierarchy) ? true : false );
+		return ( array_key_exists($edge, $this->getHierarchy()) ? true : false );
 	}
 
 	/**
@@ -1123,6 +1121,18 @@ class Api {
 			}
 		}
 		return false;
+	}
+
+	/**
+	  * Gets $hierarchy array private var with relationships between edges at database tables.
+	  *
+	  * @return array  								$hierarchy		API Edges hierarchy private array. 
+	  */
+	private function getHierarchy() {
+		if (!isset($this->hierarchy)) {
+			$this->setHierarchy();
+		}
+		return $this->hierarchy;
 	}
 
 	/**
