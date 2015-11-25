@@ -47,7 +47,7 @@ return array(
 			'fields' 		=> array('id', 'name', 'created', 'modified')
 		),
 		'uploads' => array(
-			'basepath' => '../uploads/',
+			'basepath' => 'uploads/',
 		),
 	],
 

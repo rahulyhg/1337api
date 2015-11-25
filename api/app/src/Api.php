@@ -744,7 +744,7 @@ class Api {
 			// build api response array
 			$payload = array(
 				'id' 		=> $args['id'],
-				'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: '.$args['id'].')',
+				'message' 	=> getMessage('UPDATE_SUCCESS') . ' (id: ' . $args['id'] . ')',
 			);
 			
 			//output response
@@ -789,13 +789,12 @@ class Api {
 		}
 
 		// explode $data['blob']
-		// TODO: this procedure could be done in one line if I use regex. verify correct expression.
-		list($type, $data['blob']) = explode(';', $data['blob']);
-		list(,$type) = explode(':', $type);
-		list(,$data['blob']) = explode(',', $data['blob']);
+		list($header, $blob) = explode(',', $data['blob']);
+		preg_match('/:(.*);/', $header, $match);
+		$type = $match[1];
 
 		// decode blob data
-		$content = base64_decode($data['blob']);
+		$content = base64_decode($blob);
 
 		// define path
 		$datepath 	= str_replace('-', '/', R::isoDate()) . '/';
