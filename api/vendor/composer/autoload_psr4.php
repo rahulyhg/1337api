@@ -6,8 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'eApi\\' => array($baseDir . '/app/src'),
     'Slim\\' => array($vendorDir . '/slim/slim/Slim'),
-    'SlimBean\\' => array($baseDir . '/app/src'),
     'Sinergi\\Dictionary\\' => array($vendorDir . '/sinergi/dictionary/src/Dictionary'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),

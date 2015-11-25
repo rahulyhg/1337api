@@ -1,17 +1,17 @@
 <?php 
 /**
- * SlimBean
+ * eApi
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT
  */
-namespace SlimBean;
+namespace eApi;
 
 use \RedBeanPHP\Facade as R;
 use \Firebase\JWT\JWT;
 use Psr\Log\LoggerInterface;
 
 /**
- * SlimBean core Auth class.
+ * eApi core Auth class.
  * Provides default functions to JWT.io Authentication
  * integrated with Firebase JWT, Slim Framework, RedBeanPHP and Monolog.
  *

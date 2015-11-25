@@ -35,7 +35,7 @@
 			"vendor/redbeanphp/rb.php"
 		],
 		"psr-4": {
-			"SlimBean\\": "app/src"
+			"eApi\\": "app/src"
 		}
 	}
 }

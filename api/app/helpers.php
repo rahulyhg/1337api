@@ -1,6 +1,6 @@
 <?php
 /**
- * SlimBean helper functions.
+ * eApi helper functions.
  *
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT

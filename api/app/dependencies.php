@@ -1,6 +1,6 @@
 <?php 
 /**
- * SlimBean dependencies instantiation.
+ * eApi dependencies instantiation.
  *
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT
@@ -129,16 +129,16 @@ $c['notAllowedHandler'] = function ($c) {
 	};
 };
 
-// \SlimBean\ Classes
+// \eApi\ Classes
 // -----------------------------------------------------------------------------
-$c['SlimBean\Api'] = function ($c) {
+$c['eApi\Api'] = function ($c) {
 	global $config;
-	return new SlimBean\Api($config, $c->get('logger'));
+	return new eApi\Api($config, $c->get('logger'));
 };
 
-$c['SlimBean\Auth'] = function ($c) {
+$c['eApi\Auth'] = function ($c) {
 	global $config;
-	return new SlimBean\Auth($config, $c->get('logger'));
+	return new eApi\Auth($config, $c->get('logger'));
 };
 
 ?>

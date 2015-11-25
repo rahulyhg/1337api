@@ -1,6 +1,6 @@
 <?php
 /**
- * SlimBean global settings configuration file.
+ * eApi global settings configuration file.
  *
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT

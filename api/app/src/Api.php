@@ -1,16 +1,16 @@
 <?php 
 /**
- * SlimBean
+ * eApi
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT
  */
-namespace SlimBean;
+namespace eApi;
 
 use \RedBeanPHP\Facade as R;
 use Psr\Log\LoggerInterface;
 
 /**
- * SlimBean core Api class.
+ * eApi core Api class.
  * Provides main default functions to RESTful API
  * integrated with Slim Framework, RedBeanPHP and Monolog.
  *
@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  */
 class Api {
 
-/** VARS - SlimBean\Api Class Variables **/
+/** VARS - eApi\Api Class Variables **/
 
 	/**
 	 * @var array 						$config 	Global settings values. 
@@ -47,7 +47,7 @@ class Api {
 		$this->logger 		= $logger;
 	}
 
-/** PUBLIC - SlimBean\Api Class Public Functions **/
+/** PUBLIC - eApi\Api Class Public Functions **/
 
 	/**
 	  * Counts items from a database collection and properties related.
@@ -863,7 +863,7 @@ class Api {
 		return $response->withJson($payload);
 	}
 
-/** PRIVATE - SlimBean\Api Class Private Functions **/
+/** PRIVATE - eApi\Api Class Private Functions **/
 
 	/**
 	  * Auxiliar private method to build JSON hyperschema compatible array from database table description.
