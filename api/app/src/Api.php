@@ -22,17 +22,17 @@ class Api {
 /** VARS - SlimBean\Api Class Variables **/
 
 	/**
-	 * @var array $config Global settings values. 
+	 * @var array 						$config 	Global settings values. 
 	 */
 	private $config;
 
 	/**
-	 * @var Psr\Log\LoggerInterface $logger Logger handler. 
+	 * @var Psr\Log\LoggerInterface 	$logger 	Monolog Logger handler. 
 	 */
 	private $logger;
 
 	/**
-	 * @var array $hierarchy Hierarchy private array, built from $this->getHierarchy function. 
+	 * @var array 						$hierarchy 	API Edges hierarchy private array. 
 	 */
 	private $hierarchy;
 
@@ -861,6 +861,13 @@ class Api {
 
 /** PRIVATE - SlimBean\Api Class Private Functions **/
 
+	/**
+	  * Auxiliar private method to build JSON hyperschema compatible array from database table description.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return array 									$schema 	JSON hyper-schema compatible array. 
+	  */
 	private function buildSchema ($edge) {
 
 		// get database schema
@@ -985,6 +992,15 @@ class Api {
 		return $schema;
 	}
 
+	/**
+	  * Auxiliar private method to append Relations node recursively to :edges method tree array.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  * @param array 									$root 		Edges tree root level array.
+	  * @param array 									$edges 		Edges tree array.
+	  *
+	  * @return array 									$relations 	Relations array to be append at Edges tree array. 
+	  */
 	private function edgeAppendRelations ($edge, $root, $edges) {
 		$relations = array();
 
@@ -1009,6 +1025,13 @@ class Api {
 		return $relations;
 	}
 
+	/**
+	  * Auxiliar private method to get Parents array (one-to-many relationships) from an API edge resource.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return array 									$parents 	API Edges related in a one-to-many relationship with this edge. 
+	  */
 	private function edgeGetParents ($edge) {
 		$parents = array();
 
@@ -1026,12 +1049,19 @@ class Api {
 		return $parents;
 	}
 
+	/**
+	  * Auxiliar private method to get M2M Relations array (many-to-many relationships) from an API edge resource.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return array 									$relateds 	API Edges related in a many-to-many relationship with this edge. 
+	  */
 	private function edgeGetM2MRelations ($edge) {
 		$relateds = array();
 		foreach ($this->config['edges']['relations'] as $relations) {
 			$relation = explode('_', $relations);
 
-			// IF RELATION WAS FOUND FOR THIS EDGE
+			// IF relation was found for this edge
 			if (in_array($edge, $relation)) {
 				// remove "self"
 				unset($relation[array_search($edge, $relation)]);
@@ -1044,9 +1074,16 @@ class Api {
 		return $relateds;
 	}
 
+	/**
+	  * Auxiliar private method to verify if Parents (one-to-many relationships) exists from an API edge resource.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return boolean
+	  */
 	private function edgeHasParent ($edge) {
 
-		// return bool if found in multi-dimensional array
+		// return boolean if found in multi-dimensional array
 		foreach ($this->hierarchy as $values) {
 			if (in_array($edge, $values)) {
 				return true;
@@ -1055,12 +1092,26 @@ class Api {
 		return false;
 	}
 
+	/**
+	  * Auxiliar private method to verify if Childs (one-to-many relationships) exists from an API edge resource.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return boolean
+	  */
 	private function edgeHasChild ($edge) {
 
-		// return bool if found in array
+		// return boolean if found in array
 		return ( array_key_exists($edge, $this->hierarchy) ? true : false );
 	}
 
+	/**
+	  * Auxiliar private method to verify if M2M Relations (many-to-many relationships) exists from an API edge resource.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return boolean
+	  */
 	private function edgeHasM2MRelations ($edge) {
 
 		foreach ($this->config['edges']['relations'] as $relations) {
@@ -1076,10 +1127,6 @@ class Api {
 
 	/**
 	  * Sets $hierarchy array private var with relationships between edges at database tables.
-	  *
-	  * @param string $edge Optional parameter to filter results by only one edge.
-	  *
-	  * @return array Hierarchy array with Parent Key and Children Values.
 	  */
 	private function setHierarchy() {
 

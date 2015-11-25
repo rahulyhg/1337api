@@ -39,11 +39,11 @@ class Auth {
 	/**
 	  * Authentication signin method.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
-	  * @param array $args Wildcard arguments from Request URI
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function signin ($request, $response, $args) {
 
@@ -113,10 +113,10 @@ class Auth {
 	/**
 	  * Authentication Middleware to check authorization token method.
 	  *
-	  * @param Psr\Http\Message\ServerRequestInterface $request Request Object
-	  * @param Psr\Http\Message\ResponseInterface $response Response Object
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  *
-	  * @return Psr\Http\Message\ResponseInterface
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
 	  */
 	public function isAuth($request, $response, $next) {
 
