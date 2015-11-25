@@ -501,6 +501,28 @@ class Api {
 				}
 			}
 
+			// IF _ many-to-one relationship exists
+			if ($this->edgeHasChild($args['edge'])) {
+				$children = $this->edgeGetChildren($args['edge']);
+				if (!empty($children)) {
+					foreach ($children as $child) {
+						$childList = $item['own' . ucfirst($child) . 'List'];
+						if (!empty($childList)) {
+							$i = 0;
+							foreach ($childList as $childObj) {
+								foreach ($childObj as $childField => $childValue) {
+									if (!in_array($childField, $this->config['schema']['default']['blacklist']) && $childField != $args['edge'] . '_id' ) {
+										// TODO: And if the child item has related fields? We should get recursive here.
+										$read[$child][$i][$childField] = $childValue;
+									}
+								}
+								$i++;
+							}
+						}
+					}
+				}
+			}
+
 			// IF _ many-to-many relationship exists
 			if ($this->edgeHasM2MRelations($args['edge'])) {
 				$relateds = $this->edgeGetM2MRelations($args['edge']);
