@@ -1,6 +1,6 @@
 <?php
 /**
- * SlimBean middleware register.
+ * eApi middleware register.
  *
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT

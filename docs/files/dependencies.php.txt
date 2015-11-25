@@ -1,6 +1,6 @@
 <?php 
 /**
- * SlimBean dependencies instantiation.
+ * eApi dependencies instantiation.
  *
  * @author  Elijah Hatem <elias.hatem@gmail.com>
  * @license MIT
@@ -21,17 +21,20 @@ if (R::testConnection() == TRUE) {
 	R::setAutoResolve( TRUE );
 	R::freeze( TRUE );
 
-	// INSPECT TABLES
-	$config['edges']['list'] = R::inspect();
+	// INIT TABLE EDGES
+	$edges = array(
+		'list' 		=> R::inspect(),
+		'relations' => array(),
+		'blacklist' => $config['api']['edges']['blacklist']
+	);
 
 	// INSERT MANY-TO-MANY TABLES AT BLACKLIST
-	foreach ($config['edges']['list'] as $k => $edge) {
+	foreach ($edges['list'] as $edge) {
 		if (strpos($edge, '_') !== FALSE) {
-			array_push($config['edges']['blacklist'], $edge);
-			array_push($config['edges']['relations'], $edge);
+			array_push($edges['blacklist'], $edge);
+			array_push($edges['relations'], $edge);
 		}
 	}
-
 }
 
 /* ***************************************************************************************************
@@ -129,16 +132,20 @@ $c['notAllowedHandler'] = function ($c) {
 	};
 };
 
-// \SlimBean\ Classes
+// \eApi\ Classes
 // -----------------------------------------------------------------------------
-$c['SlimBean\Api'] = function ($c) {
+$c['eApi\Api'] = function ($c) {
 	global $config;
-	return new SlimBean\Api($config, $c->get('logger'));
+	global $edges;
+
+	return new eApi\Api($config, $edges, $c->get('logger'));
 };
 
-$c['SlimBean\Auth'] = function ($c) {
+$c['eApi\Auth'] = function ($c) {
 	global $config;
-	return new SlimBean\Auth($config, $c->get('logger'));
+	global $edges;
+
+	return new eApi\Auth($config, $c->get('logger'));
 };
 
 ?>
