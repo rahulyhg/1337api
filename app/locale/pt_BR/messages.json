@@ -31,5 +31,9 @@
 	"UPLOAD_FAIL_BLOB_MISSING": "Não foi possível processar sua requisição. (blob não encontrado na requisição)",
 	"UPLOAD_FAIL_FILESIZE_MISSING": "Não foi possível processar sua requisição. (filesize não encontrado na requisição)",
 	"UPLOAD_FAIL_FILENAME_MISSING": "Não foi possível processar sua requisição. (filename não encontrado na requisição)",
-	"UPLOAD_SUCCESS": "Upload realizado com sucesso."	
+	"UPLOAD_SUCCESS": "Upload realizado com sucesso.",
+	"VOTE_EXPIRED": "VOTE_EXPIRED",
+	"VOTE_FAIL": "VOTE_FAIL",
+	"VOTE_INVALID": "VOTE_INVALID",
+	"VOTE_SUCCESS": "VOTE_SUCCESS"
 }

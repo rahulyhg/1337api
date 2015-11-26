@@ -63,13 +63,21 @@ class Poll {
 			if (!empty($option)) {
 				$option = R::load( 'foodtrucks', $args['optionId'] );
 				if ($option->polls_id !== $args['id']) {
-					$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+					$err = array('error' => true, 'message' => getMessage('VOTE_INVALID'));
 					$this->logger->notice($err['message'], array($args));
 					return $response->withJson($err)->withStatus(400);
 				}
 			}
 			if (empty($option)) {
-				$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+				$err = array('error' => true, 'message' => getMessage('VOTE_INVALID'));
+				$this->logger->notice($err['message'], array($args));
+				return $response->withJson($err)->withStatus(400);
+			}
+
+			// if poll is not active, return bad request response
+			$poll = R::load( 'polls', $args['id'] );
+			if (!$poll->active) {
+				$err = array('error' => true, 'message' => getMessage('VOTE_EXPIRED'));
 				$this->logger->notice($err['message'], array($args));
 				return $response->withJson($err)->withStatus(400);
 			}
@@ -102,7 +110,7 @@ class Poll {
 				// build api response array
 				$payload = array(
 					'id' 		=> $id,
-					'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
+					'message' 	=> getMessage('VOTE_SUCCESS'),
 				);
 				
 				//output response
@@ -112,7 +120,7 @@ class Poll {
 
 			// else something happened, throw error
 			else {
-				$err = getMessage('CREATE_FAIL');
+				$err = getMessage('VOTE_FAIL');
 				throw new \Exception($err, 1);
 			}
 		}
