@@ -32,8 +32,8 @@
 	"UPLOAD_FAIL_FILESIZE_MISSING": "Não foi possível processar sua requisição. (filesize não encontrado na requisição)",
 	"UPLOAD_FAIL_FILENAME_MISSING": "Não foi possível processar sua requisição. (filename não encontrado na requisição)",
 	"UPLOAD_SUCCESS": "Upload realizado com sucesso.",
-	"VOTE_EXPIRED": "VOTE_EXPIRED",
-	"VOTE_FAIL": "VOTE_FAIL",
-	"VOTE_INVALID": "VOTE_INVALID",
-	"VOTE_SUCCESS": "VOTE_SUCCESS"
+	"VOTE_EXPIRED": "Atenção!\nVotação encerrada.\nObrigado e até a próxima.",
+	"VOTE_FAIL": "Atenção!\nVoto não computado.\nTente novamente em alguns segundos.",
+	"VOTE_INVALID": "Ops!\nVotação não encontrada.",
+	"VOTE_SUCCESS": "Sucesso!\nVoto computado."
 }
