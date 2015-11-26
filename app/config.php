@@ -18,9 +18,9 @@ return array(
 
 	// $config DB (MySQL Database)
 	'db' => [
-		'host' => 'mysql:host=186.202.152.193; dbname=umstudiohomolo12',
-		'user' => 'umstudiohomolo12',
-		'pass' => 'studio0001',
+		'host' => 'mysql:host=zerodesperdiciomysql.clientes.ananke.com.br; dbname=zerodesperdicio_clientes_ananke_com_br',
+		'user' => 'zerodesperdicio',
+		'pass' => 'e7Gzq4DE',
 	],
 
 	// $config AUTH (JWT - JSON Web Token)
