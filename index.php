@@ -66,14 +66,7 @@ $app->group('/v1', function () use ($validate) {
 	// PUBLIC ROUTE GROUP
 	$this->group('/public', function () use ($validate){
 
-		// EDGES ROUTE GROUP
-		$this->group('/{edge:' . $validate['edges'] . '}', function () use ($validate) {
-			$this->get('', 							'eApi\Api:retrieve'	); 
-			$this->get('/{id:[0-9]+}', 				'eApi\Api:read'		);
-		});
-
-		// AUX ROUTES
-		$this->get('/test',							'eApi\Api:test'		);
+		$this->get('/test',							'eApi\Poll:test'		);
 
 	});
 

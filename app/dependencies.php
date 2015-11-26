@@ -143,9 +143,14 @@ $c['eApi\Api'] = function ($c) {
 
 $c['eApi\Auth'] = function ($c) {
 	global $config;
-	global $edges;
 
 	return new eApi\Auth($config, $c->get('logger'));
+};
+
+$c['eApi\Poll'] = function ($c) {
+	global $config;
+
+	return new eApi\Poll($config, $c->get('logger'));
 };
 
 ?>
