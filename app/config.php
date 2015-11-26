@@ -45,6 +45,9 @@ return array(
 		'edges' 	=> array(
 			'blacklist' => array('images')
 		),
+		'read' 	=> array(
+			'blacklist' 	=> array('modified'), 		
+		),
 		'list' 	=> array(
 			'itemsPerPage' 	=> 5,
 			'fields' 		=> array('id', 'name', 'created', 'modified')

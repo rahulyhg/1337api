@@ -67,19 +67,54 @@ class Api {
 	  */
 	public function count ($request, $response, $args) {
 
-		// define response vars
-		$count = R::count( $args['edge'] );
-		$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
+		// normal count, no child relation
+		if (!isset($args['child'])) {
 
-		// build response payload
-		$payload = array(
-			'sum' 			=> $count,
-			'pages' 		=> ceil($count/$limit),
-			'itemsPerPage' 	=> $limit
-		);
+			// define response vars
+			$count = R::count( $args['edge'] );
+			$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
 
-		// output response payload
-		return $response->withJson($payload);
+			// build response payload
+			$payload = array(
+				'sum' 			=> $count,
+				'pages' 		=> ceil($count/$limit),
+				'itemsPerPage' 	=> $limit
+			);
+
+			// output response payload
+			return $response->withJson($payload);
+		}
+		else {
+
+			// check if there is a relation between child and edge
+			if ($this->edgeHasChild($args['edge'])) {
+
+				if (in_array($args['child'], $this->edgeGetChildren($args['edge']))) {
+
+					// load item
+					$item = R::load( $args['edge'], $args['id'] );
+
+					// define response vars
+					$count = $item->countOwn( $args['child'] );
+					$limit = ( !empty($this->config['api']['list']['itemsPerPage']) ? $this->config['api']['list']['itemsPerPage'] : 10 );
+
+					// build response payload
+					$payload = array(
+						'sum' 			=> $count,
+						'pages' 		=> ceil($count/$limit),
+						'itemsPerPage' 	=> $limit
+					);
+
+					// output response payload
+					return $response->withJson($payload);
+				}
+				else {
+					die('deu ruim, não existe');
+				}
+
+			}
+		}
+
 	}
 
 	/**
@@ -434,7 +469,7 @@ class Api {
 
 			// foreach $item field, build response read array
 			foreach ($item as $field => $value) {
-				if (!in_array($field, $this->config['schema']['default']['blacklist'])) {
+				if (!in_array($field, $this->config['api']['read']['blacklist'])) {
 
 					// IF field is a password, clean it up
 					if ($field == 'password') {
@@ -453,7 +488,7 @@ class Api {
 						if (!empty($parent['id'])) {
 							// foreach $parent field, add to response payload array
 							foreach ($parent as $parentField => $parentValue) {
-								if (!in_array($parentField, $this->config['schema']['default']['blacklist'])) {
+								if (!in_array($parentField, $this->config['api']['read']['blacklist'])) {
 									// add to payload response
 									$read[$parentEdge][$parentField] = $parentValue;
 								}
@@ -461,6 +496,28 @@ class Api {
 						}
 						else {
 							throw new \Exception(getMessage('BROKEN_RELATIONSHIP', 1));
+						}
+					}
+				}
+			}
+
+			// IF _ many-to-one relationship exists
+			if ($this->edgeHasChild($args['edge'])) {
+				$children = $this->edgeGetChildren($args['edge']);
+				if (!empty($children)) {
+					foreach ($children as $child) {
+						$childList = $item['own' . ucfirst($child) . 'List'];
+						if (!empty($childList)) {
+							$i = 0;
+							foreach ($childList as $childObj) {
+								foreach ($childObj as $childField => $childValue) {
+									if (!in_array($childField, $this->config['api']['read']['blacklist']) && $childField != $args['edge'] . '_id' ) {
+										// TODO: And if the child item has related fields? We should get recursive here.
+										$read[$child][$i][$childField] = $childValue;
+									}
+								}
+								$i++;
+							}
 						}
 					}
 				}
@@ -476,7 +533,7 @@ class Api {
 							$i = 0;
 							foreach ($relatedList as $relatedObj) {
 								foreach ($relatedObj as $relatedField => $relatedValue) {
-									if (!in_array($relatedField, $this->config['schema']['default']['blacklist'])) {
+									if (!in_array($relatedField, $this->config['api']['read']['blacklist'])) {
 										// TODO: And if the related item has related fields? We should get recursive here.
 										$read[$related][$i][$relatedField] = $relatedValue;
 									}
@@ -1053,6 +1110,26 @@ class Api {
 			}
 		}
 		return $relations;
+	}
+
+	/**
+	  * Auxiliar private method to get Children array (many-to-one relationships) from an API edge resource.
+	  *
+	  * @param string 									$edge 		API Edge database table name.
+	  *
+	  * @return array 									$parents 	API Edges related in a many-to-one relationship with this edge. 
+	  */
+	private function edgeGetChildren ($edge) {
+		$children = array();
+
+		if (!empty($this->getHierarchy()) && array_key_exists($edge, $this->getHierarchy())) {
+			foreach ($this->getHierarchy()[$edge] as $child) {
+				array_push($children, $child);
+			}
+		}
+
+		// return children array
+		return $children;
 	}
 
 	/**

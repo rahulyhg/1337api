@@ -45,6 +45,7 @@ $app->group('/v1', function () use ($validate) {
 			$this->get('/{id:[0-9]+}', 				'eApi\Api:read'		);
 			$this->get('/{id:[0-9]+}/exists', 		'eApi\Api:exists'	); 
 			$this->get('/count', 					'eApi\Api:count'	);
+			$this->get('/{id:[0-9]+}/{child}/count', 'eApi\Api:count'	);
 			$this->get('/schema', 					'eApi\Api:schema'	);
 			$this->get('/export', 					'eApi\Api:export'	); 
 
