@@ -79,11 +79,13 @@ class Poll {
 				foreach ($childList as $childObj) {
 					foreach ($childObj as $childField => $childValue) {
 						if (!in_array($childField, $this->config['api']['read']['blacklist']) && $childField != $args['edge'] . '_id' ) {
-							// TODO: And if the child item has related fields? We should get recursive here.
 							$read[$args['child']][$i][$childField] = $childValue;
 						}
-					}
-					$i++;
+					}					
+					// ADD _ many-to-one votes count for each option
+					$read[$args['child']][$i]['votes'] = $item->ownFoodtrucksList[$i+1]->countOwn('votes');
+
+				$i++;
 				}
 			}
 
