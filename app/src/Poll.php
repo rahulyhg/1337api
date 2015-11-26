@@ -46,6 +46,83 @@ class Poll {
 /** PUBLIC - eApi\Poll Class Public Functions **/
 
 	/**
+	  * Inserts new vote related to a poll option.
+	  *
+	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
+	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  * @param array 									$args 		Associative array with current route's named placeholders
+	  *
+	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
+	  */
+	public function createVote ($request, $response, $args) {
+
+		// validation rules
+
+			// if poll foodtruck does not exist related at poll id, return bad request response
+			$option = R::find( 'foodtrucks', ' id = '.$args['optionId'] );
+			if (!empty($option)) {
+				$option = R::load( 'foodtrucks', $args['optionId'] );
+				if ($option->polls_id !== $args['id']) {
+					$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+					$this->logger->notice($err['message'], array($args));
+					return $response->withJson($err)->withStatus(400);
+				}
+			}
+			if (empty($option)) {
+				$err = array('error' => true, 'message' => getMessage('INVALID_REQUEST'));
+				$this->logger->notice($err['message'], array($args));
+				return $response->withJson($err)->withStatus(400);
+			}
+
+		// set fixed edges and load item
+		$args['edge'] = 'votes';
+
+		// dispense 'edge'
+		$vote = R::dispense( $args['edge'] );
+
+		// build array to insert
+		$vote['foodtrucks_id'] 	= $args['optionId'];
+		$vote['created'] 		= R::isoDateTime();
+		$vote['modified'] 		= R::isoDateTime();
+
+		// let's start the insert transaction
+		R::begin();
+
+		try {
+			// insert vote, returns id if success
+			R::store($vote);
+			$id = R::getInsertID();
+
+			// if item was insert with success
+			if ($id) {
+
+				// commit transaction
+				R::commit();
+
+				// build api response array
+				$payload = array(
+					'id' 		=> $id,
+					'message' 	=> getMessage('CREATE_SUCCESS') . ' (id: '.$id.')',
+				);
+				
+				//output response
+				$this->logger->info($payload['message'], $args);
+				return $response->withJson($payload)->withStatus(201);
+			}
+
+			// else something happened, throw error
+			else {
+				$err = getMessage('CREATE_FAIL');
+				throw new \Exception($err, 1);
+			}
+		}
+		catch(\Exception $e) {
+			R::rollback();
+			throw $e;
+		}
+	}
+
+	/**
 	  * Read Poll entry from database and return properties related.
 	  *
 	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object

@@ -66,9 +66,10 @@ $app->group('/v1', function () use ($validate) {
 	// PUBLIC ROUTE GROUP
 	$this->group('/public', function () use ($validate){
 
-		$this->get('/polls', 						'eApi\Poll:retrievePolls'	); 
-		$this->get('/polls/{id:[0-9]+}', 			'eApi\Poll:readPoll'		); 
-		$this->get('/test',							'eApi\Poll:test'			);
+		$this->get('/polls', 												'eApi\Poll:retrievePolls'	); 
+		$this->get('/polls/{id:[0-9]+}', 									'eApi\Poll:readPoll'		); 
+		$this->post('/polls/{id:[0-9]+}/foodtrucks/{optionId:[0-9]+}/vote', 'eApi\Poll:createVote'		); 
+		$this->get('/test',													'eApi\Poll:test'			);
 
 	});
 
