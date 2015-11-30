@@ -994,10 +994,7 @@ class Api {
 						'minLength'	 		=> 1,
 						'enum' 				=> array(),
 						'options' 			=> array(
-							'enum_titles' 		=> array(),
-							'selectize_options' => array(
-								'create' => false // TODO: for some reason this selectize_options for false "create" is not working. WTF?! 
-							)
+							'enum_titles' 		=> array()
 						)
 					);
 
