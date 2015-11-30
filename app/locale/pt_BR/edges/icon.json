@@ -5,5 +5,8 @@
 	"pages": "file-text",
 	"regions": "map-marker",
 	"states": "map-marker",
-	"users": "users"
+	"users": "users",
+	"polls": "sticky-note",
+	"votes": "check-circle",
+	"foodtrucks": "truck"
 }
