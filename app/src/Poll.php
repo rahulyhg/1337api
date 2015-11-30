@@ -89,7 +89,9 @@ class Poll {
 		$vote = R::dispense( $args['edge'] );
 
 		// build array to insert
+		$vote['name'] 			= uniqid();
 		$vote['foodtrucks_id'] 	= $args['optionId'];
+		$vote['user_agent'] 	= $request->getHeader('HTTP_USER_AGENT')[0];
 		$vote['created'] 		= R::isoDateTime();
 		$vote['modified'] 		= R::isoDateTime();
 
@@ -110,11 +112,12 @@ class Poll {
 				// build api response array
 				$payload = array(
 					'id' 		=> $id,
+					'hash'		=> $vote['name'],
 					'message' 	=> getMessage('VOTE_SUCCESS'),
 				);
 				
 				//output response
-				$this->logger->info($payload['message'], $args);
+				$this->logger->info($payload['message'], array($vote, $args));
 				return $response->withJson($payload)->withStatus(201);
 			}
 
