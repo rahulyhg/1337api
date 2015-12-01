@@ -249,7 +249,8 @@ class Api {
 
 			// check if edge has one-to-many relationships
 			if ($this->edgeHasChild($args['edge'])) {
-				foreach ($this->getHierarchy()[$args['edge']] as $child) {
+				$hierarchy = $this->getHierarchy();
+				foreach ($hierarchy[$args['edge']] as $child) {
 					$ownList = $item['own' . ucfirst($child) . 'List'];
 					// check if there are children and return bad request response
 					if (!empty($ownList)) {
@@ -337,7 +338,8 @@ class Api {
 			}
 
 			// if there's hierarchy, let's build our tree
-			if (!empty($this->getHierarchy())) {
+			$hierarchy = $this->getHierarchy();
+			if (!empty($hierarchy)) {
 
 				// define $root to $edges tree array
 				$root = $edges;
@@ -1147,9 +1149,10 @@ class Api {
 	  */
 	private function edgeGetChildren ($edge) {
 		$children = array();
-
-		if (!empty($this->getHierarchy()) && array_key_exists($edge, $this->getHierarchy())) {
-			foreach ($this->getHierarchy()[$edge] as $child) {
+		$hierarchy= $this->getHierarchy();
+		
+		if (!empty($hierarchy) && array_key_exists($edge, $hierarchy)) {
+			foreach ($hierarchy[$edge] as $child) {
 				array_push($children, $child);
 			}
 		}
@@ -1167,9 +1170,10 @@ class Api {
 	  */
 	private function edgeGetParents ($edge) {
 		$parents = array();
+		$hierarchy = $this->getHierarchy();
 
-		if (!empty($this->getHierarchy())) {
-			foreach ($this->getHierarchy() as $parent => $children) {
+		if (!empty($hierarchy)) {
+			foreach ($hierarchy as $parent => $children) {
 				foreach ($children as $child) {
 					if ($edge == $child) {
 						array_push($parents, $parent);
