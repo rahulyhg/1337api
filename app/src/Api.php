@@ -249,7 +249,8 @@ class Api {
 
 			// check if edge has one-to-many relationships
 			if ($this->edgeHasChild($args['edge'])) {
-				foreach ($this->getHierarchy()[$args['edge']] as $child) {
+				$hierarchy = $this->getHierarchy();
+				foreach ($hierarchy[$args['edge']] as $child) {
 					$ownList = $item['own' . ucfirst($child) . 'List'];
 					// check if there are children and return bad request response
 					if (!empty($ownList)) {
@@ -337,7 +338,8 @@ class Api {
 			}
 
 			// if there's hierarchy, let's build our tree
-			if (!empty($this->getHierarchy())) {
+			$hierarchy = $this->getHierarchy();
+			if (!empty($hierarchy)) {
 
 				// define $root to $edges tree array
 				$root = $edges;
@@ -640,6 +642,8 @@ class Api {
 					'uniqueItems' 	=> true,
 					'items' 		=> $this->buildSchema($related),
 				);
+				// Builds default defaultValues array to json-editor
+				$schema['defaultValues'][$related] = array();
 			}
 		}
 
@@ -969,10 +973,11 @@ class Api {
 			'required' 				=> true,
 			'additionalProperties' 	=> false,
 			'properties' 			=> array(),
+			'defaultValues' 		=> array(),
 			'raw' 					=> $raw
 		);
 
-		// fill properties node into schema response array
+		// fill properties and defaultValues node into schema response array
 		foreach ($schema['raw'] as $field => $properties) {
 
 			// check if field is not at config blacklist
@@ -991,10 +996,7 @@ class Api {
 						'minLength'	 		=> 1,
 						'enum' 				=> array(),
 						'options' 			=> array(
-							'enum_titles' 		=> array(),
-							'selectize_options' => array(
-								'create' => false // TODO: for some reason this selectize_options for false "create" is not working. WTF?! 
-							)
+							'enum_titles' 		=> array()
 						)
 					);
 
@@ -1003,6 +1005,15 @@ class Api {
 						$schema['properties'][$field]['enum'][] = $enum;
 						$schema['properties'][$field]['options']['enum_titles'][] = $enumTitle;
 					}
+				
+					// builds default defaultValues array to json-editor
+					if (!empty($schema['raw'][$field]['Default'])) {
+						$schema['defaultValues'][$field] = intval($schema['raw'][$field]['Default']);
+					} 
+					else {
+						$schema['defaultValues'][$field] = '';
+					}
+
 				}
 
 				// check if field defines _upload input
@@ -1027,6 +1038,15 @@ class Api {
 							)
 						)
 					);
+
+					// builds default defaultValues array to json-editor
+					if (!empty($schema['raw'][$field]['Default'])) {
+						$schema['defaultValues'][$field] = $schema['raw'][$field]['Default'];
+					} 
+					else {
+						$schema['defaultValues'][$field] = '';
+					}
+
 				}
 
 				// else, field is literal and we can go on
@@ -1072,6 +1092,14 @@ class Api {
 					// add '*' to field title if required.
 					if ($schema['properties'][$field]['minLength'] > 0) {
 						$schema['properties'][$field]['title'] = $schema['properties'][$field]['title'] . '*';
+					}
+
+					// builds default defaultValues array to json-editor
+					if (!empty($schema['raw'][$field]['Default'])) {
+						$schema['defaultValues'][$field] = $schema['raw'][$field]['Default'];
+					} 
+					else {
+						$schema['defaultValues'][$field] = '';
 					}
 				}
 			}
@@ -1121,9 +1149,10 @@ class Api {
 	  */
 	private function edgeGetChildren ($edge) {
 		$children = array();
-
-		if (!empty($this->getHierarchy()) && array_key_exists($edge, $this->getHierarchy())) {
-			foreach ($this->getHierarchy()[$edge] as $child) {
+		$hierarchy= $this->getHierarchy();
+		
+		if (!empty($hierarchy) && array_key_exists($edge, $hierarchy)) {
+			foreach ($hierarchy[$edge] as $child) {
 				array_push($children, $child);
 			}
 		}
@@ -1141,9 +1170,10 @@ class Api {
 	  */
 	private function edgeGetParents ($edge) {
 		$parents = array();
+		$hierarchy = $this->getHierarchy();
 
-		if (!empty($this->getHierarchy())) {
-			foreach ($this->getHierarchy() as $parent => $children) {
+		if (!empty($hierarchy)) {
+			foreach ($hierarchy as $parent => $children) {
 				foreach ($children as $child) {
 					if ($edge == $child) {
 						array_push($parents, $parent);
