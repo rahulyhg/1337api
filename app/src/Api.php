@@ -338,7 +338,7 @@ class Api {
 			}
 
 			// if there's hierarchy, let's build our tree
-			$hierarchy = $this->getHierarchy;
+			$hierarchy = $this->getHierarchy();
 			if (!empty($hierarchy)) {
 
 				// define $root to $edges tree array
