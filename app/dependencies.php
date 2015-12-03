@@ -10,6 +10,14 @@
 ** ORM REDBEAN - INIT ********************************************************************************
 *************************************************************************************************** */ 
 
+// INIT VARIABLES
+$edges = array(
+	'list' 		=> array(), 
+	'relations' => array(), 
+	'blacklist' => array()
+);
+
+// IF CONNECTION TRUE, GO ON
 if (R::testConnection() == TRUE) {
 
 	// DEBUG MODE
@@ -21,12 +29,9 @@ if (R::testConnection() == TRUE) {
 	R::setAutoResolve( TRUE );
 	R::freeze( TRUE );
 
-	// INIT TABLE EDGES
-	$edges = array(
-		'list' 		=> R::inspect(),
-		'relations' => array(),
-		'blacklist' => $config['api']['edges']['blacklist']
-	);
+	// INSPECT EDGES
+	$edges['list'] = R::inspect();
+	$edges['blacklist'] = $config['api']['edges']['blacklist'];
 
 	// INSERT MANY-TO-MANY TABLES AT BLACKLIST
 	foreach ($edges['list'] as $edge) {
