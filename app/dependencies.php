@@ -148,4 +148,10 @@ $c['eApi\Auth'] = function ($c) {
 	return new eApi\Auth($config, $c->get('logger'));
 };
 
+$c['eApi\Lead'] = function ($c) {
+	global $config;
+
+	return new eApi\Lead($config, $c->get('logger'));
+};
+
 ?>

@@ -18,9 +18,9 @@ return array(
 
 	// $config DB (MySQL Database)
 	'db' => [
-		'host' => 'mysql:host=186.202.152.193; dbname=umstudiohomolo12',
-		'user' => 'umstudiohomolo12',
-		'pass' => 'studio0001',
+		'host' => 'mysql:host=179.188.16.36; dbname=umstudiohomolo19',
+		'user' => 'umstudiohomolo19',
+		'pass' => 'n0v0g2oi6',
 	],
 
 	// $config AUTH (JWT - JSON Web Token)
@@ -41,7 +41,7 @@ return array(
 
 	// $config API (Global Values)
 	'api' => [
-		'debug' 	=> TRUE,
+		'debug' 	=> FALSE,
 		'edges' 	=> array(
 			'blacklist' => array('images')
 		),

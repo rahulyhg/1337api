@@ -19,7 +19,7 @@ $app->add(function ($request, $response, $next) use ($logger) {
 	else {
 		$err = array('error' => true, 'message' => getMessage('DB_CONN_FAIL'));
 		$logger->alert($err['message']);
-		return $response->withJson($err)->withStatus(503);
+		return $response->withJson($err)->withStatus(500);
 	}
 });
 
