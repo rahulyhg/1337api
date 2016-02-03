@@ -69,9 +69,6 @@ $app->group('/v1', function () use ($validate) {
 		// LEAD ROUTES
 		$this->post('/leads',						'eApi\Lead:createLead'	);
 
-		// AUX ROUTES
-		$this->get('/test',							'eApi\Lead:test'		);
-
 	});
 
 	// AUTH ROUTE GROUP

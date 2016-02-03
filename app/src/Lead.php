@@ -110,7 +110,7 @@ class Lead {
 				);
 				
 				//output response
-				$this->logger->info($payload['message'], $args);
+				// $this->logger->info($payload['message'], $args);
 				return $response->withJson($payload)->withStatus(201);
 			}
 
@@ -121,30 +121,19 @@ class Lead {
 			}
 		}
 		catch(\Exception $e) {
+
 			R::rollback();
-			throw $e;
+			
+			// handle exceptions duplicate entry message to be user-friendly
+			if (strpos($e->getMessage(), '1062 Duplicate entry')) {
+				$err = array('error' => true, 'message' => getMessage('LEAD_DUPLICATE_EMAIL'));
+				$this->logger->notice($err['message'], array($args, $data));
+				return $response->withJson($err)->withStatus(400);
+			}
+			else {
+				throw $e;
+			}
 		}
-	}
-
-	/**
-	  * API test method.
-	  *
-	  * @param Psr\Http\Message\ServerRequestInterface 	$request 	PSR 7 ServerRequestInterface Object
-	  * @param Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
-	  * @param array 									$args 		Associative array with current route's named placeholders
-	  *
-	  * @return Psr\Http\Message\ResponseInterface 		$response 	PSR 7 ResponseInterface Object
-	  */
-	public function test ($request, $response, $args) {
-
-		// build api response payload
-		$payload = array(
-			'message' => 'Hello, tested!'
-		);
-
-		// output response payload
-		$this->logger->info($payload['message'], $args);
-		return $response->withJson($payload);
 	}
 
 /** PRIVATE - eApi\Lead Class Private Functions **/
