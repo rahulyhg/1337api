@@ -63,7 +63,7 @@ class Lead {
 			// if no $data was sent, return bad request response
 			if (empty($data)) 
 			{
-				$err = array('error' => true, 'message' => getMessage('LEAD_GENERIC_ERROR'));
+				$err = array('error' => true, 'message' => getMessage('LEAD_GENERIC_ERROR'), 'class' => 'error');
 				$this->logger->notice($err['message'], array($args, $data));
 				return $response->withJson($err)->withStatus(400);
 			}
@@ -74,7 +74,7 @@ class Lead {
 				!in_array($data['flags'], ['fase1','fase2','fase3'])
 				) 
 			{
-				$err = array('error' => true, 'message' => getMessage('LEAD_MISSING_FIELDS_ERROR'));
+				$err = array('error' => true, 'message' => getMessage('LEAD_MISSING_FIELDS_ERROR'), 'class' => 'error');
 				$this->logger->notice($err['message'], array($args, $data));
 				return $response->withJson($err)->withStatus(400);
 			}
@@ -106,7 +106,9 @@ class Lead {
 
 				// build api response array
 				$payload = array(
-					'message' 	=> getMessage('LEAD_CREATE_SUCCESS'),
+					'title' 	=> getMessage('LEAD_CREATE_SUCCESS_TIT'),
+					'message' 	=> getMessage('LEAD_CREATE_SUCCESS_TXT'),
+					'class' 		=> 'success'
 				);
 				
 				//output response
@@ -126,7 +128,7 @@ class Lead {
 			
 			// handle exceptions duplicate entry message to be user-friendly
 			if (strpos($e->getMessage(), '1062 Duplicate entry')) {
-				$err = array('error' => true, 'message' => getMessage('LEAD_DUPLICATE_EMAIL'));
+				$err = array('error' => true, 'message' => getMessage('LEAD_DUPLICATE_EMAIL'), 'class' => 'warning');
 				$this->logger->notice($err['message'], array($args, $data));
 				return $response->withJson($err)->withStatus(400);
 			}
