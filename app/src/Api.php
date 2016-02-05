@@ -410,17 +410,29 @@ class Api {
 			$filename = 'export-' . $args['edge'] . '-' . $hashdate . '.csv';
 
 			//outstream response
-			header('Content-Type: text/csv');
-			header('Content-Disposition: attachment; filename=' . $filename);
+			header("Content-Disposition: attachment; filename=" . $filename);
+			header("Content-Type: application/vnd.ms-excel;");
+			header("Pragma: no-cache");
+			header("Expires: 0");
+
 			$outstream = fopen('php://output', 'w');
 
-				// inject field keys to data as csv export table heading
-				fputcsv($outstream, $headings);
+				echo '<table>';
 
-				// foreach item, outstream fputcsv
-				foreach ($data as $row) {
-					fputcsv($outstream, $row);
-				}
+					echo '</th>';
+					foreach($headings as $heading) {
+						echo '<td>' . $heading . '</td>';
+					}
+					echo '</th>';
+
+					foreach($data as $row) {
+						echo '<tr>';
+						foreach($row as $cell) {
+							echo '<td>' . $cell . '</td>';
+						}
+						echo '</tr>';
+					}
+				echo '</table>';
 
 			// fclose
 			fclose($outstream);
