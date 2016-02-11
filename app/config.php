@@ -49,7 +49,7 @@ return array(
 			'blacklist' 	=> array('modified'), 		
 		),
 		'list' 	=> array(
-			'itemsPerPage' 	=> 5,
+			'itemsPerPage' 	=> 15,
 			'fields' 		=> array('id', 'name', 'created', 'modified')
 		),
 		'uploads' => array(
