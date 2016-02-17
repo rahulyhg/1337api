@@ -420,15 +420,37 @@ class Api {
 				echo '<table>';
 
 					echo '</th>';
+
+					// change request, hide first column -> id
+					$xhC = 1;
+					// change request, hide first column -> id
+
 					foreach($headings as $heading) {
-						echo '<td>' . $heading . '</td>';
+					
+						// change request, hide first column -> id
+						if ($xhC > 1) {
+							echo '<td>' . $heading . '</td>';
+						} 
+						$xhC++;
+						// change request, hide first column -> id
+
 					}
 					echo '</th>';
 
 					foreach($data as $row) {
 						echo '<tr>';
+
+						// change request, hide first column -> id
+						$xcC = 1;
+						// change request, hide first column -> id
+
 						foreach($row as $cell) {
-							echo '<td>' . $cell . '</td>';
+
+							// change request, hide first column -> id
+							if ($xcC > 1) {							
+								echo '<td>' . $cell . '</td>';
+							}
+							$xcC++;
 						}
 						echo '</tr>';
 					}
